@@ -9,6 +9,10 @@ local server = nil
 local client = nil
 
 STATE = "Lobby"
+CMD = {
+	CHAT = 128,
+}
+
 
 function love.load( args )
 
@@ -56,17 +60,12 @@ end
 local chatLines = { "", "", "", "", "", "", "" }
 local text = ""
 
-local CMD = {
-	CHAT = 128,
-}
-
 function love.keypressed( key )
-	if key == "return" then
-		network:sendText( text )
-		text = ""
-	else
-		text = text .. key
-	end
+	chat:keypressed( key )
+end
+
+function love.textinput( letter )
+	chat:textinput( letter )
 end
 
 function love.draw()

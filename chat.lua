@@ -1,7 +1,7 @@
 local chat = {
 	lines = {},
 	active = false,
-	enterText,
+	enterText = ""
 }
 
 function chat:init()
@@ -28,11 +28,11 @@ function chat:newLine( text )
 	self.lines[#self.lines] = text
 end
 
-function love.keypressed( key )
+function chat:keypressed( key )
 	if key == "return" then
 		if self.active then
-			network:send( CMD.CHAT, text )
-			text = ""
+			network:send( CMD.CHAT, self.enterText )
+			self.enterText = ""
 			self.active = false
 		else
 			self.active = true
@@ -40,9 +40,9 @@ function love.keypressed( key )
 	end
 end
 
-function love.textinput( letter )
+function chat:textinput( letter )
 	if self.active then
-		text = text .. letter
+		self.enterText = self.enterText .. letter
 	end
 end
 
