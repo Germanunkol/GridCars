@@ -37,6 +37,17 @@ function network:startClient( address, playername, port )
 	return client
 end
 
+function network:closeConnection()
+	if client then
+		client:close()
+	end
+	if server then
+		server:close()
+	end
+	client = nil
+	server = nil
+end
+
 function network:update( dt )
 	if server then server:update( dt ) end
 	if client then client:update( dt ) end

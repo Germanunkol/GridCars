@@ -5,20 +5,28 @@ game = require( "game" )
 lobby = require( "lobby" )
 chat = require( "chat" )
 map = require( "map" )
+ui = require( "lib/punchUI" )
+menu = require( "menu" )
 
-local server = nil
-local client = nil
+server = nil
+client = nil
 
-STATE = "Lobby"
+STATE = "Menu"
 CMD = {
 	CHAT = 128,
 }
 
+port = 3410
 
 function love.load( args )
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
 	print( "Player name: '" .. PLAYERNAME .. "'" )
+
+	chat:init()
+	lobby:init()
+	menu:init()
+	map:load()
 
 	local startServer = false
 	if args[2] ~= "server" and args[2] ~= "client" then
@@ -37,52 +45,54 @@ function love.load( args )
 		server.callbacks.received = serverReceived
 		-- set client callbacks:
 		client.callbacks.received = clientReceived
-	else
-		client = network:startClient( args[3], "Germanunkol", port )
+		client.callbacks.connected = connected
 
-		-- set client callbacks:
-		client.callbacks.received = clientReceived
+		lobby:show()
+	else
+		if args[3] then
+			client = network:startClient( args[3], "Germanunkol", port )
+
+			-- set client callbacks:
+			client.callbacks.received = clientReceived
+			client.callbacks.connected = connected
+		end
+		menu:show()
 	end
 
-	chat:init()
-	STATE = "Lobby"
-	map:load()
+	love.graphics.setBackgroundColor(25,25,25,255)
 end
 
+function connected()
+	lobby:show()
+end
 
 function love.update( dt )
 	network:update( dt )
-	map:update(dt)
+	if map then map:update(dt) end
 	if STATE == "Game" then
 		game:update( dt )
 	elseif STATE == "Lobby" then
 		lobby:update( dt )
+	elseif STATE == "Menu" then
+		menu:update( dt )
 	end
+	ui:update( dt )
 end
 
 local chatLines = { "", "", "", "", "", "", "" }
 local text = ""
 
-function love.keypressed( key )
-	chat:keypressed( key )
+function love.keypressed( key, unicode )
+	--chat:keypressed( key )
+	ui:keypressed( key, unicode )
 end
 
 function love.textinput( letter )
-	chat:textinput( letter )
+	--chat:textinput( letter )
+	ui:textinput( letter )
 end
 
 function love.draw()
-
-	-- Print list of users:
-	love.graphics.setColor( 255,255,255, 255 )
-	local users = network:getUsers()
-	local x, y = 20, 10
-	for k, u in pairs( users ) do
-		love.graphics.print( u.playerName, x, y )
-		y = y + 20
-	end
-
-	map:draw()
 
 	if STATE == "Game" then
 		game:draw()
@@ -93,6 +103,8 @@ function love.draw()
 	if STATE == "Game" or STATE == "Lobby" then
 		chat:draw()
 	end
+
+	ui:draw()
 end
 
 local text = ""
