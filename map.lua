@@ -1,21 +1,37 @@
-local map = {triangles = {}}
-
+local map = {triangles = {}, Boundary = {}}
 local Camera = require "lib/hump.camera"
 local startPos = {x = 0, y = 0}
 local CameraGolX = 0
 local CameraGolY = 0
 local cameraSpeed = 300
 local cam = nil
+local CamOffset = -0.05
+local GridColorSmall = {255, 255, 160, 100}
+local GridColorBig = {50, 255, 100, 200}
+local GridSizeSmallStep = 10
+local GridSizeBigStep = 50
+GRIDSIZE = GridSizeSmallStep
 
+--wird einmalig bei Spielstart aufgerufen
 function map:load()
 	cam = Camera(startPos.x, startPos.x)
-	map:import("testtrackstl.stl") -- temp hier
+	map:new("testtrackstl.stl") -- temp hier
+end
+
+--wird zum laden neuer Maps öfters aufgerufen
+function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
+	map:import(dateiname)
+	map:getBoundary()
+	print (printTable(map.Boundary))
 end
 
 function map:update( dt )
+	cam.rot = CamOffset
 	local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
 	local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-	local mul = 1 + ((love.keyboard.isDown('y') and 1 or 0) - (love.keyboard.isDown('x') and 1 or 0))*dt
+	--local mul = 1 + ((love.keyboard.isDown('y') and 1 or 0) - (love.keyboard.isDown('x') and 1 or 0))*dt
+	local mul = 1 + ((love.mouse.isDown("wu") and 1 or 0) - (love.mouse.isDown("wd") and 1 or 0))*dt
+	
 	dx = dx*dt*cameraSpeed
 	dy = dy*dt*cameraSpeed
     cam:move(dx, dy)
@@ -36,9 +52,32 @@ function map:draw()
 	 				map.triangles[key].vertices[3].y
 	 			)
 	 		end
+	 -- draw grid
+	map:drawGrid()
 	 -- draw movement-lines
 	 -- draw player
 	cam:detach()
+end
+
+function map:drawGrid()
+	local r, g, b, a = love.graphics.getColor()
+	for i = 0, map.Boundary.maxX+math.abs(map.Boundary.minX), GridSizeSmallStep do
+		if i % GridSizeBigStep == 0 then
+			love.graphics.setColor(GridColorBig)
+		else
+			love.graphics.setColor(GridColorSmall)
+		end
+			love.graphics.line(i+map.Boundary.minX, map.Boundary.minY, i+map.Boundary.minX, map.Boundary.maxY)
+	end
+	for i = 0, map.Boundary.maxY+math.abs(map.Boundary.minY), GridSizeSmallStep do
+		if i % GridSizeBigStep == 0 then
+			love.graphics.setColor(GridColorBig)
+		else
+			love.graphics.setColor(GridColorSmall)
+		end
+			love.graphics.line(map.Boundary.minX, i+map.Boundary.minY, map.Boundary.maxX, i+map.Boundary.minY)
+	end
+	--love.graphics.setColor( r, g, b, a) 
 end
 
 function printTable( t, level )
@@ -77,7 +116,7 @@ function map:import(Dateiname)
 				endpos = string.find(line," ")
 				vertices[counterV][value] = string.sub(line, startpos, endpos) * 50
 			end
-			print("Vertex  No",counterV, vertices[counterV].x, vertices[counterV].y,  vertices[counterV].z)
+			--print("Vertex  No",counterV, vertices[counterV].x, vertices[counterV].y,  vertices[counterV].z)
 			-- jeder dritte Vertex ergibt ein Dreieck
 			if counterV%3 == 0 then
 				map.triangles[counterT] = {}
@@ -92,7 +131,6 @@ function map:import(Dateiname)
 			counterV = counterV + 1
 		end
   	end
-  	print (map.getBoundary)
 end
 
 function map:setCameraPosition(x,y)
@@ -100,16 +138,31 @@ function map:setCameraPosition(x,y)
 	cameraGolY = y
 end
 
-function map:swingCameraPosition(x,y)
+function map:swingToCameraPosition(x,y,dt)
 
 end
 
-function map:getBoundary() -- liefert maximale x und y Koordinaten
-	local max_x, max_y
+function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
+	map.Boundary.minX = 999
+	map.Boundary.minY = 999
+	map.Boundary.maxX = 0
+	map.Boundary.maxY = 0
+	--local minX, minY, maxX, maxY = 999 , 999, 0, 0
 	for key, value in pairs(map.triangles) do
-		max_x = math.max(map.triangles.vertices.x, max_x)
-		max_y = math.max(map.triangles.vertices.y, max_y)
+		for i = 1, 3, 1 do
+			map.Boundary.minX = math.min(map.triangles[key].vertices[i].x, map.Boundary.minX)
+			map.Boundary.minY = math.min(map.triangles[key].vertices[i].y, map.Boundary.minY)
+			map.Boundary.maxX = math.max(map.triangles[key].vertices[i].x, map.Boundary.maxX)
+			map.Boundary.maxY = math.max(map.triangles[key].vertices[i].y, map.Boundary.maxY)
+		end
 	end
-	return max_x, max_y
+	map.Boundary.minX = map.Boundary.minX - map.Boundary.minX % GridSizeBigStep
+	map.Boundary.minY = map.Boundary.minY - map.Boundary.minY % GridSizeBigStep
+	map.Boundary.maxX = map.Boundary.maxX + GridSizeBigStep
+	map.Boundary.maxX = map.Boundary.maxX - map.Boundary.maxX % GridSizeBigStep
+	map.Boundary.maxY = map.Boundary.maxY + GridSizeBigStep
+	map.Boundary.maxY = map.Boundary.maxY - map.Boundary.maxY % GridSizeBigStep
 end
+
+
 return map
