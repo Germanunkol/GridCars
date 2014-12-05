@@ -73,7 +73,6 @@ function map:import(Dateiname)
 			for key, value in ipairs(positions) do
 				startpos = string.find(line," ")
 				line = string.sub(line, startpos+1)
-				--print("line: ", line)
 				startpos = 0
 				endpos = string.find(line," ")
 				vertices[counterV][value] = string.sub(line, startpos, endpos) * 50
@@ -93,12 +92,24 @@ function map:import(Dateiname)
 			counterV = counterV + 1
 		end
   	end
+  	print (map.getBoundary)
 end
-
 
 function map:setCameraPosition(x,y)
 	cameraGolX = x
 	cameraGolY = y
 end
 
+function map:swingCameraPosition(x,y)
+
+end
+
+function map:getBoundary() -- liefert maximale x und y Koordinaten
+	local max_x, max_y
+	for key, value in pairs(map.triangles) do
+		max_x = math.max(map.triangles.vertices.x, max_x)
+		max_y = math.max(map.triangles.vertices.y, max_y)
+	end
+	return max_x, max_y
+end
 return map
