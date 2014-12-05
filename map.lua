@@ -168,7 +168,7 @@ function map:keypressed( key )
 	print(key)
 end
 
-function map:mousepressed( button, x, y )
+function map:mousepressed( x, y, button )
 	print(button, x, y)
 end
 

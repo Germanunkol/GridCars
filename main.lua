@@ -88,11 +88,16 @@ local text = ""
 function love.keypressed( key, unicode )
 	--chat:keypressed( key )
 	ui:keypressed( key, unicode )
+	map:keypressed( key )
 end
 
 function love.textinput( letter )
 	--chat:textinput( letter )
 	ui:textinput( letter )
+end
+
+function love.mousepressed( x, y, button )
+	map:mousepressed( x, y, button )
 end
 
 function love.draw()
