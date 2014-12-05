@@ -164,5 +164,12 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 	map.Boundary.maxY = map.Boundary.maxY - map.Boundary.maxY % GridSizeBigStep
 end
 
+function map:keypressed( key )
+	print(key)
+end
+
+function map:mousepressed( button, x, y )
+	print(button, x, y)
+end
 
 return map

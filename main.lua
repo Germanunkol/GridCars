@@ -59,6 +59,8 @@ function love.load( args )
 		menu:show()
 	end
 
+	map:new( "maps/map2.stl" )
+
 	love.graphics.setBackgroundColor(25,25,25,255)
 end
 
@@ -68,10 +70,11 @@ end
 
 function love.update( dt )
 	network:update( dt )
-	if map then map:update(dt) end
 	if STATE == "Game" then
+		map:update( dt )
 		game:update( dt )
 	elseif STATE == "Lobby" then
+		map:update( dt )
 		lobby:update( dt )
 	elseif STATE == "Menu" then
 		menu:update( dt )
@@ -97,6 +100,7 @@ function love.draw()
 	if STATE == "Game" then
 		game:draw()
 	elseif STATE == "Lobby" then
+		map:draw()
 		lobby:draw()
 	end
 
