@@ -4,6 +4,7 @@ config = require( "config" )
 game = require( "game" )
 lobby = require( "lobby" )
 chat = require( "chat" )
+map = require( "map" )
 
 local server = nil
 local client = nil
@@ -45,11 +46,13 @@ function love.load( args )
 
 	chat:init()
 	STATE = "Lobby"
+	map:load()
 end
 
 
 function love.update( dt )
 	network:update( dt )
+	map:update(dt)
 	if STATE == "Game" then
 		game:update( dt )
 	elseif STATE == "Lobby" then
@@ -79,6 +82,7 @@ function love.draw()
 		y = y + 20
 	end
 
+	map:draw()
 
 	if STATE == "Game" then
 		game:draw()
