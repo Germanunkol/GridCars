@@ -1,19 +1,17 @@
 
-network = require( "network.network" )
-config = require( "config" )
-game = require( "game" )
-lobby = require( "lobby" )
-chat = require( "chat" )
+network = require( "network" )
 
+local CMD = {
+	CHAT = 128,
+}
+
+local chatLines = { "", "", "", "", "", "", "" }
 local server = nil
 local client = nil
 
-STATE = "Lobby"
+local port = 3410
 
 function love.load( args )
-
-	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
-	print( "Player name: '" .. PLAYERNAME .. "'" )
 
 	local startServer = false
 	if args[2] ~= "server" and args[2] ~= "client" then
@@ -38,40 +36,34 @@ function love.load( args )
 		-- set client callbacks:
 		client.callbacks.received = clientReceived
 	end
-
-	chat:init()
-	STATE = "Lobby"
 end
-
 
 function love.update( dt )
 	network:update( dt )
-	if STATE == "Game" then
-		game:update( dt )
-	elseif STATE == "Lobby" then
-		lobby:update( dt )
-	end
 end
 
-local chatLines = { "", "", "", "", "", "", "" }
 local text = ""
-
-local CMD = {
-	CHAT = 128,
-}
+local chatting = false
 
 function love.keypressed( key )
 	if key == "return" then
-		network:sendText( text )
-		text = ""
-	else
-		text = text .. key
+		if chatting then
+			network:send( CMD.CHAT, text )
+			text = ""
+			chatting = false
+		else
+			chatting = true
+		end
+	end
+end
+
+function love.textinput( letter )
+	if chatting then
+		text = text .. letter
 	end
 end
 
 function love.draw()
-
-	-- Print list of users:
 	love.graphics.setColor( 255,255,255, 255 )
 	local users = network:getUsers()
 	local x, y = 20, 10
@@ -80,20 +72,17 @@ function love.draw()
 		y = y + 20
 	end
 
-
-	if STATE == "Game" then
-		game:draw()
-	elseif STATE == "Lobby" then
-		lobby:draw()
+	y = love.graphics.getHeight() - 10
+	for k = 1, #chatLines do
+		love.graphics.print( chatLines[k], x, y )
+		y = y - 20
 	end
-
-	if STATE == "Game" or STATE == "Lobby" then
-		chat:draw()
+	if chatting then
+		love.graphics.setColor( 128, 128, 128, 255 )
+		love.graphics.print( "Enter text: " .. text, x - 5, y )
+		y = y - 20
 	end
 end
-
-local text = ""
-local chatting = false
 
 function serverReceived( command, msg, user )
 	if command == CMD.CHAT then
@@ -104,6 +93,9 @@ end
 
 function clientReceived( command, msg )
 	if command == CMD.CHAT then
-		chat:newLine( msg )
+		for k = 1, #chatLines-1 do
+			chatLines[k] = chatLines[k+1]
+		end
+		chatLines[#chatLines] = msg
 	end
 end
