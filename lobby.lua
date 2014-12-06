@@ -31,7 +31,7 @@ function lobby:show()
 	ui:setActiveScreen( scr )
 
 	self.ready = false
-	self.currentLevel = ""
+	self.currentLevel = nil
 	self.locked = false
 	
 	-- In case I was a server before, remove the server settings:
@@ -154,8 +154,8 @@ function lobby:sendMap( user )
 
 	if self.currentLevel then
 
-	-- Mapstring is the map, in serialized form:
-	local mapstring = love.filesystem.read( "maps/" .. self.currentLevel )
+		-- Mapstring is the map, in serialized form:
+		local mapstring = love.filesystem.read( "maps/" .. self.currentLevel )
 		-- Remove linebreaks and replace by pipe symbol for sending.
 		mapstring = mapstring:gsub( "\n", "|" )
 

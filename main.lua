@@ -7,6 +7,7 @@ chat = require( "chat" )
 map = require( "map" )
 ui = require( "lib/punchUI" )
 menu = require( "menu" )
+utility = require( "utility" )		-- helper functions
 
 server = nil
 client = nil

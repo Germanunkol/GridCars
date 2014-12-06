@@ -73,8 +73,13 @@ function map:update( dt )
 
     --map:swingToCameraPosition(220,220,dt)
     mul = 1
-    for id in pairs(map.cars) do
-    	map.cars[id]:update(dt)
+    for id, car in pairs(map.cars) do
+    	car:update(dt)
+		if self:isPointOnRoad( car.x, car.y, 0 ) then
+			car.color = { 255, 128, 128, 255 }
+		else
+			car.color = blue
+		end
     end
 end
 
@@ -178,6 +183,19 @@ function map:import( mapstring )
 
 	map.cars[1] = Car:new( 50, 50, blue)
 
+end
+
+
+-- Check if the given coordinates are on the road:
+function map:isPointOnRoad( x, y, z )
+	local p = {x=x,y=y}
+	for k, tr in pairs( self.triangles ) do
+		-- if the point is in any of the triangles, then it's considered to be on the road:
+		if utility.pointInTriangle( p, tr.vertices[1], tr.vertices[2], tr.vertices[3] ) then
+			return true
+		end
+	end
+	return false
 end
 
 
