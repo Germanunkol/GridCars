@@ -33,16 +33,21 @@ function lobby:show()
 	self.ready = false
 	self.currentLevel = ""
 	self.locked = false
+	
+	-- In case I was a server before, remove the server settings:
+	if levelNameList ~= nil then
+		scr:removeFunction( "topPanel", "start" )
+		scr:removeList( levelNameList.name )
+		levelNameList = nil
+	end
 
 	-- If I'm the server, then let me choose the map:
 	if server then
-		levelListStart = 1	
 		self:createLevelList()
 		self:chooseMap( "map1.stl" )
+		levelListStart = 1	
 	end
 
-	-- In case this function has been added before, remove it now:
-	scr:removeFunction( "topPanel", "start" )
 
 	if server then
 		scr:addFunction( "topPanel", "start", love.graphics.getWidth()/2 - 20, 0, "Start", "s",
@@ -51,6 +56,8 @@ function lobby:show()
 end
 
 function lobby:update( dt )
+	map:update( dt )
+
 	self.camMoveTime = self.camMoveTime + dt
 	if self.camMoveTime > 5 then
 		--local x = math.random( map.Boundary.minX, map.Boundary.maxX )
@@ -61,6 +68,9 @@ function lobby:update( dt )
 end
 
 function lobby:draw()
+	
+	map:draw()
+
 	-- Print list of users:
 	love.graphics.setColor( 255,255,255, 255 )
 	local users, num = network:getUsers()
@@ -146,9 +156,8 @@ function lobby:sendMap( user )
 
 	-- Mapstring is the map, in serialized form:
 	local mapstring = love.filesystem.read( "maps/" .. self.currentLevel )
-	-- Remove linebreaks and replace by pipe symbol for sending.
-	mapstring = mapstring:gsub( "\n", "|" )
-
+		-- Remove linebreaks and replace by pipe symbol for sending.
+		mapstring = mapstring:gsub( "\n", "|" )
 
 		if user then
 			-- Send to single user?
@@ -178,6 +187,10 @@ function lobby:toggleReady()
 end
 
 function lobby:attemptGameStart()
+
+	-- SERVER ONLY!
+	if not server then return end
+
 	local allReady = true
 	local users = network:getUsers()
 	for k, u in pairs( users ) do
@@ -187,8 +200,11 @@ function lobby:attemptGameStart()
 		end
 	end
 
+	-- If all clients are ready, then they must also all be synchronized.
+	-- So we're ok to start.
 	if allReady then
 		self.locked = true		-- don't let any more users join!
+		server:send( CMD.START_GAME )
 	else
 		local commands = {}
 		commands[1] = { txt = "Ok", key = "y" }

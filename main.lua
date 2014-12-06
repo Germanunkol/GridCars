@@ -15,6 +15,7 @@ STATE = "Menu"
 CMD = {
 	CHAT = 128,
 	MAP = 129,
+	START_GAME = 130,
 }
 
 port = 3410
@@ -27,6 +28,7 @@ function love.load( args )
 	chat:init()
 	lobby:init()
 	menu:init()
+	game:init()
 	map:load()
 
 	menu:show()
@@ -101,10 +103,8 @@ end
 function love.update( dt )
 	network:update( dt )
 	if STATE == "Game" then
-		map:update( dt )
 		game:update( dt )
 	elseif STATE == "Lobby" then
-		map:update( dt )
 		lobby:update( dt )
 	elseif STATE == "Menu" then
 		menu:update( dt )
@@ -135,7 +135,6 @@ function love.draw()
 	if STATE == "Game" then
 		game:draw()
 	elseif STATE == "Lobby" then
-		map:draw()
 		lobby:draw()
 	end
 
@@ -144,6 +143,7 @@ function love.draw()
 	end
 
 	ui:draw()
+
 end
 
 local text = ""
@@ -161,5 +161,7 @@ function clientReceived( command, msg )
 		chat:newLine( msg )
 	elseif command == CMD.MAP then
 		lobby:receiveMap( msg )
+	elseif command == CMD.START_GAME then
+		game:show()
 	end
 end
