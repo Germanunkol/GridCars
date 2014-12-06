@@ -39,7 +39,7 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 
 	map:import(mapstring)
 	map:getBoundary()
-	--print (printTable(map.Boundary))
+	--utility.printTable(map.Boundary)
 end
 function map:newFromString( mapstring )
 	map:import( mapstring )
@@ -128,18 +128,6 @@ function map:drawGrid()
 	love.graphics.setColor( r, g, b, a) 
 end
 
-function printTable( t, level )
-	level = level or 1
-	for k, v in pairs( t ) do
-		if type(v) == "table" then
-			print( string.rep( "\t", level ) .. k .. " = {")
-			printTable( v, level + 1 )
-			print( string.rep( "\t", level ) .. "}" )
-		else
-			print( string.rep( "\t", level ) .. k .. " = ", v )
-		end
-	end
-end
 
 function map:import( mapstring )
 
@@ -176,7 +164,7 @@ function map:import( mapstring )
 					vertices[counterV-1],
 					vertices[counterV]
 				}
-				--printTable( map.triangles )
+				--utility.printTable( map.triangles )
 				counterT = counterT + 1
 			end
 			counterV = counterV + 1

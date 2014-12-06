@@ -133,9 +133,6 @@ function Client:received( command, msg )
 
 		userList[id].customData[key] = value
 
-		print( "user data:" )
-		printTable( userList[id].customData )
-
 		if self.callbacks.customDataChanged then
 			self.callback.customDataChanged( user, value, key )
 		end
