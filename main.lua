@@ -42,19 +42,16 @@ function love.load( args )
 		client = network:startClient( 'localhost', "Germanunkol", port )
 
 		-- set server callbacks:
-		server.callbacks.received = serverReceived
+		setServerCallbacks( server )
+
 		-- set client callbacks:
-		client.callbacks.received = clientReceived
-		client.callbacks.connected = connected
+		setClientCallbacks( client )
 
 		lobby:show()
 	else
 		if args[3] then
 			client = network:startClient( args[3], "Germanunkol", port )
-
-			-- set client callbacks:
-			client.callbacks.received = clientReceived
-			client.callbacks.connected = connected
+			setClientCallbacks( client )
 		end
 		menu:show()
 	end
@@ -64,8 +61,26 @@ function love.load( args )
 	love.graphics.setBackgroundColor(25,25,25,255)
 end
 
+function setServerCallbacks( server )
+	server.callbacks.received = serverReceived
+end
+function setClientCallbacks( client )
+	-- set client callbacks:
+	client.callbacks.received = clientReceived
+	client.callbacks.connected = connected
+	client.callbacks.disconnected = disconnected
+end
+
+-- Called when client is connected to the server
 function connected()
 	lobby:show()
+	print("CONNECTED", debug.traceback())
+end
+
+-- Called when client is disconnected from the server
+function disconnected()
+	menu:show()
+	print("menu")
 end
 
 function love.update( dt )

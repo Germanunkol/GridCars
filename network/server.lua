@@ -93,11 +93,17 @@ function Server:update( dt )
 					if userListByName[ user.playerName ] then
 						userListByName[ user.playerName ] = nil
 					end
+
+					return false
 				else
 					print("Err Received:", msg, data)
 				end
 			end
 		end
+
+		return true
+	else
+		return false
 	end
 end
 
@@ -204,6 +210,10 @@ function Server:disconnectedUser( user )
 		for k, u in pairs( userList ) do
 			self:send( CMD.PLAYER_LEFT, user.id )
 		end
+	end
+	
+	if self.callbacks.disconnectedUser then
+		self.callbacks.disconnectedUser( user )
 	end
 end
 
