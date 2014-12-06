@@ -16,18 +16,22 @@ function lobby:init()
 
 	scr:addPanel( "topPanel",
 			0, 0, 
-			love.graphics.getWidth(), 40 )
+			love.graphics.getWidth(), 35 )
 
 	scr:addFunction( "topPanel", "close", 20, 0, "Leave", "q", lobby.close )
 
 	scr:addFunction( "topPanel", "ready", love.graphics.getWidth() - 100, 0, "Ready", "r",
 		function() lobby:toggleReady() end )
 
+
 end
 
 function lobby:show()
 	STATE = "Lobby"
 	ui:setActiveScreen( scr )
+
+	self.ready = false
+	self.currentLevel = ""
 
 	-- If I'm the server, then let me choose the map:
 	if server then
