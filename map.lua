@@ -104,7 +104,7 @@ function map:draw()
 			end
 
 	if self.startLine then
-		love.graphics.setLineWidth( 5 )
+		love.graphics.setLineWidth( 3 )
 		love.graphics.setColor( 0, 0, 0, 255 )
 		love.graphics.line( self.startLine )
 	end
@@ -178,6 +178,11 @@ function map:import( mapstring )
 				vertices[counterV].z = math.floor( vertices[counterV].z/50 + 0.5 )*50
 				vertices[counterV-1].z = math.floor( vertices[counterV-1].z/50 + 0.5 )*50
 				vertices[counterV-2].z = math.floor( vertices[counterV-2].z/50 + 0.5 )*50
+
+				-- flip y coordinate:
+				vertices[counterV].y = -vertices[counterV].y
+				vertices[counterV-1].y = -vertices[counterV-1].y
+				vertices[counterV-2].y = -vertices[counterV-2].y
 
 				-- Vertices on layer z = 0 are part of the base mesh:
 				if vertices[counterV].z == 0 and vertices[counterV-1].z == 0 and
