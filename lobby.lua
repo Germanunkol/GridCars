@@ -36,8 +36,8 @@ end
 function lobby:update( dt )
 	self.camMoveTime = self.camMoveTime + dt
 	if self.camMoveTime > 5 then
-		local x = math.random( map.Boundary.minX, map.Boundary.maxX )
-		local y = math.random( map.Boundary.minY, map.Boundary.maxY )
+		--local x = math.random( map.Boundary.minX, map.Boundary.maxX )
+		--local y = math.random( map.Boundary.minY, map.Boundary.maxY )
 		--map:swingCameraTo( x, y, 3 )
 		self.camMoveTime = self.camMoveTime - 5	
 	end

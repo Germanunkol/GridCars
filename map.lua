@@ -1,4 +1,10 @@
-local map = {triangles = {}, Boundary = {}, cars = {}, View = {}}
+local map = {
+	triangles = {},
+	Boundary = {},
+	cars = {},
+	View = {},
+	loaded = false,
+}
 
 local Camera = require "lib/hump.camera"
 local Car = require "car"
@@ -41,6 +47,9 @@ function map:newFromString( mapstring )
 end
 
 function map:update( dt )
+	-- Make sure a map is loaded first!
+	if not map.loaded then return end
+
 	cam.rot = CamOffset
 	local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
 	local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
@@ -70,6 +79,10 @@ function map:update( dt )
 end
 
 function map:draw()
+
+	-- Make sure a map is loaded first!
+	if not map.loaded then return end
+
 	cam:attach()
 	-- draw World
 	 -- draw ground
@@ -170,7 +183,13 @@ function map:import( mapstring )
 		end
 	end
 
+	-- Consider the map as "loaded" if the list of triangles is not empty
+	if #map.triangles >= 1 then
+		map.loaded = true
+	end
+
 	map.cars[1] = Car:new( 50, 50, blue)
+
 end
 
 
