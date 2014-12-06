@@ -40,4 +40,10 @@ function utility.printTable( t, depth )
 	end
 end
 
+function utility.dist( p1, p2 )
+	local dx = p1.x - p2.x
+	local dy = p1.y - p2.y
+	return math.sqrt( dx*dx, dy*dy )
+end
+
 return utility

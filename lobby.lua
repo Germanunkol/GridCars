@@ -107,7 +107,7 @@ end
 function lobby:createLevelList()
 	local levelnames = love.filesystem.getDirectoryItems( "maps" )
 	if levelNameList then
-		scr:removeList( levelNameList )
+		scr:removeList( levelNameList.name )
 	end
 
 	local list = {}

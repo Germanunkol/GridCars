@@ -101,7 +101,14 @@ function map:draw()
 	 				triang.vertices[3].x,
 	 				triang.vertices[3].y
 	 			)
-	 		end
+			end
+
+	if self.startLine then
+		love.graphics.setLineWidth( 5 )
+		love.graphics.setColor( 0, 0, 0, 255 )
+		love.graphics.line( self.startLine )
+	end
+
 	 -- draw grid
 	map:drawGrid()
 	 -- draw movement-lines
@@ -114,6 +121,7 @@ end
 
 function map:drawGrid()
 	local r, g, b, a = love.graphics.getColor()
+	love.graphics.setLineWidth(1)
 	for i = 0, map.Boundary.maxX+math.abs(map.Boundary.minX), GridSizeSmallStep do
 		if i % GridSizeBigStep == 0 then
 			love.graphics.setColor(GridColorBig)
@@ -141,6 +149,7 @@ function map:import( mapstring )
 	-- testen, ob alles Triangel sind und keine Polygone
 	cam = Camera(startPos.x, startPos.x)
 	map.triangles = {}
+	map.startLine = nil
 	local vertices = {}
 	local positions = {"x", "y", "z"}
 	local counterT = 1 -- Counter für Triangle
@@ -163,15 +172,53 @@ function map:import( mapstring )
 			--print("Vertex  No",counterV, vertices[counterV].x, vertices[counterV].y,  vertices[counterV].z)
 			-- jeder dritte Vertex ergibt ein Dreieck
 			if counterV%3 == 0 then
-				map.triangles[counterT] = {}
-				map.triangles[counterT].vertices = {
-					vertices[counterV-2],
-					vertices[counterV-1],
-					vertices[counterV]
-				}
-				--utility.printTable( map.triangles )
-				counterT = counterT + 1
+
+
+				-- Round the vertices on the z axis:
+				vertices[counterV].z = math.floor( vertices[counterV].z/50 + 0.5 )*50
+				vertices[counterV-1].z = math.floor( vertices[counterV-1].z/50 + 0.5 )*50
+				vertices[counterV-2].z = math.floor( vertices[counterV-2].z/50 + 0.5 )*50
+
+				-- Vertices on layer z = 0 are part of the base mesh:
+				if vertices[counterV].z == 0 and vertices[counterV-1].z == 0 and
+						vertices[counterV-2].z == 0 then
+
+					map.triangles[counterT] = {}
+					map.triangles[counterT].vertices = {
+						vertices[counterV-2],
+						vertices[counterV-1],
+						vertices[counterV]
+					}
+					--utility.printTable( map.triangles )
+					counterT = counterT + 1
+				elseif vertices[counterV].z == 50 and vertices[counterV-1].z == 50 and
+						vertices[counterV-2].z == 50 then
+					-- Vertices on layer z = 1 are on the higher layer...
+				
+				elseif vertices[counterV].z == 100 and vertices[counterV-1].z == 100 and
+						vertices[counterV-2].z == 100 then
+					if not map.starLine then
+						local d1 = utility.dist( vertices[counterV], vertices[counterV-1] )
+						local d2 = utility.dist( vertices[counterV-1], vertices[counterV-2] )
+						local d3 = utility.dist( vertices[counterV-2], vertices[counterV] )
+						local p1, p2
+
+						if (d1 > d2 and d2 > d3) or (d1 < d2 and d2 < d3) then -- d2 is middle distance
+							p1 = vertices[counterV-1]
+							p2 = vertices[counterV-2]
+						elseif (d1 > d3 and d3 > d2) or (d1 < d3 and d3 < d2) then	-- d3 is middle distance
+							p1 = vertices[counterV]
+							p2 = vertices[counterV-2]
+						else
+							p1 = vertices[counterV]
+							p2 = vertices[counterV-1]
+						end
+							
+						map.startLine = { p1.x, p1.y, p2.x, p2.y }
+					end
+				end
 			end
+
 			counterV = counterV + 1
 		end
 	end
