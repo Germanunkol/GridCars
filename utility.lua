@@ -40,4 +40,8 @@ function utility.printTable( t, depth )
 	end
 end
 
+function utility.interpolateCos ( rel)
+	return -math.cos(math.pi*rel)*0.5 + 0.5
+end
+
 return utility
