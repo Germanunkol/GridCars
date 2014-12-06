@@ -68,10 +68,10 @@ end
 
 function network:getUsers()
 	if client then
-		return client:getUsers()
+		return client:getUsers(), client:getNumUsers()
 	end
 	if server then
-		return server:getUsers()
+		return server:getUsers(), server:getNumUsers()
 	end
 end
 

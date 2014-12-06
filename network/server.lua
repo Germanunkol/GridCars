@@ -232,6 +232,9 @@ end
 function Server:getUsers()
 	return userList
 end
+function Server:getNumUsers()
+	return numberOfUsers
+end
 
 function Server:close()
 	if self.conn then
