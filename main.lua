@@ -28,7 +28,7 @@ function love.load( args )
 	menu:init()
 	map:load()
 
-		menu:show()
+	menu:show()
 
 	local startServer = false
 	local startClient = false
@@ -77,13 +77,11 @@ end
 -- Called when client is connected to the server
 function connected()
 	lobby:show()
-	print("CONNECTED", debug.traceback())
 end
 
 -- Called when client is disconnected from the server
 function disconnected()
 	menu:show()
-	print("menu")
 end
 
 function love.update( dt )

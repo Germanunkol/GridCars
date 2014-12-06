@@ -37,6 +37,11 @@ function Server:new( port, maxNumberOfPlayers )
 		synchronize = nil,
 	}
 
+	userList = {}
+	userListByName = {}
+	numberOfUsers = 0
+	partMessage = ""
+
 	MAX_PLAYERS = maxNumberOfPlayers or 16
 
 	return o

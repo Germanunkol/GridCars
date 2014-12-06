@@ -36,6 +36,10 @@ function Client:new( address, port, playerName )
 		disconnected = nil,
 	}
 
+	userList = {}
+	partMessage = ""
+
+
 	o.clientID = nil
 	o.playerName = playerName
 
