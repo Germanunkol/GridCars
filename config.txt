@@ -1,1 +1,1 @@
-PLAYERNAME = unknown
+PLAYERNAME = Germanunkol

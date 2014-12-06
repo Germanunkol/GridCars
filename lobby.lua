@@ -1,6 +1,7 @@
 local lobby = {
 	camMoveTime = 5,
 	currentLevel = nil,
+	ready = false,
 }
 
 local scr
@@ -18,6 +19,9 @@ function lobby:init()
 			love.graphics.getWidth(), 40 )
 
 	scr:addFunction( "topPanel", "close", 20, 0, "Leave", "q", lobby.close )
+
+	scr:addFunction( "topPanel", "ready", love.graphics.getWidth() - 100, 0, "Ready", "r",
+		function() lobby:toggleReady() end )
 
 end
 
@@ -56,8 +60,9 @@ function lobby:draw()
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
-			if u.userData.ready == true then
-				local dx = love.graphics.getFont():getWidth( u.playerName )
+			if u.customData.ready == true then
+				love.graphics.setColor( 128, 255, 128, 255 )
+				local dx = love.graphics.getFont():getWidth( u.playerName ) + 30
 				love.graphics.print( "[Ready]", x + dx, y )
 			end
 			y = y + 20
@@ -150,6 +155,13 @@ function lobby:receiveMap( mapstring )
 	mapstring = mapstring:gsub( "|", "\n" )
 
 	map:newFromString( mapstring )
+end
+
+function lobby:toggleReady()
+	self.ready = not self.ready
+	if client then
+		client:setUserValue( "ready", self.ready )
+	end
 end
 
 return lobby
