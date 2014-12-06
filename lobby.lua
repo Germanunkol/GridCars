@@ -1,6 +1,6 @@
 local lobby = {
 	camMoveTime = 5,
-	levelname = ""
+	currentLevel = nil,
 }
 
 local scr
@@ -112,25 +112,44 @@ end
 
 -- SERVER ONLY!
 function lobby:chooseMap( levelname )
+
+	if not server then return end
+
 	map:new( "maps/" .. levelname )
 
+	self.currentLevel = levelname
+	self:sendMap()
+end
+function lobby:sendMap( user )
+	-- SERVER ONLY!
+	if not server then return end
+
+	if self.currentLevel then
+
 	-- Mapstring is the map, in serialized form:
-	local mapstring = love.filesystem.read( "maps/" .. levelname )
+	local mapstring = love.filesystem.read( "maps/" .. self.currentLevel )
 	-- Remove linebreaks and replace by pipe symbol for sending.
 	mapstring = mapstring:gsub( "\n", "|" )
-	if server then
-		server:send( CMD.MAP, mapstring )
+
+
+		if user then
+			-- Send to single user?
+			server:send( CMD.MAP, mapstring, user )
+		else
+			-- Broadcast to all:
+			server:send( CMD.MAP, mapstring )
+		end
 	end
 end
 
--- CLIENT ONLY!
 function lobby:receiveMap( mapstring )
+	-- CLIENT ONLY!
+	if not client then return end
+	if server then return end
 	-- Re-add line breaks:
 	mapstring = mapstring:gsub( "|", "\n" )
 
-	if not server then
-		map:newFromString( mapstring )
-	end
+	map:newFromString( mapstring )
 end
 
 return lobby

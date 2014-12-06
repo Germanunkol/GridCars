@@ -65,6 +65,7 @@ end
 
 function setServerCallbacks( server )
 	server.callbacks.received = serverReceived
+	server.callbacks.synchronize = synchronize
 end
 function setClientCallbacks( client )
 	-- set client callbacks:
@@ -81,6 +82,14 @@ end
 -- Called when client is disconnected from the server
 function disconnected()
 	menu:show()
+end
+
+-- Called on server when new client is in the process of
+-- connecting.
+function synchronize( user )
+	-- If the server has a map chosen, let the new client know
+	-- about it:
+	lobby:sendMap( user )
 end
 
 function love.update( dt )
