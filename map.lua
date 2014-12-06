@@ -1,5 +1,7 @@
-local map = {triangles = {}, Boundary = {}, View = {}}
+local map = {triangles = {}, Boundary = {}, cars = {}, View = {}}
+
 local Camera = require "lib/hump.camera"
+local Car = require "car"
 local startPos = {x = 0, y = 0}
 local CameraGolX = 0
 local CameraGolY = 0
@@ -18,47 +20,69 @@ function map:load()
 	cam = Camera(startPos.x, startPos.x)
 	map.View.x = startPos.x
 	map.View.y = startPos.y
-	map:new("testtrackstl.stl") -- temp hier
+		-- Testzweck hier
+		map:new("testtrackstl.stl")
+		blue = { 0, 100, 255, 255 }
+		map.cars[1] = Car:new( 50, 50, blue)
 end
 
 --wird zum laden neuer Maps öfters aufgerufen
 function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 	map:import(dateiname)
 	map:getBoundary()
-	print (printTable(map.Boundary))
+	--print (printTable(map.Boundary))
 end
 
 function map:update( dt )
 	cam.rot = CamOffset
 	local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
 	local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-	
 	dx = dx*cameraSpeed--*dt
 	dy = dy*cameraSpeed--*dt
     cam:move(dx, dy)
     cam:zoom(mul)
+--[[
+    if CamSwingTime then
+		CamSwingTimePassed = CamSwingTimePassed + dt
+		if CamSwingTimePassed < CamSwingTime then
+			local amount = CamSwingTimePassed/CamSwingTime
+			CamX =CamStartX + (CamTargetX - CamStartX) * amount
+			CamY = CamStartY + (CamTargetY - CamStartY) * amount
+		else
+			CamX = self.targetX
+			CamY = self.targetY
+			CamSwingTime = nil
+		end
+	end]]
+
     --map:swingToCameraPosition(220,220,dt)
     mul = 1
+    for id in pairs(map.cars) do
+    	map.cars[id]:update(dt)
+    end
 end
 
 function map:draw()
 	cam:attach()
 	-- draw World
 	 -- draw ground
-	 		for key, value in pairs(map.triangles) do
+	 		for key, triang in pairs(map.triangles) do
 	 			love.graphics.polygon( 'fill',
-	 				map.triangles[key].vertices[1].x,
-	 				map.triangles[key].vertices[1].y,
-	 				map.triangles[key].vertices[2].x,
-	 				map.triangles[key].vertices[2].y,
-	 				map.triangles[key].vertices[3].x,
-	 				map.triangles[key].vertices[3].y
+	 				triang.vertices[1].x,
+	 				triang.vertices[1].y,
+	 				triang.vertices[2].x,
+	 				triang.vertices[2].y,
+	 				triang.vertices[3].x,
+	 				triang.vertices[3].y
 	 			)
 	 		end
 	 -- draw grid
 	map:drawGrid()
 	 -- draw movement-lines
 	 -- draw player
+	for id in pairs(map.cars) do
+    	map.cars[id]:draw()
+    end
 	cam:detach()
 end
 
@@ -80,7 +104,7 @@ function map:drawGrid()
 		end
 			love.graphics.line(map.Boundary.minX, i+map.Boundary.minY, map.Boundary.maxX, i+map.Boundary.minY)
 	end
-	--love.graphics.setColor( r, g, b, a) 
+	love.graphics.setColor( r, g, b, a) 
 end
 
 function printTable( t, level )
@@ -135,13 +159,9 @@ function map:import(Dateiname)
   	end
 end
 
-function map:setCameraTo(x,y)
-	cameraGolX = x
-	cameraGolY = y
-end
 
 function map:swingCameraTo(x,y,time)
-	local cx, cy = cam:pos()
+--[[	local cx, cy = cam:pos()
 	--t counter
 	print(cx, x, dx)
 	local dx = (x - cx) * dt
@@ -149,7 +169,16 @@ function map:swingCameraTo(x,y,time)
 		dx = 10
 	end
 	--local dy = math.max((y - cy),100) * dt
-	cam:move(dx, dy)
+	cam:move(dx, dy) ]]
+
+	if (not CamSwingTime) then
+		CamTargetX = x
+		CamTargetY = y
+		CamStartX = self.x
+		CamStartY = self.y
+		CamSwingTime = time
+		CamSwingTimePassed = 0
+	end
 end
 
 function map:updatecam(dt)
@@ -178,6 +207,11 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 end
 
 function map:keypressed( key )
+	if key == "p" then
+		local x = math.random(0,400)
+		local y = math.random(0,400)
+		map:setCarPos(1, x, y)
+	end
 end
 
 function map:mousepressed( x, y, button )
@@ -187,6 +221,27 @@ function map:mousepressed( x, y, button )
 	if button == "wd" then
 		mul = mul - 0.1
 	end
+end
+
+function map:setCarPos(id, posX, posY) --car-id as number
+	posX = (posX + GRIDSIZE/2) - (posX + GRIDSIZE/2)%GRIDSIZE
+	posY = (posY + GRIDSIZE/2) - (posY + GRIDSIZE/2)%GRIDSIZE
+	map.cars[id]:MoveToPos(posX, posY, 1)
+end
+
+function map:getCarPos(id)
+	local x = map.cars[id].x
+	local y = map.cars[id].y
+	return x, y
+end
+
+function map:showCarTargets(id, show)
+	--if show == true
+		--local positions = {}
+		--map.cars[id].x = map.cars[id].x + map.cars[id].vx
+		--map.cars[id].y = map.cars[id].y + map.cars[id].vy
+		--map.cars[id].targetX
+	--end
 end
 
 return map
