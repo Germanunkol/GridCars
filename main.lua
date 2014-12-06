@@ -145,6 +145,6 @@ function clientReceived( command, msg )
 	if command == CMD.CHAT then
 		chat:newLine( msg )
 	elseif command == CMD.MAP then
-		lobby:receiveMap( levelname )
+		lobby:receiveMap( msg )
 	end
 end

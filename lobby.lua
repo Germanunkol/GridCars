@@ -116,6 +116,7 @@ function lobby:chooseMap( levelname )
 
 	-- Mapstring is the map, in serialized form:
 	local mapstring = love.filesystem.read( "maps/" .. levelname )
+	-- Remove linebreaks and replace by pipe symbol for sending.
 	mapstring = mapstring:gsub( "\n", "|" )
 	if server then
 		server:send( CMD.MAP, mapstring )
@@ -124,8 +125,12 @@ end
 
 -- CLIENT ONLY!
 function lobby:receiveMap( mapstring )
-	print("Received map.")
-	-- map:newFromString( mapstring )
+	-- Re-add line breaks:
+	mapstring = mapstring:gsub( "|", "\n" )
+
+	if not server then
+		map:newFromString( mapstring )
+	end
 end
 
 return lobby

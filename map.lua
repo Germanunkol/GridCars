@@ -28,9 +28,17 @@ end
 
 --wird zum laden neuer Maps öfters aufgerufen
 function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
-	map:import(dateiname)
+
+	-- Read full file and save it in mapstring:
+	local mapstring = love.filesystem.read( dateiname )
+
+	map:import(mapstring)
 	map:getBoundary()
 	--print (printTable(map.Boundary))
+end
+function map:newFromString( mapstring )
+	map:import( mapstring )
+	map:getBoundary()
 end
 
 function map:update( dt )
@@ -120,7 +128,10 @@ function printTable( t, level )
 	end
 end
 
-function map:import(Dateiname)
+function map:import( mapstring )
+
+	map.cars = {}
+
 	-- testen, ob alles Triangel sind und keine Polygone
 	cam = Camera(startPos.x, startPos.x)
 	map.triangles = {}
@@ -129,7 +140,8 @@ function map:import(Dateiname)
 	local counterT = 1 -- Counter für Triangle
 	local counterV = 1 -- Counter für Vertices
 	local startpos, endpos
-	for line in love.filesystem.lines(Dateiname) do
+	--for line in love.filesystem.lines(Dateiname) do
+	for line in string.gmatch( mapstring, "(.-)\r?\n" ) do
 		if(string.find(line,"vertex") ~= nil) then
 			vertices[counterV] = {}
 			-- separiere Koordinaten mit Hilfe der Leerzeichen

@@ -160,7 +160,6 @@ function Server:synchronizeUser( user )
 	-- Send this new user to the user as well (let him know about himself)
 	self:send( CMD.NEW_PLAYER, user.id .. "|" .. user.playerName, user )
 
-
 	if self.callbacks.synchronize then
 		self.callbacks.synchronize( user )
 	end
