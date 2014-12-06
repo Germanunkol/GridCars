@@ -9,9 +9,15 @@ local map = {
 local Camera = require "lib/hump.camera"
 local Car = require "car"
 local startPos = {x = 0, y = 0}
-local CameraGolX = 0
-local CameraGolY = 0
+--local CameraGolX = 0
+--local CameraGolY = 0
 local cameraSpeed = 20
+local CamTargetX = 0
+local CamTargetY = 0
+local CamStartX = 0
+local CamStartY = 0
+local CamSwingTime = 0
+local CamSwingTimePassed = 0
 local dx, dy, mul = 0, 0, 1
 local cam = nil
 local CamOffset = -0.05
@@ -51,28 +57,29 @@ function map:update( dt )
 	if not map.loaded then return end
 
 	cam.rot = CamOffset
-	local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
-	local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-	dx = dx*cameraSpeed--*dt
-	dy = dy*cameraSpeed--*dt
-    cam:move(dx, dy)
     cam:zoom(mul)
---[[
+
     if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
 		if CamSwingTimePassed < CamSwingTime then
-			local amount = CamSwingTimePassed/CamSwingTime
+			local amount = utility.interpolateCos(CamSwingTimePassed/CamSwingTime)
 			CamX =CamStartX + (CamTargetX - CamStartX) * amount
 			CamY = CamStartY + (CamTargetY - CamStartY) * amount
 		else
-			CamX = self.targetX
-			CamY = self.targetY
+			CamX = CamTargetX
+			CamY = CamTargetY
 			CamSwingTime = nil
 		end
-	end]]
-
-    --map:swingToCameraPosition(220,220,dt)
+		cam:lookAt(CamX,CamY)
+	else
+		local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
+		local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
+		dx = dx*cameraSpeed--*dt
+		dy = dy*cameraSpeed--*dt
+	    cam:move(dx, dy)
+	end
     mul = 1
+
     for id, car in pairs(map.cars) do
     	car:update(dt)
 		if self:isPointOnRoad( car.x, car.y, 0 ) then
@@ -251,22 +258,11 @@ function map:isPointOnRoad( x, y, z )
 end
 
 
-function map:swingCameraTo(x,y,time)
---[[	local cx, cy = cam:pos()
-	--t counter
-	print(cx, x, dx)
-	local dx = (x - cx) * dt
-	if math.abs(dx) < 10 then
-		dx = 10
-	end
-	--local dy = math.max((y - cy),100) * dt
-	cam:move(dx, dy) ]]
-
+function map:camSwingToPos(x,y,time)
 	if (not CamSwingTime) then
 		CamTargetX = x
 		CamTargetY = y
-		CamStartX = self.x
-		CamStartY = self.y
+		CamStartX, CamStartY = cam:pos()
 		CamSwingTime = time
 		CamSwingTimePassed = 0
 	end
@@ -318,6 +314,7 @@ function map:setCarPos(id, posX, posY) --car-id as number
 	posX = (posX + GRIDSIZE/2) - (posX + GRIDSIZE/2)%GRIDSIZE
 	posY = (posY + GRIDSIZE/2) - (posY + GRIDSIZE/2)%GRIDSIZE
 	map.cars[id]:MoveToPos(posX, posY, 1)
+	map:camSwingToPos(posX,posY,1)
 end
 
 function map:getCarPos(id)

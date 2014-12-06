@@ -46,4 +46,8 @@ function utility.dist( p1, p2 )
 	return math.sqrt( dx*dx, dy*dy )
 end
 
+function utility.interpolateCos ( rel)
+	return -math.cos(math.pi*rel)*0.5 + 0.5
+end
+
 return utility
