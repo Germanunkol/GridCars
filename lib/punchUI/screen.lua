@@ -149,6 +149,10 @@ function Screen:addFunction( panelName, name, x, y, txt, key, event, tooltip )
 	f = p:addFunction( name, x, y, txt, key, event, tooltipEv )
 	return f
 end
+function Screen:removeFunction( panelName, name )
+	local p = self:panelByName( panelName )
+	p:removeFunction( name )
+end
 
 function Screen:keypressed( key, unicode )
 	if self.msgBox then

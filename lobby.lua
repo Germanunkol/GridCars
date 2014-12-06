@@ -2,6 +2,7 @@ local lobby = {
 	camMoveTime = 5,
 	currentLevel = nil,
 	ready = false,
+	locked = false,
 }
 
 local scr
@@ -23,7 +24,6 @@ function lobby:init()
 	scr:addFunction( "topPanel", "ready", love.graphics.getWidth() - 100, 0, "Ready", "r",
 		function() lobby:toggleReady() end )
 
-
 end
 
 function lobby:show()
@@ -32,12 +32,21 @@ function lobby:show()
 
 	self.ready = false
 	self.currentLevel = ""
+	self.locked = false
 
 	-- If I'm the server, then let me choose the map:
 	if server then
 		levelListStart = 1	
 		self:createLevelList()
 		self:chooseMap( "map1.stl" )
+	end
+
+	-- In case this function has been added before, remove it now:
+	scr:removeFunction( "topPanel", "start" )
+
+	if server then
+		scr:addFunction( "topPanel", "start", love.graphics.getWidth()/2 - 20, 0, "Start", "s",
+			function() lobby:attemptGameStart() end )
 	end
 end
 
@@ -162,9 +171,36 @@ function lobby:receiveMap( mapstring )
 end
 
 function lobby:toggleReady()
-	self.ready = not self.ready
 	if client then
+		self.ready = not self.ready
 		client:setUserValue( "ready", self.ready )
+	end
+end
+
+function lobby:attemptGameStart()
+	local allReady = true
+	local users = network:getUsers()
+	for k, u in pairs( users ) do
+		if not u.customData.ready then
+			allReady = false
+			break
+		end
+	end
+
+	if allReady then
+		self.locked = true		-- don't let any more users join!
+	else
+		local commands = {}
+		commands[1] = { txt = "Ok", key = "y" }
+		scr:newMsgBox( "Cannot start:", "All users must be ready.", nil, nil, nil, commands)
+	end
+end
+
+function lobby:authorize( user )
+	if self.locked then
+		return false, "Game already started."
+	else
+		return true
 	end
 end
 

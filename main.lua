@@ -67,6 +67,7 @@ end
 function setServerCallbacks( server )
 	server.callbacks.received = serverReceived
 	server.callbacks.synchronize = synchronize
+	server.callbacks.authorize = function( user ) return lobby:authorize( user ) end
 end
 function setClientCallbacks( client )
 	-- set client callbacks:
@@ -83,6 +84,8 @@ end
 -- Called when client is disconnected from the server
 function disconnected()
 	menu:show()
+	client = nil
+	server = nil
 end
 
 -- Called on server when new client is in the process of

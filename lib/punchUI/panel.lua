@@ -86,11 +86,8 @@ end
 
 function Panel:addText( name, x, y, width, height, txt )
 
-	for k, t in ipairs(self.texts) do
-		if t.name == name then
-			table.remove(self.texts, k)
-		end
-	end
+	self:removeText( name )
+
 	-- if the width is not given, make sure text does not
 	-- move outside of panel:
 	x = x + self.padding
@@ -101,6 +98,16 @@ function Panel:addText( name, x, y, width, height, txt )
 	local t = TextBlock:new( name, x, y, width, height, txt, self.font, true )
 	table.insert( self.texts, t )
 	return t, t.trueWidth or t.width, t.height
+end
+
+function Panel:removeText( name )
+	for k, t in ipairs(self.texts) do
+		print(k, t, t.name, name)
+		if t.name == name then
+			print("removing", k)
+			table.remove(self.texts, k)
+		end
+	end
 end
 
 function Panel:addHeader( name, x, y, txt )
@@ -161,6 +168,17 @@ function Panel:addFunction( name, x, y, txt, key, event, tooltip )
 	}
 	table.insert( self.events, newEvent )
 	return newEvent, w, h
+end
+
+function Panel:removeFunction( name )
+	for k, ev in pairs( self.events ) do
+		if ev.name == name then
+			table.remove( self.events, k )
+			break
+		end
+	end
+	-- Also remove the text which describes this function:
+	self:removeText( name )
 end
 
 function Panel:addInput( name, x, y, width, height, key, returnEvent, password, content, maxLetters )

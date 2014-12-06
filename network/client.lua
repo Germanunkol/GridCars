@@ -87,7 +87,7 @@ function Client:update( dt )
 end
 
 function Client:received( command, msg )
-	print("cl received:", command, msg )
+	print("cl received:", command, msg:sub(1, 50) )
 	if command == CMD.NEW_PLAYER then
 		local id, playerName = string.match( msg, "(.*)|(.*)" )
 		local user = User:new( nil, playerName, id )
