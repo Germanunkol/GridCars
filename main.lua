@@ -60,7 +60,8 @@ function love.load( args )
 		end
 	end
 
-	love.graphics.setBackgroundColor(25,25,25,255)
+	--love.graphics.setBackgroundColor(25,25,25,255)
+	love.graphics.setBackgroundColor( 20,80,20,255)
 end
 
 function setServerCallbacks( server )

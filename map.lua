@@ -9,8 +9,8 @@ local cameraSpeed = 20
 local dx, dy, mul = 0, 0, 1
 local cam = nil
 local CamOffset = -0.05
-local GridColorSmall = {255, 255, 160, 100}
-local GridColorBig = {50, 255, 100, 200}
+local GridColorSmall = {255, 255, 160, 25}
+local GridColorBig = {50, 255, 100, 75}
 local GridSizeSmallStep = 10
 local GridSizeBigStep = 50
 GRIDSIZE = GridSizeSmallStep
@@ -21,9 +21,8 @@ function map:load()
 	map.View.x = startPos.x
 	map.View.y = startPos.y
 		-- Testzweck hier
-		map:new("testtrackstl.stl")
+		--map:new("testtrackstl.stl")
 		blue = { 0, 100, 255, 255 }
-		map.cars[1] = Car:new( 50, 50, blue)
 end
 
 --wird zum laden neuer Maps öfters aufgerufen
@@ -74,6 +73,7 @@ function map:draw()
 	cam:attach()
 	-- draw World
 	 -- draw ground
+	 love.graphics.setColor( 40, 40, 40, 255 )
 	 		for key, triang in pairs(map.triangles) do
 	 			love.graphics.polygon( 'fill',
 	 				triang.vertices[1].x,
@@ -168,7 +168,9 @@ function map:import( mapstring )
 			end
 			counterV = counterV + 1
 		end
-  	end
+	end
+
+	map.cars[1] = Car:new( 50, 50, blue)
 end
 
 
