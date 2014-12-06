@@ -1,9 +1,10 @@
-local map = {triangles = {}, Boundary = {}}
+local map = {triangles = {}, Boundary = {}, View = {}}
 local Camera = require "lib/hump.camera"
 local startPos = {x = 0, y = 0}
 local CameraGolX = 0
 local CameraGolY = 0
-local cameraSpeed = 300
+local cameraSpeed = 20
+local dx, dy, mul = 0, 0, 1
 local cam = nil
 local CamOffset = -0.05
 local GridColorSmall = {255, 255, 160, 100}
@@ -15,6 +16,8 @@ GRIDSIZE = GridSizeSmallStep
 --wird einmalig bei Spielstart aufgerufen
 function map:load()
 	cam = Camera(startPos.x, startPos.x)
+	map.View.x = startPos.x
+	map.View.y = startPos.y
 	map:new("testtrackstl.stl") -- temp hier
 end
 
@@ -29,13 +32,13 @@ function map:update( dt )
 	cam.rot = CamOffset
 	local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
 	local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-	--local mul = 1 + ((love.keyboard.isDown('y') and 1 or 0) - (love.keyboard.isDown('x') and 1 or 0))*dt
-	local mul = 1 + ((love.mouse.isDown("wu") and 1 or 0) - (love.mouse.isDown("wd") and 1 or 0))*dt
 	
-	dx = dx*dt*cameraSpeed
-	dy = dy*dt*cameraSpeed
+	dx = dx*cameraSpeed--*dt
+	dy = dy*cameraSpeed--*dt
     cam:move(dx, dy)
     cam:zoom(mul)
+    --map:swingToCameraPosition(220,220,dt)
+    mul = 1
 end
 
 function map:draw()
@@ -88,7 +91,6 @@ function printTable( t, level )
 			printTable( v, level + 1 )
 			print( string.rep( "\t", level ) .. "}" )
 		else
-
 			print( string.rep( "\t", level ) .. k .. " = ", v )
 		end
 	end
@@ -133,13 +135,24 @@ function map:import(Dateiname)
   	end
 end
 
-function map:setCameraPosition(x,y)
+function map:setCameraTo(x,y)
 	cameraGolX = x
 	cameraGolY = y
 end
 
-function map:swingToCameraPosition(x,y,dt)
+function map:swingCameraTo(x,y,time)
+	local cx, cy = cam:pos()
+	--t counter
+	print(cx, x, dx)
+	local dx = (x - cx) * dt
+	if math.abs(dx) < 10 then
+		dx = 10
+	end
+	--local dy = math.max((y - cy),100) * dt
+	cam:move(dx, dy)
+end
 
+function map:updatecam(dt)
 end
 
 function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
@@ -165,11 +178,15 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 end
 
 function map:keypressed( key )
-	print(key)
 end
 
 function map:mousepressed( x, y, button )
-	print(button, x, y)
+	if button == "wu" then
+		mul = mul + 0.1
+	end
+	if button == "wd" then
+		mul = mul - 0.1
+	end
 end
 
 return map
