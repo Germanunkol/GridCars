@@ -26,7 +26,7 @@ end
 
 function network:startClient( address, playername, port )
 
-	if not address then
+	if not address or #address == 0 then
 		print("No address found. Using default: 'localhost'")
 		address = "localhost"
 	end
