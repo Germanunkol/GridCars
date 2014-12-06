@@ -27,14 +27,16 @@ function lobby:draw()
 	-- Print list of users:
 	love.graphics.setColor( 255,255,255, 255 )
 	local users = network:getUsers()
-	local x, y = 20, 10
+	local x, y = 20, 60
+	local i = 1
 	if (server or client) and users then
 		for k, u in pairs( users ) do
-			love.graphics.print( u.playerName, x, y )
+			love.graphics.printf( i .. ":", x, y, 20, "right" )
+			love.graphics.printf( u.playerName, x + 25, y, 300, "left" )
 			y = y + 20
+			i = i + 1
 		end
 	end
-
 end
 
 function lobby:keypressed( key )

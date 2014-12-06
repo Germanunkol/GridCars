@@ -53,6 +53,7 @@ function network:update( dt )
 		-- the connection has been closed.
 		if not server:update( dt ) then
 			server = nil
+			print( "CLOSED SERVER" )
 		end
 	end
 	if client then
@@ -60,6 +61,7 @@ function network:update( dt )
 		-- the connection has been closed.
 		if not client:update( dt ) then
 			client = nil
+			print( "CLOSED CLIENT" )
 		end
 	end
 end

@@ -41,7 +41,7 @@ function love.load( args )
 		-- Start a server with a maximum of 16 users.
 		server = network:startServer( 16, port )
 		-- Connect to the server.
-		client = network:startClient( 'localhost', "Germanunkol", port )
+		client = network:startClient( 'localhost', PLAYERNAME, port )
 
 		-- set server callbacks:
 		setServerCallbacks( server )
@@ -52,7 +52,7 @@ function love.load( args )
 		lobby:show()
 	elseif startClient then
 		if args[3] then
-			client = network:startClient( args[3], "Germanunkol", port )
+			client = network:startClient( args[3], PLAYERNAME, port )
 			setClientCallbacks( client )
 		else
 			print( "Error. To start as client, you should give the address as the argument after 'client'." )
