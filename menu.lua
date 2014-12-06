@@ -1,4 +1,6 @@
-local menu = {}
+local menu = {
+	ip = ""
+}
 
 local scr
 
@@ -8,17 +10,31 @@ function menu:init()
 
 	scr:addPanel( "centerPanel",
 			50,
-			love.graphics.getHeight()/2-120,
-			300, 220 )
+			love.graphics.getHeight()/2-200,
+			300, 320 )
 
-	scr:addHeader( "centerPanel", "welcome", 0, 0, "Welcome!" )
-	scr:addText( "centerPanel", "welcometxt", 10, 30, nil, 7, "Please press 'I' to enter the IP of the server you would like to join.")
+	local y = 0
+	scr:addHeader( "centerPanel", "welcome", 0, y, "Welcome!" )
+	y = y + 30
+	scr:addText( "centerPanel", "welcometxt", 10, y, nil, 7, "Start a server or join someone else's server. Press 'H' for help.")
 
-	scr:addFunction( "centerPanel", "server", 10, 90, "Start Server", "s", menu.startServer )
-	scr:addInput( "centerPanel", "ip", 10, 110, nil, 20, "i", menu.ipEntered )
-	scr:addFunction( "centerPanel", "help", 10, 130, "Help", "h", menu.startServer )
+	y = y + 80
+	scr:addText( "centerPanel", "h1", 10, y, nil, 7, "{h}Server:")
+	y = y + 20
+	scr:addFunction( "centerPanel", "server", 10, y, "Start Server", "s", menu.startServer )
+	y = y + 40
 
-	scr:addFunction( "centerPanel", "close", 10, 180, "Quit", "q", love.event.quit )
+	scr:addText( "centerPanel", "h2", 10, y, nil, 7, "{h}Client:")
+	y = y + 20
+	scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
+	y = y + 20
+	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.connect )
+	y = y + 40
+
+	scr:addFunction( "centerPanel", "help", 10, y, "Help", "h", menu.showHelp )
+	y = y + 20
+	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
+
 end
 
 function menu:show()
@@ -55,14 +71,19 @@ function menu.startServer()
 
 	-- Also start a client!
 	menu.ipEntered( 'localhost' )
+	menu.connect()
 end
 
 function menu.ipEntered( ip )
 	print( "New IP:", ip )
+	menu.ip = ip
+end
+
+function menu.connect()
 
 	local success
 	success, client = pcall( function()
-		return network:startClient( ip, PLAYERNAME, port )
+		return network:startClient( menu.ip, PLAYERNAME, port )
 	end)
 
 	if success then

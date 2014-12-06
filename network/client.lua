@@ -11,8 +11,10 @@ local Client = {}
 Client.__index = Client
 
 local userList = {}
+local numberOfUsers = 0
 
 local partMessage = ""
+
 
 function Client:new( address, port, playerName )
 	local o = {}
@@ -21,11 +23,11 @@ function Client:new( address, port, playerName )
 	print("Initialising Client...")
 	ok, o.conn = pcall(socket.connect, address, port)
 	if ok and o.conn then
-		print("Client connected", o.conn)
 		o.conn:settimeout(0)
+		print("Client connected", o.conn)
 	else
-		error("Could not connect.")
 		o.conn = nil
+		error("Could not connect.")
 	end
 
 	o.callbacks = {
@@ -35,6 +37,9 @@ function Client:new( address, port, playerName )
 		connected = nil,
 		disconnected = nil,
 	}
+
+	userList = {}
+	partMessage = ""
 
 	o.clientID = nil
 	o.playerName = playerName
@@ -62,7 +67,7 @@ function Client:update( dt )
 					partMessage = partMessage .. partOfLine
 				end
 			elseif msg == "closed" then
-				self.conn:shutdown()
+				--self.conn:shutdown()
 				print("Disconnected.")
 				if self.callbacks.disconnected then
 					self.callbacks.disconnected()
@@ -85,9 +90,11 @@ function Client:received( command, msg )
 		local id, playerName = string.match( msg, "(.*)|(.*)" )
 		local user = User:new( nil, playerName, id )
 		userList[tonumber(id)] = user
+		numberOfUsers = numberOfUsers + 1
 	elseif command == CMD.PLAYER_LEFT then
 		local id = tonumber(msg)
 		userList[id] = nil
+		numberOfUsers = numberOfUsers - 1
 	elseif command == CMD.AUTHORIZED then
 		local authed, reason = string.match( msg, "(.*)|(.*)" )
 		if authed == "true" then
@@ -117,11 +124,15 @@ end
 function Client:getUsers()
 	return userList
 end
+function Client:getNumUsers()
+	return numberOfUsers
+end
 
 function Client:close()
 	if self.conn then
-		self.conn:shutdown()
+		--self.conn:shutdown()
 		self.conn:close()
+		print( "closed.")
 	end
 end
 

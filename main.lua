@@ -28,10 +28,12 @@ function love.load( args )
 	menu:init()
 	map:load()
 
+	menu:show()
+
 	local startServer = false
-	if args[2] ~= "server" and args[2] ~= "client" then
-		print("Invalid mode, defaulting to server")
-		startServer = true
+	local startClient = false
+	if args[2] == "client" then
+		startClient = true
 	elseif args[2] == "server" then
 		startServer = true
 	end
@@ -39,7 +41,7 @@ function love.load( args )
 		-- Start a server with a maximum of 16 users.
 		server = network:startServer( 16, port )
 		-- Connect to the server.
-		client = network:startClient( 'localhost', "Germanunkol", port )
+		client = network:startClient( 'localhost', PLAYERNAME, port )
 
 		-- set server callbacks:
 		setServerCallbacks( server )
@@ -48,12 +50,13 @@ function love.load( args )
 		setClientCallbacks( client )
 
 		lobby:show()
-	else
+	elseif startClient then
 		if args[3] then
-			client = network:startClient( args[3], "Germanunkol", port )
+			client = network:startClient( args[3], PLAYERNAME, port )
 			setClientCallbacks( client )
+		else
+			print( "Error. To start as client, you should give the address as the argument after 'client'." )
 		end
-		menu:show()
 	end
 
 	map:new( "maps/map2.stl" )
@@ -74,13 +77,11 @@ end
 -- Called when client is connected to the server
 function connected()
 	lobby:show()
-	print("CONNECTED", debug.traceback())
 end
 
 -- Called when client is disconnected from the server
 function disconnected()
 	menu:show()
-	print("menu")
 end
 
 function love.update( dt )
