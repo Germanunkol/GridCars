@@ -38,19 +38,30 @@ function network:startClient( address, playername, port )
 end
 
 function network:closeConnection()
+	print("Closing all connections.")
 	if client then
 		client:close()
 	end
 	if server then
 		server:close()
 	end
-	client = nil
-	server = nil
 end
 
 function network:update( dt )
-	if server then server:update( dt ) end
-	if client then client:update( dt ) end
+	if server then
+		-- If updating the server returns false, then
+		-- the connection has been closed.
+		if not server:update( dt ) then
+			server = nil
+		end
+	end
+	if client then
+		-- If updating the client returns false, then
+		-- the connection has been closed.
+		if not client:update( dt ) then
+			client = nil
+		end
+	end
 end
 
 function network:getUsers()

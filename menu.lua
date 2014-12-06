@@ -14,11 +14,15 @@ function menu:init()
 	scr:addHeader( "centerPanel", "welcome", 0, 0, "Welcome!" )
 	scr:addText( "centerPanel", "welcometxt", 10, 30, nil, 7, "Please press 'I' to enter the IP of the server you would like to join.")
 
-	scr:addInput( "centerPanel", "ip", 10, 130, nil, 20, "i", menu.ipEntered )
+	scr:addFunction( "centerPanel", "server", 10, 90, "Start Server", "s", menu.startServer )
+	scr:addInput( "centerPanel", "ip", 10, 110, nil, 20, "i", menu.ipEntered )
+	scr:addFunction( "centerPanel", "help", 10, 130, "Help", "h", menu.startServer )
+
 	scr:addFunction( "centerPanel", "close", 10, 180, "Quit", "q", love.event.quit )
 end
 
 function menu:show()
+	STATE = "Menu"
 	ui:setActiveScreen( scr )
 end
 
@@ -34,6 +38,25 @@ end
 function menu:mousepressed( button, x, y )
 end
 
+function menu.startServer()
+	local success
+	success, server = pcall( function()
+		return network:startServer( 16, port )
+	end)
+
+	if success then
+		-- set client callbacks:
+		setServerCallbacks( server )
+	else
+		local commands = {}
+		commands[1] = { txt = "Ok", key = "y" }
+		scr:newMsgBox( "Error:",server, nil, nil, nil, commands)
+	end
+
+	-- Also start a client!
+	menu.ipEntered( 'localhost' )
+end
+
 function menu.ipEntered( ip )
 	print( "New IP:", ip )
 
@@ -44,11 +67,10 @@ function menu.ipEntered( ip )
 
 	if success then
 		-- set client callbacks:
-		client.callbacks.received = clientReceived
-		client.callbacks.connected = connected
+		setClientCallbacks( client )
 	else
 		local commands = {}
-		commands[1] = { txt = "Ok", key = "o" }
+		commands[1] = { txt = "Ok", key = "y" }
 		scr:newMsgBox( "Error:",client, nil, nil, nil, commands)
 	end
 

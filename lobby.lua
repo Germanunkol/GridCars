@@ -17,7 +17,6 @@ end
 
 function lobby:show()
 	STATE = "Lobby"
-
 	ui:setActiveScreen( scr )
 end
 
@@ -46,7 +45,6 @@ end
 
 function lobby:close()
 	network:closeConnection()
-	menu:show()
 end
 
 return lobby

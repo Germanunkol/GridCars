@@ -68,10 +68,14 @@ function Client:update( dt )
 					self.callbacks.disconnected()
 				end
 				self.conn = nil
+				return false
 			else
 				print("Err Received:", msg, data)
 			end
 		end
+		return true
+	else	
+		return false
 	end
 end
 
@@ -88,6 +92,7 @@ function Client:received( command, msg )
 		local authed, reason = string.match( msg, "(.*)|(.*)" )
 		if authed == "true" then
 			self.authorized = true
+			print( "Connection authorized by server." )
 		else
 			print( "Not authorized to join server. Reason: " .. reason )
 		end
