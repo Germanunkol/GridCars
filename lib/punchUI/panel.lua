@@ -102,9 +102,7 @@ end
 
 function Panel:removeText( name )
 	for k, t in ipairs(self.texts) do
-		print(k, t, t.name, name)
 		if t.name == name then
-			print("removing", k)
 			table.remove(self.texts, k)
 		end
 	end

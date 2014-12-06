@@ -98,4 +98,12 @@ function menu.connect()
 	ui:setActiveScreen( nil )
 end
 
+function menu:authorized( auth, reason )
+	if not auth then
+		local commands = {}
+		commands[1] = { txt = "Ok", key = "y" }
+		scr:newMsgBox( "Could not connect:",reason, nil, nil, nil, commands)
+	end
+end
+
 return menu
