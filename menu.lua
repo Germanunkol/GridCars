@@ -16,9 +16,10 @@ function menu:init()
 
 	scr:addFunction( "centerPanel", "server", 10, 90, "Start Server", "s", menu.startServer )
 	scr:addInput( "centerPanel", "ip", 10, 110, nil, 20, "i", menu.ipEntered )
-	scr:addFunction( "centerPanel", "help", 10, 130, "Help", "h", menu.startServer )
+	scr:addFunction( "centerPanel", "help", 10, 130, "Help", "h", menu.showHelp )
 
 	scr:addFunction( "centerPanel", "close", 10, 180, "Quit", "q", love.event.quit )
+
 end
 
 function menu:show()
