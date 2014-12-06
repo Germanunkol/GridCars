@@ -14,6 +14,7 @@ client = nil
 STATE = "Menu"
 CMD = {
 	CHAT = 128,
+	MAP = 129,
 }
 
 port = 3410
@@ -58,8 +59,6 @@ function love.load( args )
 			print( "Error. To start as client, you should give the address as the argument after 'client'." )
 		end
 	end
-
-	map:new( "maps/map2.stl" )
 
 	love.graphics.setBackgroundColor(25,25,25,255)
 end
@@ -145,5 +144,7 @@ end
 function clientReceived( command, msg )
 	if command == CMD.CHAT then
 		chat:newLine( msg )
+	elseif command == CMD.MAP then
+		lobby:receiveMap( levelname )
 	end
 end

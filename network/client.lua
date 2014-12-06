@@ -111,6 +111,7 @@ function Client:received( command, msg )
 		if self.callbacks.connected then
 			self.callbacks.connected()
 		end
+		print( "new playername",  msg )
 	elseif self.callbacks.received then
 		self.callbacks.received( command, msg )
 	end

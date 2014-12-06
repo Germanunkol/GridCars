@@ -1,6 +1,13 @@
-local lobby = {}
+local lobby = {
+	camMoveTime = 5,
+	levelname = ""
+}
 
 local scr
+
+-- The first level in the list to display:
+local levelListStart = 1
+local levelNameList = nil
 
 function lobby:init()
 	
@@ -12,15 +19,28 @@ function lobby:init()
 
 	scr:addFunction( "topPanel", "close", 20, 0, "Leave", "q", lobby.close )
 
---	ui:setActiveScreen( scr )
 end
 
 function lobby:show()
 	STATE = "Lobby"
 	ui:setActiveScreen( scr )
+
+	-- If I'm the server, then let me choose the map:
+	if server then
+		levelListStart = 1	
+		self:createLevelList()
+		self:chooseMap( "map1.stl" )
+	end
 end
 
 function lobby:update( dt )
+	self.camMoveTime = self.camMoveTime + dt
+	if self.camMoveTime > 5 then
+		local x = math.random( map.Boundary.minX, map.Boundary.maxX )
+		local y = math.random( map.Boundary.minY, map.Boundary.maxY )
+		--map:swingCameraTo( x, y, 3 )
+		self.camMoveTime = self.camMoveTime - 5	
+	end
 end
 
 function lobby:draw()
@@ -54,6 +74,58 @@ end
 
 function lobby:close()
 	network:closeConnection()
+end
+
+function lobby:createLevelList()
+	local levelnames = love.filesystem.getDirectoryItems( "maps" )
+	if levelNameList then
+		scr:removeList( levelNameList )
+	end
+
+	local list = {}
+	if levelListStart > 1 then
+		local entry = { txt="Up", event=function() lobby:moveLevelList( -1 ) end, key = "u" }
+		table.insert( list, entry )
+	end
+	-- Display up to 8 items in the list:
+	for i = levelListStart, levelListStart + 7 do
+		if levelnames[i] then
+			local entry = {
+				txt=levelnames[i],
+				event=function() self:chooseMap( levelnames[i] ) end,
+			}
+			table.insert( list, entry )
+		end
+	end
+	if levelListStart + 7 < #levelnames then
+		local entry = { txt="Down", event=function() lobby:moveLevelList( 1 ) end, key = "d" }
+		table.insert( list, entry )
+	end
+
+	levelNameList = scr:newList( love.graphics.getWidth() - 150, 60, nil, list )
+end
+
+function lobby:moveLevelList( amount )
+	levelListStart = levelListStart + amount
+	lobby:createLevelList()
+end
+
+-- SERVER ONLY!
+function lobby:chooseMap( levelname )
+	map:new( "maps/" .. levelname )
+
+	-- Mapstring is the map, in serialized form:
+	local mapstring = love.filesystem.read( "maps/" .. levelname )
+	mapstring = mapstring:gsub( "\n", "|" )
+	if server then
+		server:send( CMD.MAP, mapstring )
+	end
+end
+
+-- CLIENT ONLY!
+function lobby:receiveMap( mapstring )
+	print("Received map.")
+	-- map:newFromString( mapstring )
 end
 
 return lobby

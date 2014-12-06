@@ -14,6 +14,7 @@ function Screen:initialize( name, font, maxWidth, maxHeight )
 	self.panels = {}
 	self.msgBox = nil
 	self.menus = {}
+	self.lists = {}
 
 	self.tooltipPan = nil
 	self.tooltipTime = 0
@@ -117,6 +118,9 @@ function Screen:draw()
 	for k,p in ipairs(self.panels) do
 		p:draw( inactive or inactiveMenu )
 	end
+	for k,l in ipairs(self.lists) do
+		l:draw( inactive or inactiveMenu )
+	end
 	for k,m in ipairs(self.menus) do
 		if k == #self.menus then
 			m:draw( inactive )
@@ -164,6 +168,13 @@ function Screen:keypressed( key, unicode )
 			end
 		end
 
+		for k, l in pairs( self.lists ) do
+			-- allow only one panel to react to the input:
+			if l:keypressed( key, unicode ) then
+				return true
+			end
+		end
+
 		for k, p in pairs( self.panels ) do
 			-- allow only one panel to react to the input:
 			if p:keypressed( key, unicode ) then
@@ -188,6 +199,9 @@ function Screen:update( dt )
 	end
 	for k, m in pairs(self.menus) do
 		m:update( dt )
+	end
+	for k, l in pairs(self.lists) do
+		l:update( dt )
 	end
 	if self.msgBox then self.msgBox:update(dt) end
 end
@@ -286,6 +300,59 @@ function Screen:newMenu( x, y, minWidth, list )
 	menuPanel.w = 8 + maxWidth
 	menuPanel:calcBorder()
 	self.menus[ID] = menuPanel
+end
+
+function Screen:newList( x, y, minWidth, list )
+	width = love.graphics.getWidth()/5 + 8
+	x = x or 10
+	y = y or 10
+	local ID = #self.lists + 1
+	local listPanel = Panel:new( "listPanel" .. ID, x, y, width, 100, self.font, 4, {0,0,3,3} )
+	
+	local curY = 0
+	local ev, w, h
+	local maxWidth = minWidth or 0
+	for k, v in ipairs( list ) do
+
+		local ev = function()
+			if v.event then
+				v.event()
+			end
+		end
+		local tip = v.tooltip or "Choose option " .. k .. "."
+		local tooltipEv = function()
+			self:newTooltip( tip )
+		end
+
+		local key = v.key or tostring(k)
+
+		ev, w, h = listPanel:addFunction( key, 0, curY, v.txt, key, ev, tooltipEv )
+		maxWidth = math.max( maxWidth, w )
+		curY = curY + self.font:getHeight() + 8
+	end
+
+	curY = 0
+	for k, v in ipairs( list ) do
+		curY = curY + self.font:getHeight() + 8
+		if k < #list then
+			listPanel:addLine( 4, curY , maxWidth + 4, curY )
+		end
+	end
+	
+	listPanel.h = curY
+	listPanel.w = 12 + maxWidth
+	listPanel:calcBorder()
+	self.lists[ID] = listPanel
+	return listPanel
+end
+
+function Screen:removeList( list )
+	for k, l in pairs( self.lists ) do
+		if l == list then
+			table.remove( self.lists, k )
+			return
+		end
+	end
 end
 
 return Screen
