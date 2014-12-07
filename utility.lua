@@ -63,6 +63,13 @@ function utility.printTable( t, depth )
 	end
 end
 
+function utility.tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+
 function utility.dist( p1, p2 )
 	local dx = p1.x - p2.x
 	local dy = p1.y - p2.y

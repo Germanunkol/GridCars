@@ -2,8 +2,8 @@ local 	MapSubject = {}
 MapSubject.__index = MapSubject
 
 local col_shadow = { 0, 0, 0, 100 }
-local shadowOffsetX = 8
-local shadowOffsetY = 8
+local shadowOffsetX = 20
+local shadowOffsetY = 20
 local shadowSize = 1.3
 
 Images = require "images"

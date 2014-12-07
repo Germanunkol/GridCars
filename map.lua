@@ -26,8 +26,11 @@ local GridColorSmall = {255, 255, 160, 25}
 local GridColorBig = {50, 255, 100, 75}
 local GridSizeSmallStep = 100
 local GridSizeBigStep = 500
-local maxMapSubjects = 50
-local SubjectList = {"car", "head3"}
+-- different Subjects:
+local maxS_OnePivot = 200  -- trees, ...
+local maxS_QuadPivot = 30 -- houses, ...
+local SubjectListOnePivot = {"Baum1", "Baum2", "Baum3", "BaumKl1", "BaumKl2", "BaumKl3"}
+local SubjectListQuadPivot = {"house1", "house2"}
 GRIDSIZE = GridSizeSmallStep
 local MapScale = 500
 
@@ -57,7 +60,8 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 	--utility.printTable(map.Boundary)
 	
 	-- create Environment
-	for i = 1, maxMapSubjects, 1 do
+	-- plant Subjects with one Pivot
+	for i = 1, maxS_OnePivot, 1 do
 		--search fitting positon
 		local x = math.random(map.Boundary.minX, map.Boundary.maxX)
 		local y = math.random(map.Boundary.minY, map.Boundary.maxY)
@@ -65,8 +69,8 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 			x = math.random(map.Boundary.minX, map.Boundary.maxX)
 			y = math.random(map.Boundary.minY, map.Boundary.maxY)
 		end
-		--nDifferentSubjects = SubjectList.
-		local s = mapSubject:new("car", x, y)
+		local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
+		local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
 		table.insert( map.subjects, s )
 	end
 end
