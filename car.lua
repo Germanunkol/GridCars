@@ -131,6 +131,24 @@ function Car:MoveToPos( x, y, time )
 	end
 end
 
+function Car:setPos( x, y )
+	self.vX = x - self.x
+	self.vY = y - self.y
+	self.startX = self.x
+	self.startY = self.y
+	self.targetX = x
+	self.targetY = y
+	self.startX = self.x
+	self.startY = self.y
+
+	--rotate to Target
+	self.r = math.atan2(self.y - self.targetY, self.x - self.targetX) - math.pi/2
+
+	-- Directly set position:
+	self.x = x
+	self.y = y
+end
+
 function Car:isThisAValidTargetPos( x, y )
 	x = x*GRIDSIZE
 	y = y*GRIDSIZE
