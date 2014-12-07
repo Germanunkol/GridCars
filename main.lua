@@ -18,6 +18,7 @@ CMD = {
 	CHAT = 128,
 	MAP = 129,
 	START_GAME = 130,
+	GAMESTATE = 131,
 }
 
 port = 3410
@@ -166,5 +167,7 @@ function clientReceived( command, msg )
 		lobby:receiveMap( msg )
 	elseif command == CMD.START_GAME then
 		game:show()
+	elseif command == CMD.GAMESTATE then
+		game:setState( msg )
 	end
 end

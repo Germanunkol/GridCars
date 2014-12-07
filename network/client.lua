@@ -114,7 +114,9 @@ function Client:received( command, msg )
 		end
 
 	elseif command == CMD.PLAYERNAME then
-		self.playerName = msg
+		local id, playerName = string.match( msg, "(.*)|(.*)" )
+		self.playerName = playerName
+		self.clientID = id
 		-- At this point I am fully connected!
 		if self.callbacks.connected then
 			self.callbacks.connected()
@@ -167,6 +169,10 @@ function Client:setUserValue( key, value )
 	local valueType = type( value )
 	self:send( CMD.USER_VALUE, keyType .. "|" .. tostring(key) ..
 			"|" .. valueType .. "|" .. tostring(value) )
+end
+
+function Client:getID()
+	return self.clientID
 end
 
 return Client

@@ -149,6 +149,13 @@ function map:draw()
 	cam:detach()
 end
 
+function map:drawCarPoints( id )
+	local car = map.cars[id]
+	if car then
+		
+	end
+end
+
 function map:drawGrid()
 	local r, g, b, a = love.graphics.getColor()
 	love.graphics.setLineWidth(1)
@@ -456,7 +463,7 @@ function map:checkRoundTransition( id )
 				car.round = car.round - 1
 			end
 		end
-end
+	end
 end
 
 return map
