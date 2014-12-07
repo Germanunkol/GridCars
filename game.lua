@@ -7,6 +7,9 @@ local game = {
 	time = 0,
 	maxTime = 0,
 	timerEvent = nil,
+	time2 = 0,
+	maxTime2 = 0,
+	timerEvent2 = nil,
 	roundTime = 10,
 }
 
@@ -44,22 +47,51 @@ function game:show()
 			crashedUsers = {}
 
 		end
-		game:startMovementRound()
+
+		-- Start the round after 3 seconds!
+		self.timerEvent = function()
+			game:startMovementRound()
+		end
+		self.maxTime = 3
+	end
+
+
+	-- Do a cool camera startup swing:
+	map:camSwingAbort()
+	map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
+	self.timerEvent2 = function()
+		game:camToCar()
+	end
+	self.maxTime2 = 2
+end
+
+function game:camToCar()
+	if client then
+		local x, y = map:getCarPos( client:getID() )
+		x = x*GRIDSIZE
+		y = y*GRIDSIZE
+		map:camSwingToPos( x, y, 1 )
 	end
 end
 
 function game:update( dt )
 	map:update( dt )
-
-	--print(self.timerEvent)
-	-- Timer:
-	if self.timerEvent then
+	-- print(self.timerEvent)
+	-- Timer1:
+	if self.maxTime > 0 then
 		self.time = self.time + dt
 		if self.time >= self.maxTime then
-			print("->fired")
-			self.timerEvent()
-			self.timerEvent = nil
+			self.maxTime = 0
 			self.time = 0
+			self.timerEvent()
+		end
+	end
+	if self.maxTime2 > 0 then
+		self.time2 = self.time2 + dt
+		if self.time2 >= self.maxTime2 then
+			self.maxTime2 = 0
+			self.time2 = 0
+			self.timerEvent2()
 		end
 	end
 end
@@ -85,20 +117,25 @@ function game:drawUserList()
 	local i = 1
 	if client and users then
 		love.graphics.setColor( 0, 0, 0, 128 )
-		love.graphics.rectangle( "fill", x - 5, y - 5, 300, num*20 + 5 )
+		love.graphics.rectangle( "fill", x - 5, y - 5, 400, num*20 + 5 )
 		for k, u in pairs( users ) do
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
+
+			local dx = love.graphics.getFont():getWidth( u.playerName ) + 40
+			local lapString = "Lap: " .. map:getCarRound( u.id )
+			love.graphics.print( lapString, x + dx, y )
+
 			-- Show crashed users in list:
 			if u.customData.crashed == true then
 				love.graphics.setColor( 255, 128, 128, 255 )
-				local dx = love.graphics.getFont():getWidth( u.playerName ) + 30
+				dx = dx + love.graphics.getFont():getWidth( lapString ) + 20
 				local rounds = u.customData.waitingRounds or 1
 				love.graphics.print( "[Crashed! (" .. rounds .. ")]", x + dx, y )
 			elseif not u.customData.moved == true then
 				love.graphics.setColor( 255, 255, 128, 255 )
-				local dx = love.graphics.getFont():getWidth( u.playerName ) + 30
+				dx = dx + love.graphics.getFont():getWidth( lapString ) + 20
 				love.graphics.print( "[Waiting for move]", x + dx, y )
 			end
 			y = y + 20
@@ -216,7 +253,6 @@ function game:moveAll()
 		game:startMovementRound()
 	end
 	self.maxTime = 1.2
-	print("event", self.maxTime)
 end
 
 function game:validateCarMovement( id, x, y )

@@ -35,7 +35,7 @@ function love.load( args )
 	LAPS = tonumber(config.getValue( "LAPS" )) or 1
 	MAX_PLAYERS = tonumber(config.getValue( "MAX_PLAYERS" )) or 16
 	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
-	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 1
+	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
 
 	if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
 		love.window.setMode( WIDTH, HEIGHT )

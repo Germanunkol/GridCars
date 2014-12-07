@@ -23,7 +23,7 @@ local dx, dy, ZoomIs, mul, ZoomTarget, ZoomStart = 0, 0, 1, 1, 0, 1
 local cam = nil
 local CamOffset = -0.05
 local GridColorSmall = {255, 255, 160, 25}
-local GridColorBig = {50, 255, 100, 75}
+local GridColorBig = {255, 255, 160, 50}
 local GridSizeSmallStep = 100
 local GridSizeBigStep = 500
 -- different Subjects:
@@ -159,25 +159,25 @@ function map:draw()
 			end
 
 	if self.startLine then
-		love.graphics.setLineWidth( 3 )
-		love.graphics.setColor( 50, 50, 50, 255 )
-		love.graphics.polygon( "fill", 
+		love.graphics.setLineWidth( 30 )
+		love.graphics.setColor( 50, 50, 50, 100 )
+		--[[love.graphics.polygon( "fill", 
 			self.startTriangle[1].x,
 			self.startTriangle[1].y,
 			self.startTriangle[2].x,
 			self.startTriangle[2].y,
 			self.startTriangle[3].x,
 			self.startTriangle[3].y
-		)
-		love.graphics.setColor( 150, 150, 150, 255 )
+		)]]
+		love.graphics.setColor( 150, 150, 150, 100 )
 		love.graphics.line( self.startLine.p1.x, self.startLine.p1.y,
 				self.startLine.p2.x, self.startLine.p2.y )
 		love.graphics.circle( "fill", self.startProjPoint.x, self.startProjPoint.y, 5 )
 
-		love.graphics.setColor( 0, 255,0, 255 )
+		--[[love.graphics.setColor( 0, 255,0, 255 )
 		love.graphics.circle( "fill", self.startPoint.x, self.startPoint.y, 5 )
 		love.graphics.setColor( 255,0,0, 255)
-		love.graphics.circle( "fill", self.endPoint.x, self.endPoint.y, 5 )
+		love.graphics.circle( "fill", self.endPoint.x, self.endPoint.y, 5 )]]
 	end
 
 	 -- draw grid
@@ -211,25 +211,33 @@ function map:drawCarInfo()
 end
 
 function map:drawGrid()
-	local r, g, b, a = love.graphics.getColor()
 	love.graphics.setLineWidth(1)
-	for i = 0, map.Boundary.maxX+math.abs(map.Boundary.minX), GridSizeSmallStep do
-		if i % GridSizeBigStep == 0 then
-			love.graphics.setColor(GridColorBig)
-		else
-			love.graphics.setColor(GridColorSmall)
-		end
+	if cam.scale > 0.14 then
+		for i = 0, map.Boundary.maxX+math.abs(map.Boundary.minX), GridSizeSmallStep do
+			if i % GridSizeBigStep == 0 then
+				love.graphics.setColor(GridColorBig)
+			else
+				love.graphics.setColor(GridColorSmall)
+			end
 			love.graphics.line(i+map.Boundary.minX, map.Boundary.minY, i+map.Boundary.minX, map.Boundary.maxY)
-	end
-	for i = 0, map.Boundary.maxY+math.abs(map.Boundary.minY), GridSizeSmallStep do
-		if i % GridSizeBigStep == 0 then
-			love.graphics.setColor(GridColorBig)
-		else
-			love.graphics.setColor(GridColorSmall)
 		end
+		for i = 0, map.Boundary.maxY+math.abs(map.Boundary.minY), GridSizeSmallStep do
+			if i % GridSizeBigStep == 0 then
+				love.graphics.setColor(GridColorBig)
+			else
+				love.graphics.setColor(GridColorSmall)
+			end
 			love.graphics.line(map.Boundary.minX, i+map.Boundary.minY, map.Boundary.maxX, i+map.Boundary.minY)
+		end
+	else
+		love.graphics.setColor(GridColorSmall)
+		for i = 0, map.Boundary.maxX+math.abs(map.Boundary.minX), GridSizeBigStep do
+			love.graphics.line(i+map.Boundary.minX, map.Boundary.minY, i+map.Boundary.minX, map.Boundary.maxY)
+		end
+		for i = 0, map.Boundary.maxY+math.abs(map.Boundary.minY), GridSizeBigStep do
+			love.graphics.line(map.Boundary.minX, i+map.Boundary.minY, map.Boundary.maxX, i+map.Boundary.minY)
+		end
 	end
-	love.graphics.setColor( r, g, b, a) 
 end
 
 function map:reset()
@@ -244,6 +252,7 @@ function map:reset()
 	map.triangles = {}
 	map.startLine = nil
 	map.startPositions = {}
+	map.driveAngle = 0
 end
 
 function map:import( mapstring )
@@ -351,7 +360,13 @@ function map:import( mapstring )
 							x = p3.x - 2*diff.x,
 							y = p3.y - 2*diff.y
 						}
-
+						
+						local driveDir = {
+							x = map.startPoint.x - map.startProjPoint.x,
+							y = map.startPoint.y - map.startProjPoint.y
+						}
+						map.driveAngle = math.atan2( driveDir.x, -driveDir.y )
+						print("drive angle", map.driveAngle, driveDir.x, driveDir.y )
 
 					end
 				elseif vertices[counterV].z == MapScale*3 and vertices[counterV-1].z == MapScale*3 and
@@ -450,6 +465,10 @@ function map:camSwingToPos(x, y, time) --, zoom, time)
 	end
 end
 
+function map:camSwingAbort()
+	CamSwingTime = nil
+end
+
 function map:updatecam(dt)
 end
 
@@ -533,7 +552,6 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	map:camSwingToPos(posX, posY, 1)
 
 	map:checkRoundTransition( id )
-	print(posX, posY)
 end
 
 function map:setCarPosDirectly(id, posX, posY) --car-id as number, pos as Gridpos
@@ -573,7 +591,7 @@ function map:checkRoundTransition( id )
 	local drivenLine = { p1=pStart, p2=p }
 
 	local intersects = utility.segSegIntersection( map.startLine, drivenLine )
-	if intersects then
+	print("intersects?", intersects)
 
 		local distToEnd = utility.dist( p, map.endPoint )
 		local distToStart = utility.dist( p, map.startPoint )
@@ -584,20 +602,23 @@ function map:checkRoundTransition( id )
 		if car.closerToEnd then
 			if distToStart < distToEnd then
 				car.closerToEnd = false
-				car.round = car.round + 1
+				if intersects then
+					car.round = car.round + 1
+				end
 			end
 		else
 			if distToEnd < distToStart then
 				car.closerToEnd = true
+				if intersects then
 				car.round = car.round - 1
 			end
+			end
 		end
-	end
 end
 
 function map:newCar( id, x, y, color )
 	print("new car!", id, x, y, color[1], color[2], color[3], color[4] )
-	map.cars[id] = Car:new( x, y, color )
+	map.cars[id] = Car:new( x, y, color, map.driveAngle )
 end
 
 function map:removeAllCars()
@@ -628,6 +649,14 @@ function map:setCarNextMovement( id, x, y )
 
 end
 function map:resetCarNextMovement( id )
+end
+
+function map:getCarRound( id )
+	local car = map.cars[id]
+	if car then
+		return car.round or 0
+	end
+	return 0
 end
 
 return map

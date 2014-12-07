@@ -14,12 +14,12 @@ function Car.update( self, dt )]]
 
 Images = require "images"
 
-function Car:new( x, y, color )
+function Car:new( x, y, color, angle )
 	local c = {}
 	setmetatable( c, Car )
 	c.x = x
 	c.y = y
-	c.r = 0 -- rotation
+	c.r = angle or 0 -- rotation
 	c.vX = 0
 	c.vY = 0
 	c.color = color
