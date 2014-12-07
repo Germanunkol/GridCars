@@ -28,6 +28,8 @@ port = 3410
 function love.load( args )
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
+	ROUND_TIME = config.getValue( "ROUND_TIME" ) or "Unknown"
+	LAPS = config.getValue( "LAPS" ) or 1
 
 	-- Remove any pipe symbols from the player name:
 	PLAYERNAME = string.gsub( PLAYERNAME, "|", "" )
@@ -168,7 +170,7 @@ function serverReceived( command, msg, user )
 		server:send( command, user.playerName .. ": " .. msg )
 	elseif command == CMD.MOVE_CAR then
 		local x, y = msg:match( "(.*)|(.*)" )
-		game:moveCar( user.id, x, y )
+		game:validateCarMovement( user.id, x, y )
 	end
 end
 
@@ -183,5 +185,8 @@ function clientReceived( command, msg )
 		game:setState( msg )
 	elseif command == CMD.NEW_CAR then
 		game:newCar( msg )
+	elseif command == CMD.MOVE_CAR then
+		print("moving car on client")
+		game:moveCar( msg )
 	end
 end

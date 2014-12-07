@@ -122,7 +122,6 @@ function Car:MoveToPos( x, y, time )
 		self.targetY = y
 		self.vX = x - self.x
 		self.vY = y - self.y
-		print("vX:",self.vX, "vY:",self.vY)
 		self.startX = self.x
 		self.startY = self.y
 		self.driveTime = time
@@ -135,14 +134,15 @@ end
 function Car:isThisAValidTargetPos( x, y )
 	x = x*GRIDSIZE
 	y = y*GRIDSIZE
-	if (x == self.startX + self.vX - GRIDSIZE or
-		x == self.startX + self.vX or
-		x == self.startX + self.vX + GRIDSIZE ) and
-	 (y == self.startY + self.vY - GRIDSIZE or
-		y == self.startY + self.vY or
-		y == self.startY + self.vY + GRIDSIZE ) then
+	if (x == self.targetX + self.vX - GRIDSIZE or
+		x == self.targetX + self.vX or
+		x == self.targetX + self.vX + GRIDSIZE ) and
+	 (y == self.targetY + self.vY - GRIDSIZE or
+		y == self.targetY + self.vY or
+		y == self.targetY + self.vY + GRIDSIZE ) then
 		return true
 	end
+	return false
 end
 
 return Car

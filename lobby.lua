@@ -83,6 +83,10 @@ function lobby:draw()
 	
 	map:draw()
 
+	lobby:drawUserList()
+end
+
+function lobby:drawUserList()
 	-- Print list of users:
 	love.graphics.setColor( 255,255,255, 255 )
 	local users, num = network:getUsers()

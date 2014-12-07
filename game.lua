@@ -46,6 +46,7 @@ function game:draw()
 		if self.GAMESTATE == "move" then
 			map:drawTargetPoints( client:getID() )
 		end
+		lobby:drawUserList()
 	end
 end
 
@@ -53,11 +54,11 @@ function game:keypressed( key )
 end
 
 function game:mousepressed( x, y, button )
+	if button == "l" then
 	if client then
 		if self.GAMESTATE == "move" then
 			-- Turn screen coordinates into grid coordinates:
 			local gX, gY = map:screenToGrid( x, y )
-			print( gX, gY )
 			gX = math.floor( gX + 0.5 )
 			gY = math.floor( gY + 0.5 )
 			if map:clickAtTargetPosition( client:getID(), gX, gY ) then
@@ -65,6 +66,7 @@ function game:mousepressed( x, y, button )
 			end
 		end
 	end
+end
 end
 
 function game:setState( state )
@@ -97,11 +99,27 @@ end
 function game:sendNewCarPosition( x, y )
 	-- CLIENT ONLY!
 	if client then
+		print("SENDING POSITION")
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
 	end
 end
 
-function game:moveCar( id, x, y )
-	map:setCarPos( id, x, y )
+function game:validateCarMovement( id, x, y )
+	--SERVER ONLY!
+	if server then
+		print("server sending on")
+		server:send( CMD.MOVE_CAR, id .. "|" .. x .. "|" .. y )
+	end
+end
+
+function game:moveCar( msg )
+	-- CLIENT ONLY!
+	if client then
+		local id, x, y = msg:match( "(.*)|(.*)|(.*)" )
+		id = tonumber(id)
+		x = tonumber(x)
+		y = tonumber(y)
+		map:setCarPos( id, x, y )
+	end
 end
 return game
