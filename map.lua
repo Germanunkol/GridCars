@@ -378,4 +378,12 @@ function map:showCarTargets(id, show)
 	--end
 end
 
+-- Check if a car has moved into a new round:
+function map:checkRoundTransition( id )
+	local x = map.car[id].x
+	local y = map.car[id].y
+	
+
+end
+
 return map
