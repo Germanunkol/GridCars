@@ -49,6 +49,11 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 	-- Read full file and save it in mapstring:
 	local mapstring = love.filesystem.read( dateiname )
 
+	self:newFromString( mapstring )
+
+end
+
+function map:newFromString( mapstring )
 	local success, msg = map:import(mapstring)
 	if not success then
 		print("error loading map: ", msg)
@@ -56,11 +61,9 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 		map:reset()
 	else
 		map:getBoundary()
-		ZoomTarget = 50/MapScale -- for now startzoom depends on MapScale
-		--map:camZoom(ZoomIs, 1) -- zoom a bit out
+		ZoomTarget = 50/MapScale -- startzoom depends on MapScale
 	end
-	--utility.printTable(map.Boundary)
-	
+
 	-- create Environment
 	-- plant Subjects with one Pivot
 	for i = 1, maxS_OnePivot, 1 do
@@ -74,22 +77,6 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 		local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
 		local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
 		table.insert( map.subjects, s )
-	end
-end
-
-function map:newFromString( mapstring )
-	local success, msg = map:import(mapstring)
-	if not success then
-		print("error loading map: ", msg)
-		lobby:errorMsg( msg )
-		map:reset()
-	else
-		map:getBoundary()
-		ZoomTarget = 50/MapScale -- startzoom depends on MapScale
-		-- create Environment
-		for i = 0, maxMapSubjects, 1 do
-			map.mapSubjects[i] = mapSubject:new("car", 20, 20)
-		end
 	end
 end
 
@@ -375,7 +362,7 @@ function map:import( mapstring )
 
 	-- Consider the map as "loaded" if the list of triangles is not empty
 	if #map.triangles < 1 then
-		return false, "Number of triangles is 0."
+		return false, "Number of triangles is 0. Make sure to save the map file as ASCII stl."
 	end
 
 	if not map.startLine then
