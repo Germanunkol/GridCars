@@ -360,20 +360,20 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 
 	--print("Bound.: ", math.abs(map.Boundary.minX)+map.Boundary.maxX)
 	--print("gerundet: ", (math.abs(map.Boundary.minX)+map.Boundary.maxX)%GridSizeSmallStep)
-	map.Boundary.minX = map.Boundary.minX - map.Boundary.minX % GridSizeBigStep
-	map.Boundary.minY = map.Boundary.minY - map.Boundary.minY % GridSizeBigStep
-	map.Boundary.maxX = map.Boundary.maxX + GridSizeBigStep
+	map.Boundary.minX = map.Boundary.minX - map.Boundary.minX % GridSizeBigStep - 3*GridSizeBigStep
+	map.Boundary.minY = map.Boundary.minY - map.Boundary.minY % GridSizeBigStep - 3*GridSizeBigStep
+	map.Boundary.maxX = map.Boundary.maxX + 4*GridSizeBigStep
 	map.Boundary.maxX = map.Boundary.maxX - map.Boundary.maxX % GridSizeBigStep
-	map.Boundary.maxY = map.Boundary.maxY + GridSizeBigStep
+	map.Boundary.maxY = map.Boundary.maxY + 4*GridSizeBigStep
 	map.Boundary.maxY = map.Boundary.maxY - map.Boundary.maxY % GridSizeBigStep
 end
 
 function map:keypressed( key )
 	if key == "p" then
-		local x = math.random(-50,50)
-		local y = math.random(-50,50)
 		--print(map.grid[x][y].pxlX, map.grid[x][y].pxlY)
 		--map:setCarPos(1, map.grid[x][y].pxlX, map.grid[x][y].pxlY)
+		local x = math.random(0,5)
+		local y = math.random(0,5)
 		map:setCarPos(1, x, y)
 	end
 end
@@ -402,8 +402,6 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	map.cars[id]:MoveToPos(posX, posY, 1)
 	--map:camSwingToPos(posX,posY, 1.05, 1)
 	map:camSwingToPos(posX,posY, 1, 1)
-	print("PixelCoords:", posX, posY)
-	print("Grid-pos:", map:getGridPos(posX, posY))
 
 	map:checkRoundTransition( id )
 end
