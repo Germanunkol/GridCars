@@ -12,14 +12,13 @@ function MapSubject:new(item, x, y)
 	o.color =  {255, 255, 255, 255}
 	--o.boundaryX
 	o.r = 0 -- rotation
-	o.body = images[item .. ".png"]
+	o.body = images["car.png"]--[item .. ".png"]
 	return o
 end
 
 function MapSubject:draw()
 	love.graphics.setColor(self.color)
 	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
-	love.graphics.setColor(255,255,255,255)
 	 -- draw decoration
 	--love.graphics.draw(self.detail, self.x, self.y, self.r, 1, 1, self.detail:getWidth()/2, self.detail:getHeight()/2, 0, 0)
 	 -- draw heads

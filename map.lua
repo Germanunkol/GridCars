@@ -52,8 +52,9 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 	--utility.printTable(map.Boundary)
 	
 	-- create Environment
-	for i = 0, maxMapSubjects, 1 do
+	for i = 1, maxMapSubjects, 1 do
 		map.mapSubjects[i] = mapSubject:new("car", 20, 20)
+		print(i, map.mapSubjects[i].body)
 	end
 end
 
