@@ -21,6 +21,8 @@ CMD = {
 	GAMESTATE = 131,
 	NEW_CAR = 132,
 	MOVE_CAR = 133,
+	PLAYER_WINS = 134,
+	BACK_TO_LOBBY = 135,
 }
 
 MAX_PLAYERS = 16
@@ -197,5 +199,9 @@ function clientReceived( command, msg )
 		game:newCar( msg )
 	elseif command == CMD.MOVE_CAR then
 		game:moveCar( msg )
+	elseif command == CMD.PLAYER_WINS then
+		game:playerWins( msg )
+	elseif command == CMD.BACK_TO_LOBBY then
+		lobby:show()
 	end
 end

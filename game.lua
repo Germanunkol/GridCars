@@ -11,6 +11,7 @@ local game = {
 	maxTime2 = 0,
 	timerEvent2 = nil,
 	roundTime = 10,
+	winnerID = nil
 }
 
 -- Possible gamestates:
@@ -26,6 +27,8 @@ function game:show()
 	ui:setActiveScreen( nil )
 
 	map:removeAllCars()
+
+	game.winnerID = nil
 
 	if server then
 		for id, u in pairs( server:getUsers() ) do
@@ -55,19 +58,20 @@ function game:show()
 		self.maxTime = 3
 	end
 
-
 	-- Do a cool camera startup swing:
 	map:camSwingAbort()
 	map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
 	self.timerEvent2 = function()
-		game:camToCar()
+		if client then
+			game:camToCar( client:getID() )
+		end
 	end
 	self.maxTime2 = 2
 end
 
-function game:camToCar()
+function game:camToCar( id )
 	if client then
-		local x, y = map:getCarPos( client:getID() )
+		local x, y = map:getCarPos( id )
 		x = x*GRIDSIZE
 		y = y*GRIDSIZE
 		map:camSwingToPos( x, y, 1 )
@@ -250,7 +254,16 @@ function game:moveAll()
 		end
 	end
 	self.timerEvent = function()
-		game:startMovementRound()
+
+		game:checkForWinner()
+
+		if not game.winnerID then
+			game:startMovementRound()
+		else
+			game:sendWinner( game.winnerID )
+			self.timerEvent = game.sendBackToLobby
+			self.maxTime = 5
+		end
 	end
 	self.maxTime = 1.2
 end
@@ -335,6 +348,18 @@ function game:checkForRoundEnd()
 	end
 end
 
+function game:checkForWinner()
+	if server and not game.winnerID then
+		for k, u in pairs( server:getUsers() ) do
+			if map:getCarRound( u.id ) >= LAPS then
+				game.winnerID = u.id
+				print("WINNER FOUND!", u.id)
+				break
+			end
+		end
+	end
+end
+
 function game:moveCar( msg )
 	-- CLIENT ONLY!
 	if client then
@@ -344,5 +369,29 @@ function game:moveCar( msg )
 		y = tonumber(y)
 		map:setCarPos( id, x, y )
 	end
+end
+
+function game:playerWins( msg )
+	game.winnerID = tonumber(msg)	
+	game:camToCar( game.winnerID )
+	self.timerEvent2 = game.zoomOut
+	self.maxTime2 = 3
+end
+
+function game:sendWinner()
+	if server then
+		server:send( CMD.PLAYER_WINS, game.winnerID )
+	end
+end
+function game:sendBackToLobby()
+	if server then
+		server:send( CMD.BACK_TO_LOBBY, "" )
+	end
+end
+
+function game:zoomOut()
+	local cX = map.Boundary.minX + (map.Boundary.maxX - map.Boundary.minX)*0.5
+	local cY = map.Boundary.minY + (map.Boundary.maxY - map.Boundary.minY)*0.5
+	map:camSwingToPos( cX, cY )
 end
 return game

@@ -55,7 +55,7 @@ function lobby:show()
 	-- If I'm the server, then let me choose the map:
 	if server then
 		self:createLevelList()
-		self:chooseMap( "map6.stl" )
+		--self:chooseMap( "map6.stl" )
 		levelListStart = 1	
 	end
 
