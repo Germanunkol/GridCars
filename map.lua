@@ -3,13 +3,14 @@ local map = {
 	Boundary = {},
 	nullpunkt = {},
 	cars = {},
+	mapSubjects = {},
 	View = {},
 	loaded = false,
 }
 
 local Camera = require "lib/hump.camera"
 local Car = require "car"
-local cameraSpeed = 20
+local mapSubject = require "environment"
 local CamTargetX = 0
 local CamTargetY = 0
 local CamStartX = 0
@@ -21,10 +22,11 @@ local cam = nil
 local CamOffset = -0.05
 local GridColorSmall = {255, 255, 160, 25}
 local GridColorBig = {50, 255, 100, 75}
-local GridSizeSmallStep = 50
-local GridSizeBigStep = 100
+local GridSizeSmallStep = 100
+local GridSizeBigStep = 500
+local maxMapSubjects = 50
 GRIDSIZE = GridSizeSmallStep
-local MapScale = 100
+local MapScale = 500
 
 --wird einmalig bei Spielstart aufgerufen
 function map:load()
@@ -48,7 +50,13 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 		map:getBoundary()
 	end
 	--utility.printTable(map.Boundary)
+	
+	-- create Environment
+	for i = 0, maxMapSubjects, 1 do
+		map.mapSubjects[i] = mapSubject:new("car", 20, 20)
+	end
 end
+
 function map:newFromString( mapstring )
 	map:import( mapstring )
 	map:getBoundary()
@@ -90,8 +98,8 @@ function map:update( dt )
 	else
 		local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
 		local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-		dx = dx*cameraSpeed--*dt
-		dy = dy*cameraSpeed--*dt
+		dx = dx*GridSizeSmallStep--*dt
+		dy = dy*GridSizeSmallStep--*dt
 	    cam:move(dx, dy)
 	end
     mul = 1
@@ -150,10 +158,14 @@ function map:draw()
 
 	 -- draw grid
 	map:drawGrid()
-	 -- draw movement-lines
 	 -- draw player
 	for id in pairs(map.cars) do
     	map.cars[id]:draw()
+    end
+     -- draw environment
+    for id in pairs(map.MapSubjects) do
+    	map.MapSubjects[id]:draw()
+    	print(id)
     end
 	cam:detach()
 end
@@ -191,6 +203,7 @@ end
 function map:import( mapstring )
 
 	map.cars = {}
+	map.MapSubjects = {}
 
 	map.triangles = {}
 	map.startLine = nil
@@ -308,7 +321,6 @@ function map:import( mapstring )
 	end
 
 	map.cars[1] = Car:new( 50, 50, blue)
-	map:camSwingToPos(50, 50, 1, 20)
 	map.loaded = true
 	return true
 end
@@ -333,7 +345,7 @@ function map:camSwingToPos(x, y, zoom, time)
 		CamTargetY = y
 		CamStartX, CamStartY = cam:pos()
 		CamSwingTime = time
-		ZoomTarget = zoom
+		ZoomTarget = zoom/10
 		ZoomStart = ZoomIs
 		ZoomTime = time
 		ZoomTimePassed = 0
@@ -389,7 +401,7 @@ function map:keypressed( key )
 	if key == "p" then
 		--print(map.grid[x][y].pxlX, map.grid[x][y].pxlY)
 		--map:setCarPos(1, map.grid[x][y].pxlX, map.grid[x][y].pxlY)
-		local x = math.random(0,5)
+		local x = -math.random(0,5)
 		local y = math.random(0,5)
 		map:setCarPos(1, x, y)
 	end

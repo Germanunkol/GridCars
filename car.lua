@@ -58,14 +58,14 @@ function Car:draw()
 	if self.showTarget then
 		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4]/3)
 		love.graphics.polygon("fill",
-			self.x+self.vX -GRIDSIZE, self.y+self.vY-GRIDSIZE,
+			self.x+self.vX-GRIDSIZE, self.y+self.vY-GRIDSIZE,
 			self.x+self.vX-GRIDSIZE, self.y+self.vY+GRIDSIZE,
 			self.x+self.vX+GRIDSIZE, self.y+self.vY+GRIDSIZE,
 			self.x+self.vX+GRIDSIZE, self.y+self.vY-GRIDSIZE)
 	end
 	-- draw Car
 	love.graphics.push()
-	love.graphics.scale(self.scale, self.scale)
+	--love.graphics.scale(self.scale, self.scale)
 	 -- draw body
 	love.graphics.setColor(self.color)
 	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
@@ -116,6 +116,8 @@ function Car:MoveToPos( x, y, time )
 		self.startY = self.y
 		self.driveTime = time
 		self.driveTimePassed = 0
+		--rotate to Target
+		self.r = math.atan2(self.y - self.targetY, self.x - self.targetX) - math.pi/2
 	end
 end
 
