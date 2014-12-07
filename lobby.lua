@@ -5,6 +5,17 @@ local lobby = {
 	locked = false,
 }
 
+lobby.colors = {
+	{ 255, 0, 0 },
+	{ 255, 255, 0 },
+	{ 0, 255, 255 },
+	{ 0, 0, 128 },
+	{ 0, 0, 255 },
+	{ 0, 255, 0 },
+	{ 255, 128, 0 },
+	{ 25, 25, 25 },
+}
+
 local scr
 
 -- The first level in the list to display:
@@ -44,10 +55,9 @@ function lobby:show()
 	-- If I'm the server, then let me choose the map:
 	if server then
 		self:createLevelList()
-		self:chooseMap( "map1.stl" )
+		self:chooseMap( "map0StartLine.stl" )
 		levelListStart = 1	
 	end
-
 
 	if server then
 		scr:addFunction( "topPanel", "start", love.graphics.getWidth()/2 - 20, 0, "Start", "s",
@@ -219,6 +229,17 @@ function lobby:authorize( user )
 		return false, "Game already started."
 	else
 		return true
+	end
+end
+
+function lobby:setUserColor( user )
+	-- SERVER ONLY!
+	if server then
+		local col = lobby.colors[ math.random(#lobby.colors) ]
+		print("COLOR:", col[1], col[2], col[3] )
+		server:setUserValue( user, "red", col[1] )
+		server:setUserValue( user, "green", col[2] )
+		server:setUserValue( user, "blue", col[3] )
 	end
 end
 

@@ -31,7 +31,6 @@ function Car:new( x, y, color )
 	c.driveTimePassed = 0
 	c.targetX = 0
 	c.targetY = 0
-	c.showTarget = false
 	c.startX = 0
 	c.startY = 0
 	c.route = {}
@@ -53,15 +52,6 @@ function Car:draw()
 	if self.routeIndex > 1 then
 		love.graphics.line(self.route[self.routeIndex-1][1], self.route[self.routeIndex-1][2],
 				self.x, self.y)
-	end
-	-- draw targets to move
-	if self.showTarget then
-		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4]/3)
-		love.graphics.polygon("fill",
-			self.x+self.vX -GRIDSIZE, self.y+self.vY-GRIDSIZE,
-			self.x+self.vX-GRIDSIZE, self.y+self.vY+GRIDSIZE,
-			self.x+self.vX+GRIDSIZE, self.y+self.vY+GRIDSIZE,
-			self.x+self.vX+GRIDSIZE, self.y+self.vY-GRIDSIZE)
 	end
 	-- draw Car
 	love.graphics.push()
@@ -86,6 +76,29 @@ function Car:draw()
 	love.graphics.printf( info, self.x + 5, self.y + 15, 70 )
 end
 
+function Car:drawTargetPoints()
+	if not self.driveTime then		 -- Don't show while moving.
+	-- draw targets to move
+	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4]/3)
+	love.graphics.polygon("fill",
+		self.x+self.vX -GRIDSIZE, self.y+self.vY-GRIDSIZE,
+		self.x+self.vX-GRIDSIZE, self.y+self.vY+GRIDSIZE,
+		self.x+self.vX+GRIDSIZE, self.y+self.vY+GRIDSIZE,
+		self.x+self.vX+GRIDSIZE, self.y+self.vY-GRIDSIZE)
+
+	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4] )
+
+	for x = -1, 1 do
+		for y = -1, 1 do
+			love.graphics.circle( "fill",
+				self.x + self.vX + GRIDSIZE*x,
+				self.y + self.vY + GRIDSIZE*y,
+				10 )
+		end
+	end
+end
+end
+
 function Car:update( dt )
 	if self.driveTime then
 		self.driveTimePassed = self.driveTimePassed + dt
@@ -93,12 +106,10 @@ function Car:update( dt )
 			local amount = self.driveTimePassed/self.driveTime
 			self.x = self.startX + (self.targetX - self.startX) * amount
 			self.y = self.startY + (self.targetY - self.startY) * amount
-			self.showTarget = false
 		else
 			self.x = self.targetX
 			self.y = self.targetY
 			self.driveTime = nil
-			self.showTarget = true
 		end
 	end
 end
@@ -116,6 +127,19 @@ function Car:MoveToPos( x, y, time )
 		self.startY = self.y
 		self.driveTime = time
 		self.driveTimePassed = 0
+	end
+end
+
+function Car:isThisAValidTargetPos( x, y )
+	x = x*GRIDSIZE
+	y = y*GRIDSIZE
+	if (x == self.startX + self.vX - GRIDSIZE or
+		x == self.startX + self.vX or
+		x == self.startX + self.vX + GRIDSIZE ) and
+	 (y == self.startY + self.vY - GRIDSIZE or
+		y == self.startY + self.vY or
+		y == self.startY + self.vY + GRIDSIZE ) then
+		return true
 	end
 end
 
