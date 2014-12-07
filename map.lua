@@ -143,7 +143,6 @@ function map:update( dt )
 			CamZoomTime = nil
 		end
 		cam:zoomTo(ZoomIs)
-		print(ZoomIs, ZoomTarget)
 	--else
 		--cam:zoom(mul)
 	end
