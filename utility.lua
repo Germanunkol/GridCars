@@ -74,6 +74,32 @@ function utility.interpolateCos ( rel)
 end
 
 function utility.segSegIntersection( seg1, seg2 )
+	--local t = (q - p) x s /( r x s)
+	local r = {x = seg2.p2.x - seg2.p1.x, y = seg2.p2.y - seg2.p1.y }
+	local s = {x = seg1.p2.x - seg1.p1.x, y = seg1.p2.y - seg1.p1.y }
+
+	local denom1 = vectorCross( r, s )
+	local denom2 = vectorCross( s, r )
+	if denom1 == 0 or denom2 == 0 then
+		return false
+	end
+
+	local diff1 = { x = seg1.p1.x - seg2.p1.x, y = seg1.p1.y - seg2.p1.y }
+	local diff2 = { x = seg2.p1.x - seg1.p1.x, y = seg2.p1.y - seg1.p1.y }
+
+	local numer1 = vectorCross( diff1, s )
+	local numer2 = vectorCross( diff2, r )
+
+	local t = numer1/denom1
+	if t < 0 or t > 1 then
+		return false
+	end
+	local u = numer2/denom2
+	if u < 0 or u > 1 then
+		return false
+	end
+
+	return true, t, u
 end
 
 return utility

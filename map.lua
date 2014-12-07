@@ -434,24 +434,31 @@ function map:checkRoundTransition( id )
 
 	local car = map.cars[id]
 	local p = { x = car.targetX, y = car.targetY }
+	local pStart = { x = car.startX, y = car.startY }
 
-	local distToEnd = utility.dist( p, map.endPoint )
-	local distToStart = utility.dist( p, map.startPoint )
+	local drivenLine = { p1=pStart, p2=p }
 
-	print( "dist to end:", distToEnd)
-	print( "dist to start:", distToStart)
-	
-	if car.closerToEnd then
-		if distToStart < distToEnd then
-			car.closerToEnd = false
-			car.round = car.round + 1
+	local intersects = utility.segSegIntersection( map.startLine, drivenLine )
+	if intersects then
+
+		local distToEnd = utility.dist( p, map.endPoint )
+		local distToStart = utility.dist( p, map.startPoint )
+
+		print( "dist to end:", distToEnd)
+		print( "dist to start:", distToStart)
+
+		if car.closerToEnd then
+			if distToStart < distToEnd then
+				car.closerToEnd = false
+				car.round = car.round + 1
+			end
+		else
+			if distToEnd < distToStart then
+				car.closerToEnd = true
+				car.round = car.round - 1
+			end
 		end
-	else
-		if distToEnd < distToStart then
-			car.closerToEnd = true
-			car.round = car.round - 1
-		end
-	end
+end
 end
 
 return map
