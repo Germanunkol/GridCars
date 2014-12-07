@@ -66,11 +66,14 @@ end
 function utility.dist( p1, p2 )
 	local dx = p1.x - p2.x
 	local dy = p1.y - p2.y
-	return math.sqrt( dx*dx, dy*dy )
+	return math.sqrt( dx*dx + dy*dy )
 end
 
 function utility.interpolateCos ( rel)
 	return -math.cos(math.pi*rel)*0.5 + 0.5
+end
+
+function utility.segSegIntersection( seg1, seg2 )
 end
 
 return utility
