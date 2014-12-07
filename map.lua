@@ -16,14 +16,15 @@ local CamStartX = 0
 local CamStartY = 0
 local CamSwingTime = 0
 local CamSwingTimePassed = 0
-local dx, dy, mul, ZoomTarget, ZoomStart = 0, 0, 1, 0, 1
+local dx, dy, ZoomIs, mul, ZoomTarget, ZoomStart = 0, 0, 1, 1, 0, 1
 local cam = nil
 local CamOffset = -0.05
 local GridColorSmall = {255, 255, 160, 25}
 local GridColorBig = {50, 255, 100, 75}
-local GridSizeSmallStep = 10
-local GridSizeBigStep = 50
+local GridSizeSmallStep = 50
+local GridSizeBigStep = 100
 GRIDSIZE = GridSizeSmallStep
+local MapScale = 100
 
 --wird einmalig bei Spielstart aufgerufen
 function map:load()
@@ -40,8 +41,12 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 	-- Read full file and save it in mapstring:
 	local mapstring = love.filesystem.read( dateiname )
 
-	map:import(mapstring)
-	map:getBoundary()
+	local success, msg = map:import(mapstring)
+	if not success then
+		print("error loading map: ", msg)
+	else
+		map:getBoundary()
+	end
 	--utility.printTable(map.Boundary)
 end
 function map:newFromString( mapstring )
@@ -61,10 +66,14 @@ function map:update( dt )
 			mul = ZoomStart + (ZoomTarget - ZoomStart) * amount
 		else
 			mul = ZoomTarget
+			ZoomIs = ZoomTarget
 			ZoomTime = nil
 		end
+		cam:zoomTo(mul)
+	else
+		cam:zoom(mul)
 	end
-    cam:zoom(mul)
+    
 
     if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
@@ -202,7 +211,7 @@ function map:import( mapstring )
 				line = string.sub(line, startpos+1)
 				startpos = 0
 				endpos = string.find(line," ")
-				vertices[counterV][value] = string.sub(line, startpos, endpos) * 50
+				vertices[counterV][value] = string.sub(line, startpos, endpos) * MapScale
 			end
 			--print("Vertex  No",counterV, vertices[counterV].x, vertices[counterV].y,  vertices[counterV].z)
 			-- jeder dritte Vertex ergibt ein Dreieck
@@ -210,9 +219,9 @@ function map:import( mapstring )
 
 
 				-- Round the vertices on the z axis:
-				vertices[counterV].z = math.floor( vertices[counterV].z/50 + 0.5 )*50
-				vertices[counterV-1].z = math.floor( vertices[counterV-1].z/50 + 0.5 )*50
-				vertices[counterV-2].z = math.floor( vertices[counterV-2].z/50 + 0.5 )*50
+				vertices[counterV].z = math.floor( vertices[counterV].z/MapScale + 0.5 )*MapScale
+				vertices[counterV-1].z = math.floor( vertices[counterV-1].z/MapScale + 0.5 )*MapScale
+				vertices[counterV-2].z = math.floor( vertices[counterV-2].z/MapScale + 0.5 )*MapScale
 
 				-- flip y coordinate:
 				vertices[counterV].y = -vertices[counterV].y
@@ -231,12 +240,12 @@ function map:import( mapstring )
 					}
 					--utility.printTable( map.triangles )
 					counterT = counterT + 1
-				elseif vertices[counterV].z == 50 and vertices[counterV-1].z == 50 and
-						vertices[counterV-2].z == 50 then
+				elseif vertices[counterV].z == MapScale and vertices[counterV-1].z == MapScale and
+						vertices[counterV-2].z == MapScale then
 					-- Vertices on layer z = 1 are on the higher layer...
 				
-				elseif vertices[counterV].z == 100 and vertices[counterV-1].z == 100 and
-						vertices[counterV-2].z == 100 then
+				elseif vertices[counterV].z == MapScale*2 and vertices[counterV-1].z == MapScale*2 and
+						vertices[counterV-2].z == MapScale*2 then
 					if not map.startLine then
 						local d1 = utility.dist( vertices[counterV], vertices[counterV-1] )
 						local d2 = utility.dist( vertices[counterV-1], vertices[counterV-2] )
@@ -299,6 +308,7 @@ function map:import( mapstring )
 	end
 
 	map.cars[1] = Car:new( 50, 50, blue)
+	map:camSwingToPos(50, 50, 1, 20)
 	map.loaded = true
 	return true
 end
@@ -324,7 +334,7 @@ function map:camSwingToPos(x, y, zoom, time)
 		CamStartX, CamStartY = cam:pos()
 		CamSwingTime = time
 		ZoomTarget = zoom
-		ZoomStart = mul
+		ZoomStart = ZoomIs
 		ZoomTime = time
 		ZoomTimePassed = 0
 		CamSwingTimePassed = 0

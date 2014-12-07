@@ -12,14 +12,21 @@ Car.update( c, dt )
 function Car:update( dt )
 function Car.update( self, dt )]]
 
+Images = require "images"
+
 function Car:new( x, y, color )
 	local c = {}
 	setmetatable( c, Car )
 	c.x = x
 	c.y = y
+	c.r = 0 -- rotation
 	c.vX = 0
 	c.vY = 0
 	c.color = color
+	c.scale = 0.5
+	c.body = images["car.png"]
+	c.detail = images["detail1.png"]
+	c.head = images["head1.png"]
 	c.driveTime = 0
 	c.driveTimePassed = 0
 	c.targetX = 0
@@ -57,10 +64,17 @@ function Car:draw()
 			self.x+self.vX+GRIDSIZE, self.y+self.vY-GRIDSIZE)
 	end
 	-- draw Car
-	love.graphics.circle( "fill", self.x, self.y, 5)
-	 -- draw car
+	love.graphics.push()
+	love.graphics.scale(self.scale, self.scale)
+	 -- draw body
+	love.graphics.setColor(self.color)
+	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
+	love.graphics.setColor(255,255,255,255)
 	 -- draw decoration
+	love.graphics.draw(self.detail, self.x, self.y, self.r, 1, 1, self.detail:getWidth()/2, self.detail:getHeight()/2, 0, 0)
 	 -- draw heads
+	love.graphics.draw(self.head, self.x, self.y, self.r, 1, 1, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
+	love.graphics.pop()
 
 	local info = "Round: " .. self.round
 	info = info .. "\nx: " .. self.targetX
