@@ -8,9 +8,9 @@ endloop
 endfacet
 facet normal 0 0 0
 outer loop
-vertex 5.800000 -1.000000 0.000000
 vertex 4.200000 -1.000000 0.000000
 vertex 4.000000 -3.000000 0.000000
+vertex 5.800000 -1.000000 0.000000
 endloop
 endfacet
 facet normal 0 0 0
@@ -1261,9 +1261,9 @@ endloop
 endfacet
 facet normal 0 0 0
 outer loop
-vertex 6.306429 -4.000000 0.000000
 vertex 6.000000 -3.000000 0.000000
 vertex 4.000000 -3.000000 0.000000
+vertex 6.306429 -4.000000 0.000000
 endloop
 endfacet
 facet normal 0 0 0
@@ -1275,16 +1275,9 @@ endloop
 endfacet
 facet normal 0 0 0
 outer loop
-vertex -6.384638 2.880128 2.000000
-vertex -4.542772 1.759681 2.000000
-vertex -4.646333 1.611738 2.000000
-endloop
-endfacet
-facet normal 0 0 0
-outer loop
-vertex -4.646333 1.611738 2.000000
-vertex -6.468689 2.712677 2.000000
-vertex -6.384638 2.880128 2.000000
+vertex -6.734969 3.087466 2.000000
+vertex -4.893103 1.967020 2.000000
+vertex -6.376538 1.797628 2.000000
 endloop
 endfacet
 endsolid Exported from Blender-2.69 (sub 0)

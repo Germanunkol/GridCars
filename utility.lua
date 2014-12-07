@@ -18,11 +18,34 @@ local function onSameSide(a,b, c,d)
 	return l*m >= 0
 end
 
+local function sign( v )
+	return (v > 0 and 1) or (v < 0 and -1) or 0
+end
+
+-- Get which side of a line a point lies (-1, 0 or 1)
+function whichSideOfLine( l1,l2, p )
+	--return sign( (Bx-Ax)*(Y-Ay) - (By-Ay)*(X-Ax) )
+	return sign( (l1.x-l2.x)*(p.y-l1.y) - (l2.y-l1.y)*(p.x-l1.x) )
+end
+
+function projectPointOntoLine( l1,l2, p )
+	-- Direction vector of line:
+	local u = { x = l2.x - l1.x, y = l2.y - l1.y }
+	-- Perpendicular to that:
+	local n = { x =-u.y, y = u.x }
+
+	local v = { x = p.x - l1.x, y = p.y - l1.y }
+
+	local dist = vectorDot( u, v )/vectorDot( u, u )
+	print("dist:", dist)
+	return { x=u.x*dist + l1.x, y = u.y*dist + l1.y }
+end
+
 function utility.pointInTriangle(p, a,b,c)
 	return onSameSide(p,a, b,c) and onSameSide(p,b, a,c) and onSameSide(p,c, a,b)
 end
-local function vectorDot(x1,y1, x2,y2)
-	return x1*x2 + y1*y2
+function vectorDot( q, p )
+	return q.x*p.x + q.y*p.y
 end
 
 

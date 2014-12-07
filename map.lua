@@ -112,8 +112,23 @@ function map:draw()
 
 	if self.startLine then
 		love.graphics.setLineWidth( 3 )
-		love.graphics.setColor( 0, 0, 0, 255 )
+		love.graphics.setColor( 50, 50, 50, 255 )
+		love.graphics.polygon( "fill", 
+			self.startTriangle[1].x,
+			self.startTriangle[1].y,
+			self.startTriangle[2].x,
+			self.startTriangle[2].y,
+			self.startTriangle[3].x,
+			self.startTriangle[3].y
+		)
+		love.graphics.setColor( 150, 150, 150, 255 )
 		love.graphics.line( self.startLine )
+		love.graphics.circle( "fill", self.startProjPoint.x, self.startProjPoint.y, 5 )
+
+		love.graphics.setColor( 0, 255,0, 255 )
+		love.graphics.circle( "fill", self.startPoint.x, self.startPoint.y, 5 )
+		love.graphics.setColor( 255,0,0, 255)
+		love.graphics.circle( "fill", self.endPoint.x, self.endPoint.y, 5 )
 	end
 
 	 -- draw grid
@@ -209,24 +224,50 @@ function map:import( mapstring )
 				
 				elseif vertices[counterV].z == 100 and vertices[counterV-1].z == 100 and
 						vertices[counterV-2].z == 100 then
-					if not map.starLine then
+					if not map.startLine then
 						local d1 = utility.dist( vertices[counterV], vertices[counterV-1] )
 						local d2 = utility.dist( vertices[counterV-1], vertices[counterV-2] )
 						local d3 = utility.dist( vertices[counterV-2], vertices[counterV] )
-						local p1, p2
+						local p1, p2, p3
 
-						if (d1 > d2 and d2 > d3) or (d1 < d2 and d2 < d3) then -- d2 is middle distance
-							p1 = vertices[counterV-1]
-							p2 = vertices[counterV-2]
-						elseif (d1 > d3 and d3 > d2) or (d1 < d3 and d3 < d2) then	-- d3 is middle distance
-							p1 = vertices[counterV]
-							p2 = vertices[counterV-2]
-						else
+						-- Look for the longest distance - that's the starting line!
+						if d1 > d2 and d1 > d3 then
 							p1 = vertices[counterV]
 							p2 = vertices[counterV-1]
+							p3 = vertices[counterV-2]
+						elseif d2 > d1 and d2 > d3 then
+							p1 = vertices[counterV-1]
+							p2 = vertices[counterV-2]
+							p3 = vertices[counterV]
+						else
+							p1 = vertices[counterV-2]
+							p2 = vertices[counterV]
+							p3 = vertices[counterV-1]
 						end
-							
+						
+						-- This is the line the players need to cross in order to win
 						map.startLine = { p1.x, p1.y, p2.x, p2.y }
+						map.startTriangle = { p1, p2, p3 }
+
+						if whichSideOfLine( p1,p2, p3 ) == 0 then
+							map.startLine = 0
+							return false, "Start line is not a proper triangle."
+						end
+
+						map.startProjPoint = projectPointOntoLine( p1,p2, p3 )
+
+						local diff = {
+							x = p3.x - map.startProjPoint.x,
+							y = p3.y - map.startProjPoint.y
+						}
+
+						map.startPoint = p3
+						map.endPoint = {
+							x = p3.x - 2*diff.x,
+							y = p3.y - 2*diff.y
+						}
+
+
 					end
 				end
 			end
@@ -236,12 +277,17 @@ function map:import( mapstring )
 	end
 
 	-- Consider the map as "loaded" if the list of triangles is not empty
-	if #map.triangles >= 1 then
-		map.loaded = true
+	if #map.triangles < 1 then
+		return false, "Number of triangles is 0."
+	end
+
+	if not map.startLine then
+		return false, "No start line found."
 	end
 
 	map.cars[1] = Car:new( 50, 50, blue)
-
+	map.loaded = true
+	return true
 end
 
 
