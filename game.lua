@@ -190,7 +190,31 @@ function game:validateCarMovement( id, x, y )
 --			map:setCarPos( id, x, y )
 			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
-			local newX, newY = map:getCarPos( id )
+			local oldX, oldY = map:getCarPos( id )
+	
+
+			-- Step along the path and check if there's a collision. If so, stop there.
+			local p = {x = oldX, y = oldY }
+			local diff = {x = x-oldX, y = y-oldY}
+			local dist = utility.length( diff )
+			diff = utility.normalize(diff)
+
+			print( "moving:", dist )
+			print( "diff:", diff.x, diff.y )
+
+			local crashed = false
+			for l = 0.5, dist, 0.5 do
+				p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
+				if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+					crashed = true
+					break
+				end
+			end
+
+			if crashed then
+				x, y = oldX, oldY
+			end
+
 			self.usersMoved[id] = true
 			self.newUserPositions[id] = {x=x, y=y}
 
