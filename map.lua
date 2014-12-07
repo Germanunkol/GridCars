@@ -437,9 +437,15 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	map:checkRoundTransition( id )
 end
 
+function map:setCarPosDirectly(id, posX, posY) --car-id as number, pos as Gridpos
+	posX = map:TransCoordGtP(posX)
+	posY = map:TransCoordGtP(posY)
+	map.cars[id]:setPos(posX, posY)
+end
+
 function map:getCarPos(id)
-	local x = map.cars[id].x
-	local y = map.cars[id].y
+	local x = map.cars[id].x/GRIDSIZE
+	local y = map.cars[id].y/GRIDSIZE
 	return x, y
 end
 

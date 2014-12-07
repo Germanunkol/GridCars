@@ -1,5 +1,10 @@
 local game = {
 	GAMESTATE = "",
+	usersMoved = {},
+	newUserPositions = {},
+	time = 0,
+	maxTime = 0,
+	timerEvent = nil
 }
 
 -- Possible gamestates:
@@ -32,12 +37,22 @@ function game:show()
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
 
 		end
-		server:send( CMD.GAMESTATE, "move" )
+		game:startMovementRound()
 	end
 end
 
 function game:update( dt )
 	map:update( dt )
+
+	-- Timer:
+	if self.timerEvent then
+		self.time = self.time + dt
+		if self.time >= self.maxTime then
+			self.timerEvent()
+			self.timerEvent = nil
+			self.time = 0
+		end
+	end
 end
 
 function game:draw()
@@ -72,6 +87,9 @@ end
 function game:setState( state )
 	self.GAMESTATE = state
 	print("Set game state", state)
+	if self.GAMESTATE == "move" then
+		
+	end
 end
 
 function game:newCar( msg )
@@ -104,11 +122,53 @@ function game:sendNewCarPosition( x, y )
 	end
 end
 
-function game:validateCarMovement( id, x, y )
+function game:startMovementRound()
 	--SERVER ONLY!
 	if server then
-		print("server sending on")
-		server:send( CMD.MOVE_CAR, id .. "|" .. x .. "|" .. y )
+		server:send( CMD.GAMESTATE, "move" )
+		self.GAMESTATE = "move"
+		game.usersMoved = {}
+	end
+end
+
+function game:moveAll()
+	if server then
+		for k, u in pairs( server:getUsers() ) do
+			--local x, y = map:getCarPos( u.id )
+			local x,y = self.newUserPositions[u.id].x, self.newUserPositions[u.id].y
+			server:send( CMD.MOVE_CAR, u.id .. "|" .. x .. "|" .. y )
+		end
+	end
+	self.timerEvent = function()
+		game:startMovementRound()
+	end
+	self.maxTime = 1.2
+end
+
+function game:validateCarMovement( id, x, y )
+	--SERVER ONLY!
+	if server and self.GAMESTATE == "move" then
+		-- if this user has not moved yet:
+		if self.usersMoved[id] == nil then
+--			map:setCarPos( id, x, y )
+			print( "server moving car to:", x, y)
+			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
+			local newX, newY = map:getCarPos( id )
+			print( newX, newY )
+			self.usersMoved[id] = true
+			self.newUserPositions[id] = {x=x, y=y}
+
+			-- Check if all users have sent their move:
+			local doneMoving = true
+			for k, u in pairs( server:getUsers() ) do
+				if not self.usersMoved[u.id] then
+					doneMoving = false
+					break
+				end
+			end
+			-- If all users have sent the move, go on to next round:
+			self:moveAll()
+		end
 	end
 end
 
