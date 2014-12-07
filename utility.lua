@@ -82,6 +82,16 @@ function utility.dist( p1, p2 )
 	local dy = p1.y - p2.y
 	return math.sqrt( dx*dx + dy*dy )
 end
+function utility.length( p )
+	return math.sqrt( p.x*p.x + p.y*p.y )
+end
+function utility.normalize( p )
+	local len = utility.length( p )
+	if len > 0 then
+		return {x = p.x/len, y = p.y/len}
+	else return p
+	end
+end
 
 function utility.interpolateCos ( rel)
 	return -math.cos(math.pi*rel)*0.5 + 0.5

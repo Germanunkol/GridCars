@@ -55,7 +55,7 @@ function lobby:show()
 	-- If I'm the server, then let me choose the map:
 	if server then
 		self:createLevelList()
-		self:chooseMap( "map0StartLine.stl" )
+		self:chooseMap( "map6.stl" )
 		levelListStart = 1	
 	end
 
@@ -206,6 +206,13 @@ function lobby:attemptGameStart()
 
 	-- SERVER ONLY!
 	if not server then return end
+
+	if not map.loaded then
+		local commands = {}
+		commands[1] = { txt = "Ok", key = "y" }
+		scr:newMsgBox( "Cannot start:", "No valid map file loaded.", nil, nil, nil, commands)
+		return
+	end
 
 	local allReady = true
 	local users = network:getUsers()

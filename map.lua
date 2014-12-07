@@ -54,6 +54,8 @@ end
 
 function map:newFromString( mapstring )
 
+	map.loaded = false
+
 	local success, msg = map:import(mapstring)
 	if not success then
 		print("error loading map: ", msg)
@@ -338,7 +340,7 @@ function map:import( mapstring )
 
 					local area = utility.triangleArea( newTriangle )
 
-					print("Area", area)
+					--print("Area", area)
 					if area > 0 then
 						counterT = counterT + 1
 						map.triangles[counterT] = {}
@@ -575,6 +577,7 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	map:camSwingToPos(posX, posY, 1)
 
 	map:checkRoundTransition( id )
+	print(posX, posY)
 end
 
 function map:setCarPosDirectly(id, posX, posY) --car-id as number, pos as Gridpos
