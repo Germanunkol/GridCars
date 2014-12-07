@@ -57,7 +57,7 @@ end
 function menu.startServer()
 	local success
 	success, server = pcall( function()
-		return network:startServer( 16, port )
+		return network:startServer( MAX_PLAYERS, port )
 	end)
 
 	if success then

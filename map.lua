@@ -46,6 +46,8 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 	local success, msg = map:import(mapstring)
 	if not success then
 		print("error loading map: ", msg)
+		lobby:errorMsg( msg )
+		map:reset()
 	else
 		map:getBoundary()
 	end
@@ -58,8 +60,21 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 end
 
 function map:newFromString( mapstring )
-	map:import( mapstring )
-	map:getBoundary()
+	local success, msg = map:import(mapstring)
+	if not success then
+		print("error loading map: ", msg)
+		lobby:errorMsg( msg )
+		map:reset()
+	else
+		map:getBoundary()
+	end
+	--utility.printTable(map.Boundary)
+	
+	-- create Environment
+	for i = 0, maxMapSubjects, 1 do
+		map.mapSubjects[i] = mapSubject:new("car", 20, 20)
+	end
+
 end
 
 function map:update( dt )
@@ -81,13 +96,12 @@ function map:update( dt )
 	else
 		cam:zoom(mul)
 	end
-    
 
     if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
 		if CamSwingTimePassed < CamSwingTime then
 			local amount = utility.interpolateCos(CamSwingTimePassed/CamSwingTime)
-			CamX =CamStartX + (CamTargetX - CamStartX) * amount
+			CamX = CamStartX + (CamTargetX - CamStartX) * amount
 			CamY = CamStartY + (CamTargetY - CamStartY) * amount
 		else
 			CamX = CamTargetX
@@ -201,14 +215,19 @@ function map:drawGrid()
 	love.graphics.setColor( r, g, b, a) 
 end
 
-
-function map:import( mapstring )
-
+function map:reset()
 	map.cars = {}
 	map.MapSubjects = {}
 
 	map.triangles = {}
 	map.startLine = nil
+	map.startPositions = {}
+end
+
+function map:import( mapstring )
+
+	map:reset()
+
 	local vertices = {}
 	local positions = {"x", "y", "z"}
 	local counterT = 1 -- Counter für Triangle
@@ -306,9 +325,25 @@ function map:import( mapstring )
 
 
 					end
+				elseif vertices[counterV].z == MapScale*3 and vertices[counterV-1].z == MapScale*3 and
+						vertices[counterV-2].z == MapScale*3 then
+
+					local x = math.floor(vertices[counterV].x/GRIDSIZE)*GRIDSIZE
+					local y = math.floor(vertices[counterV].y/GRIDSIZE)*GRIDSIZE
+					local found = false
+					for k, s in pairs( map.startPositions ) do
+						if s.x == x and s.y == y then
+							found = true
+							print("\tduplicate start pos", x, y)
+							break
+						end
+					end
+					if not found then
+						table.insert( map.startPositions, {x = x, y = y} )
+						print("\tnew start pos", x, y)
+					end
 				end
 			end
-
 			counterV = counterV + 1
 		end
 	end
@@ -322,9 +357,33 @@ function map:import( mapstring )
 		return false, "No start line found."
 	end
 
+	if server then
+		if #map.startPositions < MAX_PLAYERS then
+		--	return false, "Map only has " .. #map.startPositions .. " start positions, but you allow up to " .. MAX_PLAYERS .. " players. Change MAX_PLAYERS in config.txt."
+		end
+	end
+
+
+	table.sort( map.startPositions, sortStartPositions )
+
 	map.cars[1] = Car:new( 50, 50, blue)
 	map.loaded = true
 	return true
+end
+
+-- Sort the start positions: the closer they are to the start line, the earlier they should come.
+function sortStartPositions( a, b )
+	if a and b then
+		if utility.dist( a, map.startProjPoint ) < utility.dist( b, map.startProjPoint ) then
+			return true
+		else
+			return false
+		end
+	elseif a then
+		return true
+	else
+		return false
+	end
 end
 
 

@@ -23,6 +23,7 @@ CMD = {
 	MOVE_CAR = 133,
 }
 
+MAX_PLAYERS = 16
 port = 3410
 
 function love.load( args )
@@ -32,6 +33,7 @@ function love.load( args )
 	WIDTH = config.getValue( "WIDTH" ) or love.graphics.getWidth()
 	HEIGHT = config.getValue( "HEIGHT" ) or love.graphics.getHeight()
 	LAPS = config.getValue( "LAPS" ) or 1
+	MAX_PLAYERS = config.getValue( "MAX_PLAYERS" ) or 16
 
 	if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
 		love.window.setMode( WIDTH, HEIGHT )

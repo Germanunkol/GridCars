@@ -247,4 +247,10 @@ function lobby:setUserColor( user )
 	end
 end
 
+function lobby:errorMsg( msg )
+	local commands = {}
+	commands[1] = { txt = "Ok", key = "y" }
+	scr:newMsgBox( "Error loading map:", msg, nil, nil, nil, commands)
+end
+
 return lobby
