@@ -41,6 +41,13 @@ function projectPointOntoLine( l1,l2, p )
 	return { x=u.x*dist + l1.x, y = u.y*dist + l1.y }
 end
 
+function utility.triangleArea( t )
+	local p = projectPointOntoLine( t[1],t[2], t[3] )
+	local width = utility.dist( t[1], t[2] )
+	local height = utility.dist( t[3], p )
+	return 0.5*width*height
+end
+
 function utility.pointInTriangle(p, a,b,c)
 	return onSameSide(p,a, b,c) and onSameSide(p,b, a,c) and onSameSide(p,c, a,b)
 end
