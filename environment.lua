@@ -2,9 +2,9 @@ local 	MapSubject = {}
 MapSubject.__index = MapSubject
 
 local col_shadow = { 0, 0, 0, 100 }
-local shadowOffsetX = 10
-local shadowOffsetY = 10
-local shadowSize = 1.5
+local shadowOffsetX = 50
+local shadowOffsetY = 50
+local shadowSize = 1
 
 Images = require "images"
 
@@ -19,6 +19,7 @@ function MapSubject:new(item, x, y)
 	o.body = images[item .. ".png"]
 	o.castshadow = true
 	o.shadow = images[item .. ".png"]
+	o.name = item
 	return o
 end
 
@@ -26,9 +27,8 @@ function MapSubject:draw()
 	-- first draw shadow
 	if self.castshadow then
 		love.graphics.setColor(col_shadow)
-		love.graphics.push()
+		--print(self.name)
 		love.graphics.draw(self.shadow, self.x+shadowOffsetX, self.y+shadowOffsetY, self.r, shadowSize, shadowSize, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
-		love.graphics.pop()
 	end
 	love.graphics.setColor(self.color)
 	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
