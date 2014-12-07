@@ -27,12 +27,12 @@ function Car:new( x, y, color )
 	c.body = images["car.png"]
 	c.detail = images["detail1.png"]
 	c.head = images["head1.png"]
-	c.driveTime = 0
+	c.driveTime = nil
 	c.driveTimePassed = 0
-	c.targetX = 0
-	c.targetY = 0
-	c.startX = 0
-	c.startY = 0
+	c.targetX = x
+	c.targetY = y
+	c.startX = x
+	c.startY = y
 	c.route = {}
 	c.routeIndex = 1
 	c.closerToEnd = true

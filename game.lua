@@ -33,9 +33,9 @@ function game:show()
 
 			local x, y = 0,0
 			if map.startPositions[id] then
-				local x, y = map.startPositions[id].x, map.startPositions[id].y
+				x, y = map.startPositions[id].x, map.startPositions[id].y
 			end
-			map:newCar( u.id, 0, 0, col )
+			map:newCar( u.id, x, y, col )
 
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
 
@@ -67,7 +67,31 @@ function game:draw()
 		if love.keyboard.isDown( " " ) then
 			map:drawCarInfo()
 		end
-		lobby:drawUserList()
+		game:drawUserList()
+	end
+end
+
+function game:drawUserList()
+	-- Print list of users:
+	love.graphics.setColor( 255,255,255, 255 )
+	local users, num = network:getUsers()
+	local x, y = 20, 60
+	local i = 1
+	if client and users then
+		love.graphics.setColor( 0, 0, 0, 128 )
+		love.graphics.rectangle( "fill", x - 5, y - 5, 300, num*20 + 5 )
+		for k, u in pairs( users ) do
+			love.graphics.setColor( 255,255,255, 255 )
+			love.graphics.printf( i .. ":", x, y, 20, "right" )
+			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
+			if not u.customData.moved == true then
+				love.graphics.setColor( 255, 128, 128, 255 )
+				local dx = love.graphics.getFont():getWidth( u.playerName ) + 30
+				love.graphics.print( "[Waiting for move]", x + dx, y )
+			end
+			y = y + 20
+			i = i + 1
+		end
 	end
 end
 
@@ -94,7 +118,9 @@ function game:setState( state )
 	self.GAMESTATE = state
 	print("Set game state", state)
 	if self.GAMESTATE == "move" then
-		
+		if client then
+			map:resetCarNextMovement( client:getID() )
+		end
 	end
 end
 
@@ -125,6 +151,8 @@ function game:sendNewCarPosition( x, y )
 	if client then
 		print("SENDING POSITION")
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
+
+		map:setCarNextMovement( client:getID(), x, y )
 	end
 end
 
@@ -134,6 +162,9 @@ function game:startMovementRound()
 		server:send( CMD.GAMESTATE, "move" )
 		self.GAMESTATE = "move"
 		game.usersMoved = {}
+		for k, u in pairs( server:getUsers() ) do
+			server:setUserValue( u, "moved", false )
+		end
 	end
 end
 
@@ -160,15 +191,17 @@ function game:validateCarMovement( id, x, y )
 			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local newX, newY = map:getCarPos( id )
-			print( newX, newY )
 			self.usersMoved[id] = true
 			self.newUserPositions[id] = {x=x, y=y}
 
-			-- tell this user to wait!
 			local user = server:getUsers()[id]
 			if user then
+				-- tell this user to wait!
 				server:send( CMD.GAMESTATE, "wait", user )
+				-- Let all users know this user has already moved:
+				server:setUserValue( user, "moved", true )
 			end
+
 
 			-- Check if all users have sent their move:
 			local doneMoving = true

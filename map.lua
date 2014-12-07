@@ -205,7 +205,7 @@ function map:drawCarInfo()
 	for k, c in pairs( map.cars ) do
 		c:drawInfo()
 	end
-	cam:detatch()
+	cam:detach()
 end
 
 function map:drawGrid()
@@ -292,6 +292,9 @@ function map:import( mapstring )
 						vertices[counterV-1],
 						vertices[counterV]
 					}
+					
+
+
 					--utility.printTable( map.triangles )
 					counterT = counterT + 1
 				elseif vertices[counterV].z == MapScale and vertices[counterV-1].z == MapScale and
@@ -586,7 +589,7 @@ function map:checkRoundTransition( id )
 end
 
 function map:newCar( id, x, y, color )
-	print("new car!", id, color[1], color[2], color[3], color[4] )
+	print("new car!", id, x, y, color[1], color[2], color[3], color[4] )
 	map.cars[id] = Car:new( x, y, color )
 end
 
@@ -612,6 +615,12 @@ function map:clickAtTargetPosition( id, x, y )
 		return car:isThisAValidTargetPos( x, y )
 	end
 	return false
+end
+
+function map:setCarNextMovement( id, x, y )
+
+end
+function map:resetCarNextMovement( id )
 end
 
 return map

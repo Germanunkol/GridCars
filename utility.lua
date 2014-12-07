@@ -37,7 +37,7 @@ function projectPointOntoLine( l1,l2, p )
 	local v = { x = p.x - l1.x, y = p.y - l1.y }
 
 	local dist = vectorDot( u, v )/vectorDot( u, u )
-	print("dist:", dist)
+
 	return { x=u.x*dist + l1.x, y = u.y*dist + l1.y }
 end
 
