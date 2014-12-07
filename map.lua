@@ -3,7 +3,7 @@ local map = {
 	Boundary = {},
 	nullpunkt = {},
 	cars = {},
-	mapSubjects = {},
+	subjects = {},
 	View = {},
 	loaded = false,
 }
@@ -15,7 +15,9 @@ local CamTargetX = 0
 local CamTargetY = 0
 local CamStartX = 0
 local CamStartY = 0
+local CamZoomTime = 0
 local CamSwingTime = 0
+local CamZoomTimePassed = 0
 local CamSwingTimePassed = 0
 local dx, dy, ZoomIs, mul, ZoomTarget, ZoomStart = 0, 0, 1, 1, 0, 1
 local cam = nil
@@ -25,6 +27,7 @@ local GridColorBig = {50, 255, 100, 75}
 local GridSizeSmallStep = 100
 local GridSizeBigStep = 500
 local maxMapSubjects = 50
+local SubjectList = {"car", "head3"}
 GRIDSIZE = GridSizeSmallStep
 local MapScale = 500
 
@@ -50,12 +53,23 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 		map:reset()
 	else
 		map:getBoundary()
+		ZoomTarget = 50/MapScale -- for now startzoom depends on MapScale
+		--map:camZoom(ZoomIs, 1) -- zoom a bit out
 	end
 	--utility.printTable(map.Boundary)
 	
 	-- create Environment
-	for i = 0, maxMapSubjects, 1 do
-		map.mapSubjects[i] = mapSubject:new("car", 20, 20)
+	for i = 1, maxMapSubjects, 1 do
+		--search fitting positon
+		local x = math.random(map.Boundary.minX, map.Boundary.maxX)
+		local y = math.random(map.Boundary.minY, map.Boundary.maxY)
+		while map:isPointOnRoad(x, y, 0) == true do
+			x = math.random(map.Boundary.minX, map.Boundary.maxX)
+			y = math.random(map.Boundary.minY, map.Boundary.maxY)
+		end
+		--nDifferentSubjects = SubjectList.
+		local s = mapSubject:new("car", x, y)
+		table.insert( map.subjects, s )
 	end
 end
 
@@ -67,14 +81,12 @@ function map:newFromString( mapstring )
 		map:reset()
 	else
 		map:getBoundary()
+		ZoomTarget = 50/MapScale -- startzoom depends on MapScale
+		-- create Environment
+		for i = 0, maxMapSubjects, 1 do
+			map.mapSubjects[i] = mapSubject:new("car", 20, 20)
+		end
 	end
-	--utility.printTable(map.Boundary)
-	
-	-- create Environment
-	for i = 0, maxMapSubjects, 1 do
-		map.mapSubjects[i] = mapSubject:new("car", 20, 20)
-	end
-
 end
 
 function map:update( dt )
@@ -82,21 +94,26 @@ function map:update( dt )
 	if not map.loaded then return end
 
 	cam.rot = CamOffset
-	if ZoomTime then
-		ZoomTimePassed = ZoomTimePassed + dt
-		if ZoomTimePassed < ZoomTime then
-			local amount = utility.interpolateCos(ZoomTimePassed/ZoomTime)
+	cam:zoomTo(ZoomTarget)
+	--[[if CamZoomTime then
+		CamZoomTimePassed = CamZoomTimePassed + dt
+		if CamZoomTimePassed < CamZoomTime then
+			local amount = utility.interpolateCos(CamZoomTimePassed/CamZoomTime)
 			mul = ZoomStart + (ZoomTarget - ZoomStart) * amount
 		else
-			mul = ZoomTarget
+			--mul = ZoomTarget
 			ZoomIs = ZoomTarget
-			ZoomTime = nil
+			CamZoomTime = nil
 		end
 		cam:zoomTo(mul)
 	else
 		cam:zoom(mul)
 	end
 
+		cam:zoomTo(ZoomTarget)
+	--else
+	--	cam:zoom(mul)
+	end]]
     if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
 		if CamSwingTimePassed < CamSwingTime then
@@ -116,7 +133,7 @@ function map:update( dt )
 		dy = dy*GridSizeSmallStep--*dt
 	    cam:move(dx, dy)
 	end
-    mul = 1
+    --mul = 1
 
     for id, car in pairs(map.cars) do
     	car:update(dt)
@@ -173,13 +190,12 @@ function map:draw()
 	 -- draw grid
 	map:drawGrid()
 	 -- draw player
-	for id in pairs(map.cars) do
-    	map.cars[id]:draw()
+	for id, c in pairs(map.cars) do
+    	c:draw()
     end
      -- draw environment
-    for id in pairs(map.MapSubjects) do
-    	map.MapSubjects[id]:draw()
-    	print(id)
+    for id, s in ipairs(map.subjects) do
+    	s:draw()
     end
 	cam:detach()
 end
@@ -217,7 +233,12 @@ end
 
 function map:reset()
 	map.cars = {}
-	map.MapSubjects = {}
+	map.Boundary = {	minX = math.huge,
+						minY = math.huge,
+						maxX = -math.huge,
+						maxY = -math.huge,
+					}
+	map.subjects = {}
 
 	map.triangles = {}
 	map.startLine = nil
@@ -398,18 +419,29 @@ function map:isPointOnRoad( x, y, z )
 	end
 	return false
 end
-
-
-function map:camSwingToPos(x, y, zoom, time)
+--[[
+function map:camZoom(zoom, time)
+	if (not CamZoomTime) then
+		ZoomTarget = zoom
+		ZoomStart = ZoomIs
+		CamZoomTime = time
+		CamZoomTimePassed = 0
+	end
+end]]
+function map:camSwingToPos(x, y, time) --, zoom, time)
 	if (not CamSwingTime) then
 		CamTargetX = x
 		CamTargetY = y
 		CamStartX, CamStartY = cam:pos()
 		CamSwingTime = time
-		ZoomTarget = zoom/10
-		ZoomStart = ZoomIs
-		ZoomTime = time
-		ZoomTimePassed = 0
+		--ZoomTarget = zoom or ZoomIs -- zoom = nil or false -> ZoomIs
+		--ZoomStart = ZoomIs
+		--if zoom == nil then
+		--	CamZoomTime = 0
+		--else
+		--	CamZoomTime = time
+		--end
+		--CamZoomTimePassed = 0
 		CamSwingTimePassed = 0
 	end
 end
@@ -418,10 +450,10 @@ function map:updatecam(dt)
 end
 
 function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
-	map.Boundary.minX = 999
-	map.Boundary.minY = 999
-	map.Boundary.maxX = 0
-	map.Boundary.maxY = 0
+	map.Boundary.minX = math.huge
+	map.Boundary.minY = math.huge
+	map.Boundary.maxX = -math.huge
+	map.Boundary.maxY = -math.huge
 	for key, value in pairs(map.triangles) do
 		for i = 1, 3, 1 do
 			map.Boundary.minX = math.min(map.triangles[key].vertices[i].x, map.Boundary.minX)
@@ -456,6 +488,8 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 	map.Boundary.maxX = map.Boundary.maxX - map.Boundary.maxX % GridSizeBigStep
 	map.Boundary.maxY = map.Boundary.maxY + 4*GridSizeBigStep
 	map.Boundary.maxY = map.Boundary.maxY - map.Boundary.maxY % GridSizeBigStep
+
+	print(map.Boundary.minX, map.Boundary.maxX)
 end
 
 function map:keypressed( key )
@@ -470,10 +504,12 @@ end
 
 function map:mousepressed( x, y, button )
 	if button == "wu" then
-		mul = mul + 0.1
+		--map:camZoom(.2, 1)
+		ZoomTarget = ZoomTarget + 0.01
 	end
 	if button == "wd" then
-		mul = mul - 0.1
+		--map:camZoom(-.2, 1)
+		ZoomTarget = ZoomTarget - 0.01
 	end
 end
 
@@ -490,8 +526,7 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	posX = map:TransCoordGtP(posX)
 	posY = map:TransCoordGtP(posY)
 	map.cars[id]:MoveToPos(posX, posY, 1)
-	--map:camSwingToPos(posX,posY, 1.05, 1)
-	map:camSwingToPos(posX,posY, 1, 1)
+	map:camSwingToPos(posX, posY, 1)
 
 	map:checkRoundTransition( id )
 end
