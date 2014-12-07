@@ -205,6 +205,7 @@ function map:drawCarInfo()
 	for k, c in pairs( map.cars ) do
 		c:drawInfo()
 	end
+	cam:detatch()
 end
 
 function map:drawGrid()
