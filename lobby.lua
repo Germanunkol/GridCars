@@ -201,7 +201,6 @@ function lobby:toggleReady()
 	if client then
 		self.ready = not self.ready
 		client:setUserValue( "ready", self.ready )
-		client:setUserValue( "body", math.random(NUM_CAR_IMAGES) )
 	end
 end
 
@@ -254,6 +253,7 @@ function lobby:setUserColor( user )
 		server:setUserValue( user, "red", col[1] )
 		server:setUserValue( user, "green", col[2] )
 		server:setUserValue( user, "blue", col[3] )
+		server:setUserValue( user, "body", math.random(NUM_CAR_IMAGES) )
 	end
 end
 
