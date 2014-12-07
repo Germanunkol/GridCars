@@ -1,6 +1,7 @@
 local map = {
 	triangles = {},
 	Boundary = {},
+	nullpunkt = {},
 	cars = {},
 	View = {},
 	loaded = false,
@@ -8,9 +9,6 @@ local map = {
 
 local Camera = require "lib/hump.camera"
 local Car = require "car"
-local startPos = {x = 0, y = 0}
---local CameraGolX = 0
---local CameraGolY = 0
 local cameraSpeed = 20
 local CamTargetX = 0
 local CamTargetY = 0
@@ -18,7 +16,7 @@ local CamStartX = 0
 local CamStartY = 0
 local CamSwingTime = 0
 local CamSwingTimePassed = 0
-local dx, dy, mul = 0, 0, 1
+local dx, dy, mul, ZoomTarget, ZoomStart = 0, 0, 1, 0, 1
 local cam = nil
 local CamOffset = -0.05
 local GridColorSmall = {255, 255, 160, 25}
@@ -29,11 +27,10 @@ GRIDSIZE = GridSizeSmallStep
 
 --wird einmalig bei Spielstart aufgerufen
 function map:load()
-	cam = Camera(startPos.x, startPos.x)
-	map.View.x = startPos.x
-	map.View.y = startPos.y
+	map.View.x = 0
+	map.View.y = 0
+	cam = Camera(map.View.x, map.View.y)
 		-- Testzweck hier
-		--map:new("testtrackstl.stl")
 		blue = { 0, 100, 255, 255 }
 end
 
@@ -57,6 +54,16 @@ function map:update( dt )
 	if not map.loaded then return end
 
 	cam.rot = CamOffset
+	if ZoomTime then
+		ZoomTimePassed = ZoomTimePassed + dt
+		if ZoomTimePassed < ZoomTime then
+			local amount = utility.interpolateCos(ZoomTimePassed/ZoomTime)
+			mul = ZoomStart + (ZoomTarget - ZoomStart) * amount
+		else
+			mul = ZoomTarget
+			ZoomTime = nil
+		end
+	end
     cam:zoom(mul)
 
     if CamSwingTime then
@@ -153,8 +160,6 @@ function map:import( mapstring )
 
 	map.cars = {}
 
-	-- testen, ob alles Triangel sind und keine Polygone
-	cam = Camera(startPos.x, startPos.x)
 	map.triangles = {}
 	map.startLine = nil
 	local vertices = {}
@@ -258,12 +263,16 @@ function map:isPointOnRoad( x, y, z )
 end
 
 
-function map:camSwingToPos(x,y,time)
+function map:camSwingToPos(x, y, zoom, time)
 	if (not CamSwingTime) then
 		CamTargetX = x
 		CamTargetY = y
 		CamStartX, CamStartY = cam:pos()
 		CamSwingTime = time
+		ZoomTarget = zoom
+		ZoomStart = mul
+		ZoomTime = time
+		ZoomTimePassed = 0
 		CamSwingTimePassed = 0
 	end
 end
@@ -276,7 +285,6 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 	map.Boundary.minY = 999
 	map.Boundary.maxX = 0
 	map.Boundary.maxY = 0
-	--local minX, minY, maxX, maxY = 999 , 999, 0, 0
 	for key, value in pairs(map.triangles) do
 		for i = 1, 3, 1 do
 			map.Boundary.minX = math.min(map.triangles[key].vertices[i].x, map.Boundary.minX)
@@ -285,6 +293,26 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 			map.Boundary.maxY = math.max(map.triangles[key].vertices[i].y, map.Boundary.maxY)
 		end
 	end
+	map.nullpunkt = {
+			x = map.Boundary.minX - 3*GridSizeBigStep,
+			y = map.Boundary.minY - 3*GridSizeBigStep,
+		}
+	--local mapSizePixelX = math.abs(nullpunkt.x) + map.Boundary.maxX + 3*GridSizeBigStep
+	--local mapSizePixelY = math.abs(nullpunkt.y) + map.Boundary.maxY + 3*GridSizeBigStep
+	--local mapSizeGridX = mapSizePixelX / GridSizeSmallStep
+	--local mapSizeGridY = mapSizePixelY / GridSizeSmallStep
+	--print("mapSizePixelX:", mapSizePixelX, "mapSizePixelY:", mapSizePixelY)
+	--print("mapSizeGridX:", mapSizeGridX, "mapSizeGridY:", mapSizeGridY)
+	--for i = 1, mapSizeGridX, 1 do
+	--	map.grid[i] = {}
+	--	for j = 1, mapSizeGridY, 1 do
+	--		map.grid[i][j] = {pxlX = i*GridSizeSmallStep, pxlY = j*GridSizeSmallStep}
+	--	end
+	--end
+	--utility.printTable(map.grid)
+
+	--print("Bound.: ", math.abs(map.Boundary.minX)+map.Boundary.maxX)
+	--print("gerundet: ", (math.abs(map.Boundary.minX)+map.Boundary.maxX)%GridSizeSmallStep)
 	map.Boundary.minX = map.Boundary.minX - map.Boundary.minX % GridSizeBigStep
 	map.Boundary.minY = map.Boundary.minY - map.Boundary.minY % GridSizeBigStep
 	map.Boundary.maxX = map.Boundary.maxX + GridSizeBigStep
@@ -295,8 +323,10 @@ end
 
 function map:keypressed( key )
 	if key == "p" then
-		local x = math.random(0,400)
-		local y = math.random(0,400)
+		local x = math.random(-50,50)
+		local y = math.random(-50,50)
+		--print(map.grid[x][y].pxlX, map.grid[x][y].pxlY)
+		--map:setCarPos(1, map.grid[x][y].pxlX, map.grid[x][y].pxlY)
 		map:setCarPos(1, x, y)
 	end
 end
@@ -310,11 +340,23 @@ function map:mousepressed( x, y, button )
 	end
 end
 
-function map:setCarPos(id, posX, posY) --car-id as number
-	posX = (posX + GRIDSIZE/2) - (posX + GRIDSIZE/2)%GRIDSIZE
-	posY = (posY + GRIDSIZE/2) - (posY + GRIDSIZE/2)%GRIDSIZE
+function map:TransCoordPtG(pos)
+	pos = pos / GRIDSIZE
+	return pos
+end
+function map:TransCoordGtP(pos)
+	pos = pos * GRIDSIZE
+	return pos
+end
+
+function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
+	posX = map:TransCoordGtP(posX)
+	posY = map:TransCoordGtP(posY)
 	map.cars[id]:MoveToPos(posX, posY, 1)
-	map:camSwingToPos(posX,posY,1)
+	--map:camSwingToPos(posX,posY, 1.05, 1)
+	map:camSwingToPos(posX,posY, 1, 1)
+	print("PixelCoords:", posX, posY)
+	print("Grid-pos:", map:getGridPos(posX, posY))
 end
 
 function map:getCarPos(id)
@@ -322,6 +364,12 @@ function map:getCarPos(id)
 	local y = map.cars[id].y
 	return x, y
 end
+
+function map:getGridPos(GridNx,GridNy)
+	local x = GridNx * GRIDSIZE
+	local y = GridNy * GRIDSIZE
+	return x, y
+end 
 
 function map:showCarTargets(id, show)
 	--if show == true
