@@ -1,3 +1,5 @@
+
+NUM_CAR_IMAGES = 4
 local Car = {}
 Car.__index = Car
 
@@ -14,7 +16,7 @@ function Car.update( self, dt )]]
 
 Images = require "images"
 
-function Car:new( x, y, color, angle )
+function Car:new( x, y, color, angle, bodyType )
 	local c = {}
 	setmetatable( c, Car )
 	c.x = x
@@ -25,8 +27,9 @@ function Car:new( x, y, color, angle )
 	c.color = color
 	c.scale = 0.5
 	c.body = images["car.png"]
-	c.detail = images["detail1.png"]
-	c.head = images["head1.png"]
+	bodyType = bodyType or 1
+	c.detail = images["detail" .. bodyType .. ".png"]
+	c.head = images["head" .. bodyType .. ".png"]
 	c.driveTime = nil
 	c.driveTimePassed = 0
 	c.targetX = x

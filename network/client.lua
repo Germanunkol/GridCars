@@ -91,8 +91,9 @@ function Client:received( command, msg )
 	print("cl received:", command, msg:sub(1, 50) )
 	if command == CMD.NEW_PLAYER then
 		local id, playerName = string.match( msg, "(.*)|(.*)" )
+		id = tonumber(id)
 		local user = User:new( nil, playerName, id )
-		userList[tonumber(id)] = user
+		userList[id] = user
 		numberOfUsers = numberOfUsers + 1
 	elseif command == CMD.PLAYER_LEFT then
 		local id = tonumber(msg)

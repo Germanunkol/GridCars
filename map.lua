@@ -549,7 +549,10 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	posX = map:TransCoordGtP(posX)
 	posY = map:TransCoordGtP(posY)
 	map.cars[id]:MoveToPos(posX, posY, 1)
-	map:camSwingToPos(posX, posY, 1)
+
+	if client and client:getID() == id then
+		map:camSwingToPos(posX, posY, 1)
+	end
 
 	map:checkRoundTransition( id )
 end
@@ -618,7 +621,18 @@ end
 
 function map:newCar( id, x, y, color )
 	print("new car!", id, x, y, color[1], color[2], color[3], color[4] )
-	map.cars[id] = Car:new( x, y, color, map.driveAngle )
+	local users = network:getUsers()
+	local bodyType = 1
+	print("bodytype")
+	if users then
+		print(1)
+		if users[id] then
+		print(2)
+			bodyType = users[id].customData.body
+		end
+	end
+		print("..", bodyType)
+	map.cars[id] = Car:new( x, y, color, map.driveAngle, bodyType )
 end
 
 function map:removeAllCars()
@@ -654,9 +668,9 @@ end
 function map:getCarRound( id )
 	local car = map.cars[id]
 	if car then
-		return car.round or 0
+		return car.round or -1
 	end
-	return 0
+	return -2
 end
 
 return map

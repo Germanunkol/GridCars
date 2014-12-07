@@ -43,6 +43,7 @@ function game:show()
 			if map.startPositions[id] then
 				x, y = map.startPositions[id].x, map.startPositions[id].y
 			end
+			
 			map:newCar( u.id, x, y, col )
 
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
@@ -110,12 +111,24 @@ function game:draw()
 			map:drawCarInfo()
 		end
 		game:drawUserList()
+
+		if game.winnerID then
+
+			local users = network:getUsers()
+			if users and users[game.winnerID] then
+				love.graphics.setColor( 0, 0, 0, 200 )
+				love.graphics.rectangle( "fill", love.graphics.getWidth()/4, love.graphics.getHeight()/2-20, love.graphics.getWidth()/2, 40 )
+				love.graphics.setColor( 64,255,64, 255 )
+				love.graphics.printf( users[game.winnerID].playerName .. " wins the round!",
+					love.graphics.getWidth()/4, love.graphics.getHeight()/2-10,
+					love.graphics.getWidth()/2, "center" )
+			end
+		end
 	end
 end
 
 function game:drawUserList()
 	-- Print list of users:
-	love.graphics.setColor( 255,255,255, 255 )
 	local users, num = network:getUsers()
 	local x, y = 20, 60
 	local i = 1
@@ -351,7 +364,7 @@ end
 function game:checkForWinner()
 	if server and not game.winnerID then
 		for k, u in pairs( server:getUsers() ) do
-			if map:getCarRound( u.id ) >= LAPS then
+			if map:getCarRound( u.id ) >= LAPS + 1 then
 				game.winnerID = u.id
 				print("WINNER FOUND!", u.id)
 				break
@@ -394,4 +407,5 @@ function game:zoomOut()
 	local cY = map.Boundary.minY + (map.Boundary.maxY - map.Boundary.minY)*0.5
 	map:camSwingToPos( cX, cY )
 end
+
 return game

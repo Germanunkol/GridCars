@@ -161,8 +161,10 @@ function lobby:chooseMap( levelname )
 
 	map:new( "maps/" .. levelname )
 
-	self.currentLevel = levelname
-	self:sendMap()
+	if map.loaded then
+		self.currentLevel = levelname
+		self:sendMap()
+	end
 end
 function lobby:sendMap( user )
 	-- SERVER ONLY!
@@ -199,6 +201,7 @@ function lobby:toggleReady()
 	if client then
 		self.ready = not self.ready
 		client:setUserValue( "ready", self.ready )
+		client:setUserValue( "body", math.random(NUM_CAR_IMAGES) )
 	end
 end
 
