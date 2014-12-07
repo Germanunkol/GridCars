@@ -28,8 +28,14 @@ port = 3410
 function love.load( args )
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
-	ROUND_TIME = config.getValue( "ROUND_TIME" ) or "Unknown"
+	ROUND_TIME = config.getValue( "ROUND_TIME" ) or 10
+	WIDTH = config.getValue( "WIDTH" ) or love.graphics.getWidth()
+	HEIGHT = config.getValue( "HEIGHT" ) or love.graphics.getHeight()
 	LAPS = config.getValue( "LAPS" ) or 1
+
+	if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
+		love.window.setMode( WIDTH, HEIGHT )
+	end
 
 	-- Remove any pipe symbols from the player name:
 	PLAYERNAME = string.gsub( PLAYERNAME, "|", "" )

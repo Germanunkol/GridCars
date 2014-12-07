@@ -147,7 +147,7 @@ end
 
 function game:validateCarMovement( id, x, y )
 	--SERVER ONLY!
-	if server and self.GAMESTATE == "move" then
+	if server then
 		-- if this user has not moved yet:
 		if self.usersMoved[id] == nil then
 --			map:setCarPos( id, x, y )
@@ -158,6 +158,12 @@ function game:validateCarMovement( id, x, y )
 			self.usersMoved[id] = true
 			self.newUserPositions[id] = {x=x, y=y}
 
+			-- tell this user to wait!
+			local user = server:getUsers()[id]
+			if user then
+				server:send( CMD.GAMESTATE, "wait", user )
+			end
+
 			-- Check if all users have sent their move:
 			local doneMoving = true
 			for k, u in pairs( server:getUsers() ) do
@@ -167,7 +173,9 @@ function game:validateCarMovement( id, x, y )
 				end
 			end
 			-- If all users have sent the move, go on to next round:
-			self:moveAll()
+			if doneMoving then
+				self:moveAll()
+			end
 		end
 	end
 end
