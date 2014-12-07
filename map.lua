@@ -28,9 +28,10 @@ local GridSizeSmallStep = 100
 local GridSizeBigStep = 500
 -- different Subjects:
 local maxS_OnePivot = 200  -- trees, ...
-local maxS_QuadPivot = 30 -- houses, ...
+local maxS_QuadPivot = 20 -- houses, ...
 local SubjectListOnePivot = {"Baum1", "Baum2", "Baum3", "BaumKl1", "BaumKl2", "BaumKl3"}
-local SubjectListQuadPivot = {"house1", "house2"}
+local SubjectListQuadPivot = {"Haus1", "Haus2", "Haus3", "Haus4", "HausLang1", "HausLang2", "Kidz", "Brunnen", "laternenumzug", "Markt1", "Markt2", "Schafe", "See"}
+local noShadows = {"Schafe", "See", "laternenumzug", "Markt1", "Markt2"}
 GRIDSIZE = GridSizeSmallStep
 local MapScale = 500
 
@@ -63,6 +64,47 @@ function map:newFromString( mapstring )
 		ZoomTarget = 50/MapScale -- startzoom depends on MapScale
 
 		-- create Environment
+		-- plant Subjects with big Pivots
+		for i = 1, maxS_QuadPivot, 1 do
+			--search fitting positon
+			local x = math.random(map.Boundary.minX, map.Boundary.maxX)
+			local y = math.random(map.Boundary.minY, map.Boundary.maxY)
+
+			-- check every pivot, ugly as shit but workes
+			local onRoad = 0
+			local pivotX = x + GridSizeBigStep
+			local pivotY = y + GridSizeBigStep
+			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+				onRoad = onRoad + 1
+			end
+			local pivotX = x - GridSizeBigStep
+			local pivotY = y + GridSizeBigStep
+			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+				onRoad = onRoad + 1
+			end
+			local pivotX = x + GridSizeBigStep
+			local pivotY = y - GridSizeBigStep
+			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+				onRoad = onRoad + 1
+			end
+			local pivotX = x - GridSizeBigStep
+			local pivotY = y - GridSizeBigStep
+			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+				onRoad = onRoad + 1
+			end
+			if onRoad == 0 then
+				local nSubject = math.random(1, utility.tablelength(SubjectListQuadPivot))
+				local s = mapSubject:new(SubjectListQuadPivot[nSubject], x, y) -- choose random subject
+				for key, str in pairs(noShadows) do 
+					if str == SubjectListQuadPivot[nSubject] then
+						s.castshadow = false
+						--print(SubjectListQuadPivot[nSubject], "has no shadow")
+					end
+				end
+				table.insert(map.subjects, s)
+				--s.r = math.pi
+			end
+		end
 		-- plant Subjects with one Pivot
 		for i = 1, maxS_OnePivot, 1 do
 			--search fitting positon
@@ -74,7 +116,7 @@ function map:newFromString( mapstring )
 			end
 			local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
 			local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
-			table.insert( map.subjects, s )
+			table.insert(map.subjects, s)
 		end
 	end
 
@@ -118,11 +160,13 @@ function map:update( dt )
 		end
 		cam:lookAt(CamX,CamY)
 	else
-		local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
-		local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-		dx = dx*GridSizeSmallStep--*dt
-		dy = dy*GridSizeSmallStep--*dt
-	    cam:move(dx, dy)
+		if STATE == "Game" then
+			local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
+			local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
+			dx = dx * (map.Boundary.maxX-map.Boundary.minX)/5 *dt  --GridSizeSmallStep 	--*dt
+			dy = dy * (map.Boundary.maxY-map.Boundary.minY)/5 *dt  --GridSizeSmallStep   --*dt
+		    cam:move(dx, dy)
+		end
 	end
     --mul = 1
 
@@ -495,13 +539,13 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 end
 
 function map:keypressed( key )
-	if key == "p" then
+	--if key == "p" then
 		--print(map.grid[x][y].pxlX, map.grid[x][y].pxlY)
 		--map:setCarPos(1, map.grid[x][y].pxlX, map.grid[x][y].pxlY)
-		local x = -math.random(0,5)
-		local y = math.random(0,5)
-		map:setCarPos(1, x, y)
-	end
+	--	local x = -math.random(0,5)
+	--	local y = math.random(0,5)
+	--	map:setCarPos(1, x, y)
+	--end
 end
 
 function map:mousepressed( x, y, button )
