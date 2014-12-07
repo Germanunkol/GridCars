@@ -1,6 +1,10 @@
 local 	MapSubject = {}
 MapSubject.__index = MapSubject
 
+local col_shadow = { 0, 0, 0, 100 }
+local shadowOffsetX = 8
+local shadowOffsetY = 8
+local shadowSize = 1.3
 
 Images = require "images"
 
@@ -11,12 +15,18 @@ function MapSubject:new(item, x, y)
 	o.y = y
 	o.color =  {255, 255, 255, 255}
 	--o.boundaryX
-	o.r = 0 -- rotation
-	o.body = images["car.png"]--[item .. ".png"]
+	o.r = math.random(0, math.pi*2) -- rotation
+	o.body = images[item .. ".png"]
+	o.shadow = images[item .. ".png"]
 	return o
 end
 
 function MapSubject:draw()
+	-- first draw shadow
+	love.graphics.setColor(col_shadow)
+	love.graphics.push()
+	love.graphics.draw(self.shadow, self.x+shadowOffsetX, self.y+shadowOffsetY, self.r, shadowSize, shadowSize, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
+	love.graphics.pop()
 	love.graphics.setColor(self.color)
 	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
 	 -- draw decoration
