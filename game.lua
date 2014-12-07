@@ -1,7 +1,9 @@
 local game = {
 	GAMESTATE = "",
+	SERVERGAMESTATE = "",
 	usersMoved = {},
 	newUserPositions = {},
+	crashedUsers = {},		-- remembers how many rounds the user has to wait
 	time = 0,
 	maxTime = 0,
 	timerEvent = nil,
@@ -39,6 +41,8 @@ function game:show()
 
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
 
+			crashedUsers = {}
+
 		end
 		game:startMovementRound()
 	end
@@ -47,10 +51,12 @@ end
 function game:update( dt )
 	map:update( dt )
 
+	--print(self.timerEvent)
 	-- Timer:
 	if self.timerEvent then
 		self.time = self.time + dt
 		if self.time >= self.maxTime then
+			print("->fired")
 			self.timerEvent()
 			self.timerEvent = nil
 			self.time = 0
@@ -84,8 +90,14 @@ function game:drawUserList()
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
-			if not u.customData.moved == true then
+			-- Show crashed users in list:
+			if u.customData.crashed == true then
 				love.graphics.setColor( 255, 128, 128, 255 )
+				local dx = love.graphics.getFont():getWidth( u.playerName ) + 30
+				local rounds = u.customData.waitingRounds or 1
+				love.graphics.print( "[Crashed! (" .. rounds .. ")]", x + dx, y )
+			elseif not u.customData.moved == true then
+				love.graphics.setColor( 255, 255, 128, 255 )
 				local dx = love.graphics.getFont():getWidth( u.playerName ) + 30
 				love.graphics.print( "[Waiting for move]", x + dx, y )
 			end
@@ -149,7 +161,6 @@ end
 function game:sendNewCarPosition( x, y )
 	-- CLIENT ONLY!
 	if client then
-		print("SENDING POSITION")
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
 
 		map:setCarNextMovement( client:getID(), x, y )
@@ -158,13 +169,38 @@ end
 
 function game:startMovementRound()
 	--SERVER ONLY!
+	print("starting new round.")
 	if server then
-		server:send( CMD.GAMESTATE, "move" )
-		self.GAMESTATE = "move"
+		self.SERVERGAMESTATE = "move"
 		game.usersMoved = {}
 		for k, u in pairs( server:getUsers() ) do
-			server:setUserValue( u, "moved", false )
+
+			-- On all crashed users, count one down because we're starting a new round...
+			if game.crashedUsers[u.id] then
+				game.crashedUsers[u.id] = game.crashedUsers[u.id] - 1
+				if game.crashedUsers[u.id] <= 0 then
+					-- If I've waited long enough, let me rejoin the game:
+					server:setUserValue( u, "crashed", false )
+					game.crashedUsers[u.id] = nil
+				end
+			end
+
+			-- If a user crashed, let everyone know:
+			if game.crashedUsers[u.id] then
+				server:setUserValue( u, "waitingRounds", game.crashedUsers[u.id] )
+				server:setUserValue( u, "crashed", true )
+				-- Consider this user to be finished...
+				game.usersMoved[u.id] = true
+			else
+				-- Only let users move if they haven't crashed:
+				server:send( CMD.GAMESTATE, "move", u )
+				server:setUserValue( u, "moved", false )
+			end
+			print( u.id, "crashed?", game.crashedUsers[u.id], game.usersMoved[u.id] )
 		end
+
+		-- If all users crashed, continue:
+		game:checkForRoundEnd()
 	end
 end
 
@@ -180,6 +216,7 @@ function game:moveAll()
 		game:startMovementRound()
 	end
 	self.maxTime = 1.2
+	print("event", self.maxTime)
 end
 
 function game:validateCarMovement( id, x, y )
@@ -190,7 +227,44 @@ function game:validateCarMovement( id, x, y )
 --			map:setCarPos( id, x, y )
 			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
-			local newX, newY = map:getCarPos( id )
+			local oldX, oldY = map:getCarPos( id )
+	
+
+			-- Step along the path and check if there's a collision. If so, stop there.
+			local p = {x = oldX, y = oldY }
+			local diff = {x = x-oldX, y = y-oldY}
+			local dist = utility.length( diff )
+			diff = utility.normalize(diff)
+
+			-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
+			local crashed, crashSiteFound = false, false
+			for l = 0.5, dist, 0.5 do
+				p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
+				if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+					crashed = true
+				
+					-- remembers how many rounds the user has to wait
+					game.crashedUsers[id] = SKIP_ROUNDS_ON_CRASH + 1
+					-- Step backwards:
+					for lBack = l, 0, -0.5 do
+						p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
+						p.x = math.floor(p.x)
+						p.y = math.floor(p.y)
+						print("testing", p.x, p.y)
+						if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+							crashSiteFound = true
+							x, y = p.x, p.y
+							break
+						end
+					end
+					break
+				end
+			end
+
+			if crashed and not crashSiteFound then
+				x, y = oldX, oldY
+			end
+
 			self.usersMoved[id] = true
 			self.newUserPositions[id] = {x=x, y=y}
 
@@ -202,20 +276,26 @@ function game:validateCarMovement( id, x, y )
 				server:setUserValue( user, "moved", true )
 			end
 
-
-			-- Check if all users have sent their move:
-			local doneMoving = true
-			for k, u in pairs( server:getUsers() ) do
-				if not self.usersMoved[u.id] then
-					doneMoving = false
-					break
-				end
-			end
-			-- If all users have sent the move, go on to next round:
-			if doneMoving then
-				self:moveAll()
-			end
+			game:checkForRoundEnd()
 		end
+	end
+end
+
+function game:checkForRoundEnd()
+	-- Check if all users have sent their move:
+	print("DONE with the round?")
+	local doneMoving = true
+	for k, u in pairs( server:getUsers() ) do
+		if not self.usersMoved[u.id] then
+			print("not done moving", u.id)
+			doneMoving = false
+			break
+		end
+	end
+	-- If all users have sent the move, go on to next round:
+	if doneMoving then
+		print("\tdone.")
+		self:moveAll()
 	end
 end
 
