@@ -4,14 +4,14 @@ local game = {
 	newUserPositions = {},
 	time = 0,
 	maxTime = 0,
-	timerEvent = nil
+	timerEvent = nil,
+	roundTime = 10,
 }
 
 -- Possible gamestates:
 -- "startup": camera should move to start line
 -- "move": players are allowed to make their move.
--- "animation": cars are animating their movement
--- "waiting": waiting for server or other players
+-- "wait": waiting for server or other players, or for animtion
 
 function game:init()
 end
