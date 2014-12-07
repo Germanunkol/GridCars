@@ -62,6 +62,7 @@ function game:show()
 	-- Do a cool camera startup swing:
 	map:camSwingAbort()
 	map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
+	map:camZoom( 1.1, 1.5)
 	self.timerEvent2 = function()
 		if client then
 			game:camToCar( client:getID() )
@@ -76,6 +77,7 @@ function game:camToCar( id )
 		x = x*GRIDSIZE
 		y = y*GRIDSIZE
 		map:camSwingToPos( x, y, 1 )
+		map:camZoom( 0.6, 1 )
 	end
 end
 

@@ -76,6 +76,8 @@ function lobby:update( dt )
 			local x = math.random( map.Boundary.minX, map.Boundary.maxX )
 			local y = math.random( map.Boundary.minY, map.Boundary.maxY )
 			map:camSwingToPos( x, y, 2 )
+
+			map:camZoom( 0.05 + math.random( 0, 1 )*0.05, 2)
 			self.camMoveTime = self.camMoveTime - 4
 		end
 	end

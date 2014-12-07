@@ -143,12 +143,10 @@ function map:update( dt )
 			CamZoomTime = nil
 		end
 		cam:zoomTo(ZoomIs)
+		print(ZoomIs, ZoomTarget)
 	--else
 		--cam:zoom(mul)
 	end
-	print("ZoomIs:", ZoomIs)
-	print("ZoomStart:", ZoomStart)
-	print("ZoomTarget:", ZoomTarget)
 
     if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
@@ -485,9 +483,9 @@ function map:isPointOnRoad( x, y, z )
 end
 
 function map:camZoom(zoom, time)
-	if (not CamSwingTime) then
+	if (not CamZoomTime) then
 		ZoomTarget = zoom
-		ZoomStart = ZoomIs
+		ZoomStart = cam.scale
 		CamZoomTime = time
 		CamZoomTimePassed = 0
 	end
@@ -512,6 +510,7 @@ end
 
 function map:camSwingAbort()
 	CamSwingTime = nil
+	CamZoomTime = nil
 end
 
 function map:updatecam(dt)
@@ -571,14 +570,24 @@ function map:keypressed( key )
 end
 
 function map:mousepressed( x, y, button )
-	if button == "wu" then
-		ZoomTarget = math.min(ZoomTarget + 0.1, 1)
-		map:camZoom(ZoomTarget, 1)
+	if button == "wd" then
+		CamZoomTime = nil
+		cam:zoom( 0.9 )
+		if cam.scale < 0.01 then
+			cam.scale = 0.01
+		end
+		--ZoomTarget = math.min(ZoomTarget + 0.1, 1)
+		--map:camZoom(ZoomTarget, 1)
 		--ZoomTarget = ZoomTarget + 0.01
 	end
-	if button == "wd" then
-		ZoomTarget = math.max(ZoomTarget - 0.1, 0.1)
-		map:camZoom(ZoomTarget, 1)
+	if button == "wu" then
+		CamZoomTime = nil
+		cam:zoom( 1.1 )
+		if cam.scale > 1.5 then
+			cam.scale = 1.5
+		end
+		--ZoomTarget = math.max(ZoomTarget - 0.1, 0.1)
+		--map:camZoom(ZoomTarget, 1)
 		--ZoomTarget = ZoomTarget - 0.01
 	end
 end
