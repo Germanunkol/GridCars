@@ -39,8 +39,6 @@ function map:load()
 	map.View.x = 0
 	map.View.y = 0
 	cam = Camera(map.View.x, map.View.y)
-		-- Testzweck hier
-		blue = { 0, 100, 255, 255 }
 end
 
 --wird zum laden neuer Maps öfters aufgerufen
@@ -54,6 +52,7 @@ function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
 end
 
 function map:newFromString( mapstring )
+
 	local success, msg = map:import(mapstring)
 	if not success then
 		print("error loading map: ", msg)
@@ -62,22 +61,23 @@ function map:newFromString( mapstring )
 	else
 		map:getBoundary()
 		ZoomTarget = 50/MapScale -- startzoom depends on MapScale
+
+		-- create Environment
+		-- plant Subjects with one Pivot
+		for i = 1, maxS_OnePivot, 1 do
+			--search fitting positon
+			local x = math.random(map.Boundary.minX, map.Boundary.maxX)
+			local y = math.random(map.Boundary.minY, map.Boundary.maxY)
+			--[[while map:isPointOnRoad(x, y, 0) == true do
+				x = math.random(map.Boundary.minX, map.Boundary.maxX)
+				y = math.random(map.Boundary.minY, map.Boundary.maxY)
+			end]]
+			local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
+			local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
+			table.insert( map.subjects, s )
+		end
 	end
 
-	-- create Environment
-	-- plant Subjects with one Pivot
-	for i = 1, maxS_OnePivot, 1 do
-		--search fitting positon
-		local x = math.random(map.Boundary.minX, map.Boundary.maxX)
-		local y = math.random(map.Boundary.minY, map.Boundary.maxY)
-		while map:isPointOnRoad(x, y, 0) == true do
-			x = math.random(map.Boundary.minX, map.Boundary.maxX)
-			y = math.random(map.Boundary.minY, map.Boundary.maxY)
-		end
-		local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
-		local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
-		table.insert( map.subjects, s )
-	end
 end
 
 function map:update( dt )
@@ -198,6 +198,13 @@ function map:drawTargetPoints( id )
 		car:drawTargetPoints()	
 	end
 	cam:detach()
+end
+
+function map:drawCarInfo()
+	cam:attach()
+	for k, c in pairs( map.cars ) do
+		c:drawInfo()
+	end
 end
 
 function map:drawGrid()
@@ -371,14 +378,12 @@ function map:import( mapstring )
 
 	if server then
 		if #map.startPositions < MAX_PLAYERS then
-		--	return false, "Map only has " .. #map.startPositions .. " start positions, but you allow up to " .. MAX_PLAYERS .. " players. Change MAX_PLAYERS in config.txt."
+			return false, "Map only has " .. #map.startPositions .. " start positions, but you allow up to " .. MAX_PLAYERS .. " players. Change MAX_PLAYERS in config.txt."
 		end
 	end
 
-
 	table.sort( map.startPositions, sortStartPositions )
 
-	map.cars[1] = Car:new( 50, 50, blue)
 	map.loaded = true
 	return true
 end
@@ -391,8 +396,6 @@ function sortStartPositions( a, b )
 		else
 			return false
 		end
-	elseif a then
-		return true
 	else
 		return false
 	end

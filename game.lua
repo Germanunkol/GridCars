@@ -31,9 +31,12 @@ function game:show()
 				255
 			}
 
-			local x, y = 0, 0
+			local x, y = 0,0
+			if map.startPositions[id] then
+				local x, y = map.startPositions[id].x, map.startPositions[id].y
+			end
 			map:newCar( u.id, 0, 0, col )
-			
+
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
 
 		end
@@ -60,6 +63,9 @@ function game:draw()
 		map:draw()
 		if self.GAMESTATE == "move" then
 			map:drawTargetPoints( client:getID() )
+		end
+		if love.keyboard.isDown( " " ) then
+			map:drawCarInfo()
 		end
 		lobby:drawUserList()
 	end
