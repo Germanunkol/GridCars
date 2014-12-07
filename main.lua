@@ -29,11 +29,12 @@ port = 3410
 function love.load( args )
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
-	ROUND_TIME = config.getValue( "ROUND_TIME" ) or 10
-	WIDTH = config.getValue( "WIDTH" ) or love.graphics.getWidth()
-	HEIGHT = config.getValue( "HEIGHT" ) or love.graphics.getHeight()
-	LAPS = config.getValue( "LAPS" ) or 1
-	MAX_PLAYERS = config.getValue( "MAX_PLAYERS" ) or 16
+	ROUND_TIME = tonumber(config.getValue( "ROUND_TIME" )) or 10
+	WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
+	HEIGHT = tonumber(config.getValue( "HEIGHT" )) or love.graphics.getHeight()
+	LAPS = tonumber(config.getValue( "LAPS" )) or 1
+	MAX_PLAYERS = tonumber(config.getValue( "MAX_PLAYERS" )) or 16
+	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
 
 	if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
 		love.window.setMode( WIDTH, HEIGHT )

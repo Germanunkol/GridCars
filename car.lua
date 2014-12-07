@@ -27,12 +27,12 @@ function Car:new( x, y, color )
 	c.body = images["car.png"]
 	c.detail = images["detail1.png"]
 	c.head = images["head1.png"]
-	c.driveTime = 0
+	c.driveTime = nil
 	c.driveTimePassed = 0
-	c.targetX = 0
-	c.targetY = 0
-	c.startX = 0
-	c.startY = 0
+	c.targetX = x
+	c.targetY = y
+	c.startX = x
+	c.startY = y
 	c.route = {}
 	c.routeIndex = 1
 	c.closerToEnd = true
@@ -47,8 +47,9 @@ function Car:draw()
 		for i = self.routeIndex, 3, -1 do
 			love.graphics.line(self.route[i-1][1], self.route[i-1][2],
 				self.route[i-2][1], self.route[i-2][2])
-		end
+			end
 	end
+	love.graphics.setColor(self.color)
 	if self.routeIndex > 1 then
 		love.graphics.line(self.route[self.routeIndex-1][1], self.route[self.routeIndex-1][2],
 				self.x, self.y)
@@ -66,6 +67,9 @@ function Car:draw()
 	love.graphics.draw(self.head, self.x, self.y, self.r, 1, 1, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
 	love.graphics.pop()
 
+end
+
+function Car:drawInfo()
 	local info = "Round: " .. self.round
 	info = info .. "\nx: " .. self.targetX
 	info = info .. "\ny: " .. self.targetY
@@ -86,7 +90,7 @@ function Car:drawTargetPoints()
 		self.x+self.vX+GRIDSIZE, self.y+self.vY+GRIDSIZE,
 		self.x+self.vX+GRIDSIZE, self.y+self.vY-GRIDSIZE)
 
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4] )
+	love.graphics.setColor( self.color )
 
 	for x = -1, 1 do
 		for y = -1, 1 do
@@ -97,6 +101,12 @@ function Car:drawTargetPoints()
 		end
 	end
 end
+
+	if self.route[self.routeIndex-1] and self.routeIndex > 1 then
+		love.graphics.circle( "fill",
+			self.route[self.routeIndex-1][1],
+			self.route[self.routeIndex-1][2], 20 )
+		end
 end
 
 function Car:update( dt )
@@ -118,6 +128,10 @@ function Car:MoveToPos( x, y, time )
 	if (not self.driveTime) then
 		self.route[self.routeIndex] = {self.x, self.y}
 		self.routeIndex = self.routeIndex + 1
+		if self.routeIndex > TRAIL_LENGTH then
+			self.routeIndex = self.routeIndex - 1
+			table.remove( self.route, 1 )
+		end
 		self.targetX = x
 		self.targetY = y
 		self.vX = x - self.x
