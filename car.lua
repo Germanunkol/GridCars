@@ -35,9 +35,16 @@ end
 function Car:draw()
 	love.graphics.setColor(self.color)
 	-- draw driven route
---	for posIndex in ipairs(self.route) do
---		love.graphics.line( self.route[posIndex][1], self.route[posIndex][2])
-	--end
+	if self.routeIndex > 2 then
+		for i = self.routeIndex, 3, -1 do
+			love.graphics.line(self.route[i-1][1], self.route[i-1][2],
+				self.route[i-2][1], self.route[i-2][2])
+		end
+	end
+	if self.routeIndex > 1 then
+		love.graphics.line(self.route[self.routeIndex-1][1], self.route[self.routeIndex-1][2],
+				self.x, self.y)
+	end
 	-- draw targets to move
 	if self.showTarget then
 		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4]/3)
