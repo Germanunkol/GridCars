@@ -129,7 +129,8 @@ function map:draw()
 			self.startTriangle[3].y
 		)
 		love.graphics.setColor( 150, 150, 150, 255 )
-		love.graphics.line( self.startLine )
+		love.graphics.line( self.startLine.p1.x, self.startLine.p1.y,
+				self.startLine.p2.x, self.startLine.p2.y )
 		love.graphics.circle( "fill", self.startProjPoint.x, self.startProjPoint.y, 5 )
 
 		love.graphics.setColor( 0, 255,0, 255 )
@@ -251,11 +252,11 @@ function map:import( mapstring )
 						end
 						
 						-- This is the line the players need to cross in order to win
-						map.startLine = { p1.x, p1.y, p2.x, p2.y }
+						map.startLine = { p1 = p1, p2 = p2 }
 						map.startTriangle = { p1, p2, p3 }
 
 						if whichSideOfLine( p1,p2, p3 ) == 0 then
-							map.startLine = 0
+							map.startLine = nil
 							return false, "Start line is not a proper triangle."
 						end
 
@@ -401,7 +402,8 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	map.cars[id]:MoveToPos(posX, posY, 1)
 	--map:camSwingToPos(posX,posY, 1.05, 1)
 	map:camSwingToPos(posX,posY, 1, 1)
-	--print("Grid-pos:", map:getGridPos(posX, posY))
+
+	map:checkRoundTransition( id )
 end
 
 function map:getCarPos(id)
@@ -427,8 +429,27 @@ end
 
 -- Check if a car has moved into a new round:
 function map:checkRoundTransition( id )
-	local x = map.car[id].x
-	local y = map.car[id].y
+
+	local car = map.cars[id]
+	local p = { x = car.targetX, y = car.targetY }
+
+	local distToEnd = utility.dist( p, map.endPoint )
+	local distToStart = utility.dist( p, map.startPoint )
+
+	print( "dist to end:", distToEnd)
+	print( "dist to start:", distToStart)
+	
+	if car.closerToEnd then
+		if distToStart < distToEnd then
+			car.closerToEnd = false
+			car.round = car.round + 1
+		end
+	else
+		if distToEnd < distToStart then
+			car.closerToEnd = true
+			car.round = car.round - 1
+		end
+	end
 end
 
 return map

@@ -8,6 +8,7 @@ map = require( "map" )
 ui = require( "lib/punchUI" )
 menu = require( "menu" )
 utility = require( "utility" )		-- helper functions
+images = require( "images" )	-- loads all images.
 
 server = nil
 client = nil
@@ -26,6 +27,7 @@ function love.load( args )
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
 	print( "Player name: '" .. PLAYERNAME .. "'" )
 
+	images:load()	-- preload all images
 	chat:init()
 	lobby:init()
 	menu:init()

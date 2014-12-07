@@ -29,6 +29,8 @@ function Car:new( x, y, color )
 	c.startY = 0
 	c.route = {}
 	c.routeIndex = 1
+	c.closerToEnd = true
+	c.round = 0
 	return c
 end
 
@@ -59,6 +61,15 @@ function Car:draw()
 	 -- draw car
 	 -- draw decoration
 	 -- draw heads
+
+	local info = "Round: " .. self.round
+	info = info .. "\nx: " .. self.targetX
+	info = info .. "\ny: " .. self.targetY
+	local w, numLines = love.graphics.getFont():getWrap( info, 70 )
+	love.graphics.setColor( 0,0,0,128 )
+	love.graphics.rectangle( "fill", self.x, self.y + 10, 80, 10 + numLines*love.graphics.getFont():getHeight() )
+	love.graphics.setColor( self.color )
+	love.graphics.printf( info, self.x + 5, self.y + 15, 70 )
 end
 
 function Car:update( dt )
@@ -78,7 +89,7 @@ function Car:update( dt )
 	end
 end
 
-function Car:MoveToPos( x, y, time)
+function Car:MoveToPos( x, y, time )
 	if (not self.driveTime) then
 		self.route[self.routeIndex] = {self.x, self.y}
 		self.routeIndex = self.routeIndex + 1
