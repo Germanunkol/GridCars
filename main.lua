@@ -19,6 +19,8 @@ CMD = {
 	MAP = 129,
 	START_GAME = 130,
 	GAMESTATE = 131,
+	NEW_CAR = 132,
+	MOVE_CAR = 133,
 }
 
 port = 3410
@@ -26,6 +28,11 @@ port = 3410
 function love.load( args )
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
+	ROUND_TIME = config.getValue( "ROUND_TIME" ) or "Unknown"
+	LAPS = config.getValue( "LAPS" ) or 1
+
+	-- Remove any pipe symbols from the player name:
+	PLAYERNAME = string.gsub( PLAYERNAME, "|", "" )
 	print( "Player name: '" .. PLAYERNAME .. "'" )
 
 	images:load()	-- preload all images
@@ -74,6 +81,7 @@ function setServerCallbacks( server )
 	server.callbacks.received = serverReceived
 	server.callbacks.synchronize = synchronize
 	server.callbacks.authorize = function( user ) return lobby:authorize( user ) end
+	server.callbacks.userFullyConnected = function( user ) lobby:setUserColor( user ) end
 end
 function setClientCallbacks( client )
 	-- set client callbacks:
@@ -132,6 +140,9 @@ end
 
 function love.mousepressed( x, y, button )
 	map:mousepressed( x, y, button )
+	if STATE == "Game" then
+		game:mousepressed( x, y, button )
+	end
 end
 
 function love.draw()
@@ -157,6 +168,9 @@ function serverReceived( command, msg, user )
 	if command == CMD.CHAT then
 		-- broadcast chat messages on to all players
 		server:send( command, user.playerName .. ": " .. msg )
+	elseif command == CMD.MOVE_CAR then
+		local x, y = msg:match( "(.*)|(.*)" )
+		game:validateCarMovement( user.id, x, y )
 	end
 end
 
@@ -169,5 +183,10 @@ function clientReceived( command, msg )
 		game:show()
 	elseif command == CMD.GAMESTATE then
 		game:setState( msg )
+	elseif command == CMD.NEW_CAR then
+		game:newCar( msg )
+	elseif command == CMD.MOVE_CAR then
+		print("moving car on client")
+		game:moveCar( msg )
 	end
 end

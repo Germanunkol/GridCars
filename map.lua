@@ -107,11 +107,11 @@ function map:update( dt )
 
     for id, car in pairs(map.cars) do
     	car:update(dt)
-		if self:isPointOnRoad( car.x, car.y, 0 ) then
+		--[[if self:isPointOnRoad( car.x, car.y, 0 ) then
 			car.color = { 255, 128, 128, 255 }
 		else
 			car.color = blue
-		end
+		end]]
     end
 end
 
@@ -171,11 +171,13 @@ function map:draw()
 	cam:detach()
 end
 
-function map:drawCarPoints( id )
+function map:drawTargetPoints( id )
+	cam:attach()
 	local car = map.cars[id]
 	if car then
-		
+		car:drawTargetPoints()	
 	end
+	cam:detach()
 end
 
 function map:drawGrid()
@@ -487,6 +489,35 @@ function map:checkRoundTransition( id )
 			end
 		end
 	end
+end
+
+function map:newCar( id, x, y, color )
+	print("new car!", id, color[1], color[2], color[3], color[4] )
+	map.cars[id] = Car:new( x, y, color )
+end
+
+function map:removeAllCars()
+	map.cars = {}
+end
+
+-- Turn screen coordinates into world (pixel) coordinates:
+function map:screenToWorld( x, y )
+	local wX, wY = cam:worldCoords( x, y )
+	return wX, wY
+end
+
+-- Turn screen coordinates into grid coordinates:
+function map:screenToGrid( x, y )
+	local wX, wY = cam:worldCoords( x, y )
+	return self:TransCoordPtG(wX), self:TransCoordPtG(wY)
+end
+
+function map:clickAtTargetPosition( id, x, y )
+	local car = map.cars[id]
+	if car then
+		return car:isThisAValidTargetPos( x, y )
+	end
+	return false
 end
 
 return map
