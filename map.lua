@@ -68,10 +68,10 @@ function map:newFromString( mapstring )
 			--search fitting positon
 			local x = math.random(map.Boundary.minX, map.Boundary.maxX)
 			local y = math.random(map.Boundary.minY, map.Boundary.maxY)
-			--[[while map:isPointOnRoad(x, y, 0) == true do
+			while map:isPointOnRoad(x, y, 0) == true do
 				x = math.random(map.Boundary.minX, map.Boundary.maxX)
 				y = math.random(map.Boundary.minY, map.Boundary.maxY)
-			end]]
+			end
 			local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
 			local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
 			table.insert( map.subjects, s )
@@ -286,17 +286,21 @@ function map:import( mapstring )
 				if vertices[counterV].z == 0 and vertices[counterV-1].z == 0 and
 						vertices[counterV-2].z == 0 then
 
-					map.triangles[counterT] = {}
-					map.triangles[counterT].vertices = {
+					local newTriangle = {
 						vertices[counterV-2],
 						vertices[counterV-1],
 						vertices[counterV]
 					}
-					
 
+					local area = utility.triangleArea( newTriangle )
 
-					--utility.printTable( map.triangles )
-					counterT = counterT + 1
+					print("Area", area)
+					if area > 0 then
+						counterT = counterT + 1
+						map.triangles[counterT] = {}
+						map.triangles[counterT].vertices = newTriangle
+					end
+
 				elseif vertices[counterV].z == MapScale and vertices[counterV-1].z == MapScale and
 						vertices[counterV-2].z == MapScale then
 					-- Vertices on layer z = 1 are on the higher layer...
