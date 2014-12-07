@@ -533,6 +533,7 @@ function map:setCarPos(id, posX, posY) --car-id as number, pos as Gridpos
 	map:camSwingToPos(posX, posY, 1)
 
 	map:checkRoundTransition( id )
+	print(posX, posY)
 end
 
 function map:setCarPosDirectly(id, posX, posY) --car-id as number, pos as Gridpos
