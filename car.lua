@@ -13,6 +13,7 @@ function Car:update( dt )
 function Car.update( self, dt )]]
 
 Images = require "images"
+local headoffsetMax = 10
 
 function Car:new( x, y, color )
 	local c = {}
@@ -37,6 +38,8 @@ function Car:new( x, y, color )
 	c.routeIndex = 1
 	c.closerToEnd = true
 	c.round = 0
+	c.headX = x
+	c.headY = y
 	return c
 end
 
@@ -64,7 +67,7 @@ function Car:draw()
 	 -- draw decoration
 	love.graphics.draw(self.detail, self.x, self.y, self.r, 1, 1, self.detail:getWidth()/2, self.detail:getHeight()/2, 0, 0)
 	 -- draw heads
-	love.graphics.draw(self.head, self.x, self.y, self.r, 1, 1, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
+	love.graphics.draw(self.head, self.headX, self.headY, self.r, 1, 1, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
 	love.graphics.pop()
 
 end
@@ -116,12 +119,20 @@ function Car:update( dt )
 			local amount = self.driveTimePassed/self.driveTime
 			self.x = self.startX + (self.targetX - self.startX) * amount
 			self.y = self.startY + (self.targetY - self.startY) * amount
+			dist = math.sqrt((self.headX - self.x)*(self.headX - self.x) + (self.headY - self.y)*(self.headY - self.y))
+			if dist > headoffsetMax then
+				self.headX = self.x
+				self.headY = self.y
+			end
 		else
 			self.x = self.targetX
 			self.y = self.targetY
+			self.headX = self.targetX
+			self.headY = self.targetY
 			self.driveTime = nil
 		end
 	end
+	--print("headoffset:", headoffset)
 end
 
 function Car:MoveToPos( x, y, time )

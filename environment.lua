@@ -27,15 +27,10 @@ function MapSubject:draw()
 	-- first draw shadow
 	if self.castshadow then
 		love.graphics.setColor(col_shadow)
-		--print(self.name)
 		love.graphics.draw(self.shadow, self.x+shadowOffsetX, self.y+shadowOffsetY, self.r, shadowSize, shadowSize, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
 	end
 	love.graphics.setColor(self.color)
 	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
-	 -- draw decoration
-	--love.graphics.draw(self.detail, self.x, self.y, self.r, 1, 1, self.detail:getWidth()/2, self.detail:getHeight()/2, 0, 0)
-	 -- draw heads
-	--love.graphics.draw(self.head, self.x, self.y, self.r, 1, 1, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
 end
 
 function MapSubject:update( dt )

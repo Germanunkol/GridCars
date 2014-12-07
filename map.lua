@@ -19,7 +19,7 @@ local CamZoomTime = 0
 local CamSwingTime = 0
 local CamZoomTimePassed = 0
 local CamSwingTimePassed = 0
-local dx, dy, ZoomIs, mul, ZoomTarget, ZoomStart = 0, 0, 1, 1, 0, 1
+local dx, dy, ZoomIs, mul, ZoomTarget, ZoomStart = 0, 0, 1, 1, 0.1, 0.1
 local cam = nil
 local CamOffset = -0.05
 local GridColorSmall = {255, 255, 160, 25}
@@ -30,8 +30,8 @@ local GridSizeBigStep = 500
 local maxS_OnePivot = 200  -- trees, ...
 local maxS_QuadPivot = 20 -- houses, ...
 local SubjectListOnePivot = {"Baum1", "Baum2", "Baum3", "BaumKl1", "BaumKl2", "BaumKl3"}
-local SubjectListQuadPivot = {"Haus1", "Haus2", "Haus3", "Haus4", "HausLang1", "HausLang2", "Kidz1", "Brunnen", "laternenumzug", "Markt1", "Markt2", "Schafe", "See"}
-local noShadows = {"Schafe", "See", "laternenumzug", "Markt1", "Markt2"}
+local SubjectListQuadPivot = {"Haus1", "Haus2", "Haus3", "Haus4", "HausLang1", "HausLang2", "Kidz1", "Brunnen", "laternenumzug", "Markt1", "Markt2", "Schafe", "See", "Feld", "Traktor"}
+local noShadows = {"Schafe", "See", "laternenumzug", "Markt1", "Markt2", "Kidz1", "Feld", "Traktor"}
 GRIDSIZE = GridSizeSmallStep
 local MapScale = 500
 
@@ -63,7 +63,9 @@ function map:newFromString( mapstring )
 		map:reset()
 	else
 		map:getBoundary()
-		ZoomTarget = 50/MapScale -- startzoom depends on MapScale
+		map:camZoom(0.02, 1)
+
+		--ZoomTarget = 50/MapScale -- startzoom depends on MapScale
 
 		-- create Environment
 		-- plant Subjects with big Pivots
@@ -129,26 +131,25 @@ function map:update( dt )
 	if not map.loaded then return end
 
 	cam.rot = CamOffset
-	cam:zoomTo(ZoomTarget)
-	--[[if CamZoomTime then
+	--cam:zoomTo(ZoomTarget)
+	if CamZoomTime then
 		CamZoomTimePassed = CamZoomTimePassed + dt
 		if CamZoomTimePassed < CamZoomTime then
 			local amount = utility.interpolateCos(CamZoomTimePassed/CamZoomTime)
-			mul = ZoomStart + (ZoomTarget - ZoomStart) * amount
+			ZoomIs = ZoomStart + (ZoomTarget - ZoomStart) * amount
 		else
 			--mul = ZoomTarget
 			ZoomIs = ZoomTarget
 			CamZoomTime = nil
 		end
-		cam:zoomTo(mul)
-	else
-		cam:zoom(mul)
-	end
-
-		cam:zoomTo(ZoomTarget)
+		cam:zoomTo(ZoomIs)
 	--else
-	--	cam:zoom(mul)
-	end]]
+		--cam:zoom(mul)
+	end
+	print("ZoomIs:", ZoomIs)
+	print("ZoomStart:", ZoomStart)
+	print("ZoomTarget:", ZoomTarget)
+
     if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
 		if CamSwingTimePassed < CamSwingTime then
@@ -467,15 +468,15 @@ function map:isPointOnRoad( x, y, z )
 	end
 	return false
 end
---[[
+
 function map:camZoom(zoom, time)
-	if (not CamZoomTime) then
+	if (not CamSwingTime) then
 		ZoomTarget = zoom
 		ZoomStart = ZoomIs
 		CamZoomTime = time
 		CamZoomTimePassed = 0
 	end
-end]]
+end
 function map:camSwingToPos(x, y, time) --, zoom, time)
 	if (not CamSwingTime) then
 		CamTargetX = x
@@ -552,12 +553,14 @@ end
 
 function map:mousepressed( x, y, button )
 	if button == "wu" then
-		--map:camZoom(.2, 1)
-		ZoomTarget = ZoomTarget + 0.01
+		ZoomTarget = math.min(ZoomTarget + 0.1, 1)
+		map:camZoom(ZoomTarget, 1)
+		--ZoomTarget = ZoomTarget + 0.01
 	end
 	if button == "wd" then
-		--map:camZoom(-.2, 1)
-		ZoomTarget = ZoomTarget - 0.01
+		ZoomTarget = math.max(ZoomTarget - 0.1, 0.1)
+		map:camZoom(ZoomTarget, 1)
+		--ZoomTarget = ZoomTarget - 0.01
 	end
 end
 
