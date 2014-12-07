@@ -118,6 +118,10 @@ function Car:MoveToPos( x, y, time )
 	if (not self.driveTime) then
 		self.route[self.routeIndex] = {self.x, self.y}
 		self.routeIndex = self.routeIndex + 1
+		if self.routeIndex > TRAIL_LENGTH then
+			self.routeIndex = self.routeIndex - 1
+			table.remove( self.route, 1 )
+		end
 		self.targetX = x
 		self.targetY = y
 		self.vX = x - self.x
