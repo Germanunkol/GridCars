@@ -7,7 +7,6 @@
 	love.filesystem.append( "log.txt", str .. "\r\n" )
 end]]
 
-
 network = require( "network/network" )
 config = require( "config" )
 game = require( "game" )

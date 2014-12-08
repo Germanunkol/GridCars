@@ -4,8 +4,8 @@ package.path = package.path .. ";" .. _PATH .. "/?.lua"
 
 local socket = require("socket")
 
-local User = require( "user" )
-local CMD = require( "commands" )
+local User = require( "network/user" )
+local CMD = require( "network/commands" )
 
 local Client = {}
 Client.__index = Client

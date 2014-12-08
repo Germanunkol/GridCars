@@ -19,7 +19,11 @@ function menu:init()
 	y = y + 30
 	scr:addText( "centerPanel", "welcometxt", 10, y, nil, 7, "Start a server or join someone else's server. Press 'H' for help.")
 
-	y = y + 80
+	y = y + 40
+	scr:addInput( "centerPanel", "name", 10, y, nil, 20, "p", menu.playername )
+
+	y = y + 40
+
 	scr:addText( "centerPanel", "h1", 10, y, nil, 7, "{h}Server:")
 	y = y + 20
 	scr:addFunction( "centerPanel", "server", 10, y, "Start Server", "s", menu.startServer )
@@ -36,6 +40,14 @@ function menu:init()
 	y = y + 20
 	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
 
+end
+
+function menu.playername( name )
+	name = name:gsub( "|", "" )
+	name = name:gsub( " ", "" )
+	if #name > 0 then
+		PLAYERNAME = name
+	end
 end
 
 function menu:show()
