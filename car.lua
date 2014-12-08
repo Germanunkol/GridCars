@@ -51,16 +51,17 @@ function Car:new( x, y, color, angle, bodyType )
 end
 
 function Car:draw()
-	love.graphics.setColor(self.color)
+	love.graphics.setLineWidth( 5 )
+		love.graphics.setColor(self.color)
 	-- draw driven route
 	if self.routeIndex > 2 then
 		for i = self.routeIndex, 3, -1 do
 			love.graphics.line(self.route[i-1][1], self.route[i-1][2],
 				self.route[i-2][1], self.route[i-2][2])
-			end
+		end
 	end
-	love.graphics.setColor(self.color)
 	if self.routeIndex > 1 then
+		love.graphics.setColor(self.color)
 		love.graphics.line(self.route[self.routeIndex-1][1], self.route[self.routeIndex-1][2],
 				self.x, self.y)
 	end
@@ -113,6 +114,7 @@ function Car:drawTargetPoints()
 end
 
 	if self.route[self.routeIndex-1] and self.routeIndex > 1 then
+		love.graphics.setColor( self.color )
 		love.graphics.circle( "fill",
 			self.route[self.routeIndex-1][1],
 			self.route[self.routeIndex-1][2], 20 )
