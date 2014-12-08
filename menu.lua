@@ -3,6 +3,7 @@ local menu = {
 }
 
 local scr
+Images = require "images"
 
 function menu:init()
 	
@@ -46,6 +47,9 @@ function menu:update( dt )
 end
 
 function menu:draw()
+	x, y, tbl = love.window.getMode()
+	love.graphics.draw(images["Logo.png"], x/2, 0, 0, 1, 1, 0, 0, 0, 0)
+--love.graphics.draw(images["Logo.png"], 0, 0, 0, 1, 1, 0, 0, 0, 0)
 end
 
 function menu:keypressed( key )
