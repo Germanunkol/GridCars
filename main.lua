@@ -8,7 +8,7 @@
 end]]
 
 
-network = require( "network.network" )
+network = require( "network/network" )
 config = require( "config" )
 game = require( "game" )
 lobby = require( "lobby" )
