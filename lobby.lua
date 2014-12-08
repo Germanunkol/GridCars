@@ -46,6 +46,10 @@ function lobby:show()
 	self.ready = false
 	self.currentLevel = nil
 	self.locked = false
+
+	if client then
+		client:setUserValue( "ready", self.ready )
+	end
 	
 	-- In case I was a server before, remove the server settings:
 	if levelNameList ~= nil then

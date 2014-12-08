@@ -345,27 +345,57 @@ function game:validateCarMovement( id, x, y )
 
 			-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
 			local crashed, crashSiteFound = false, false
+			local movedDist = 0
 			for l = 0.5, dist, 0.5 do
 				p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
 				if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
 					crashed = true
-				
-					-- remembers how many rounds the user has to wait
-					game.crashedUsers[id] = SKIP_ROUNDS_ON_CRASH + 1
-					-- Step backwards:
-					for lBack = l, 0, -0.5 do
-						p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
-						p.x = math.floor(p.x)
-						p.y = math.floor(p.y)
-						print("testing", p.x, p.y)
-						if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
-							crashSiteFound = true
-							x, y = p.x, p.y
-							break
-						end
-					end
 					break
 				end
+				movedDist = l
+			end
+
+			-- Also check the end position!!
+			if not crashed then
+				-- I have managed to move the entire distance!
+				movedDist = dist
+				if not map:isPointOnRoad( x*GRIDSIZE, y*GRIDSIZE, 0 ) then
+					crashed = true
+				end
+			end
+
+
+			-- If I managed to move the full distance, then check if there's already a car there
+			if movedDist == dist then
+				for id2, bool in pairs( self.usersMoved ) do
+					if bool then
+						if self.newUserPositions[id2] then
+							print( "other user is at:", self.newUserPositions[id2].x, self.newUserPositions[id2].y)
+							print(" -> i'm trying to go to", x, y )
+							if self.newUserPositions[id2].x == x and
+								self.newUserPositions[id2].y == y then
+
+								crashed = true
+								break
+							end
+						end
+					end
+				end
+			end
+			if crashed then
+				-- Step backwards:
+				for lBack = movedDist-0.5, 0, -0.5 do
+					p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
+					p.x = math.floor(p.x)
+					p.y = math.floor(p.y)
+					if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+						crashSiteFound = true
+						x, y = p.x, p.y
+						break
+					end
+				end
+				-- remembers how many rounds the user has to wait
+				game.crashedUsers[id] = SKIP_ROUNDS_ON_CRASH + 1
 			end
 
 			if crashed and not crashSiteFound then
