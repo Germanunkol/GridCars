@@ -4,6 +4,7 @@ local menu = {
 
 local scr
 Images = require "images"
+local playernameInput
 
 function menu:init()
 	
@@ -20,7 +21,8 @@ function menu:init()
 	scr:addText( "centerPanel", "welcometxt", 10, y, nil, 7, "Start a server or join someone else's server. Press 'H' for help.")
 
 	y = y + 40
-	scr:addInput( "centerPanel", "name", 10, y, nil, 20, "p", menu.playername )
+	playernameInput = scr:addInput( "centerPanel", "name", 10, y, nil, 20, "p", menu.playername )
+	playernameInput:setContent( PLAYERNAME )
 
 	y = y + 40
 
@@ -49,6 +51,9 @@ function menu.playername( name )
 	name = name:gsub( " ", "" )
 	if #name > 0 then
 		PLAYERNAME = name
+	end
+	if playernameInput then
+		playernameInput:setContent( PLAYERNAME )
 	end
 end
 
