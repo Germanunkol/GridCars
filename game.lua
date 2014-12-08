@@ -70,6 +70,7 @@ function game:show()
 			game:startMovementRound()
 		end
 		self.maxTime = 3
+		self.time = 0
 	end
 
 	-- Do a cool camera startup swing:
@@ -82,6 +83,7 @@ function game:show()
 		end
 	end
 	self.maxTime2 = 2
+	self.time2 = 0
 end
 
 function game:camToCar( id )
@@ -270,12 +272,33 @@ function game:startMovementRound()
 				-- Only let users move if they haven't crashed:
 				server:send( CMD.GAMESTATE, "move", u )
 				server:setUserValue( u, "moved", false )
+
+				self.timerEvent = function() game:roundTimeout() end
+				self.maxTime = ROUND_TIME
+				self.time = 0
 			end
 			print( u.id, "crashed?", game.crashedUsers[u.id], game.usersMoved[u.id] )
 		end
 
 		-- If all users crashed, continue:
 		game:checkForRoundEnd()
+	end
+end
+
+function game:roundTimeout()
+	local found = false
+	if server then
+		for k, u in pairs( server:getUsers() ) do
+			print("...", k, u, u.id)
+			if not self.usersMoved[u.id] then
+				local x, y = map:getCarCenterVel( u.id )
+				game:validateCarMovement( u.id, x, y )
+				found = true
+			end
+		end
+		if found then
+			server:send( CMD.CHAT, "Server: Time up. Moving on..." )
+		end
 	end
 end
 
@@ -297,9 +320,11 @@ function game:moveAll()
 			game:sendWinner( game.winnerID )
 			self.timerEvent = game.sendBackToLobby
 			self.maxTime = 5
+			self.time = 0
 		end
 	end
 	self.maxTime = 1.2
+	self.time = 0
 end
 
 function game:validateCarMovement( id, x, y )
@@ -409,6 +434,7 @@ function game:playerWins( msg )
 	game:camToCar( game.winnerID )
 	self.timerEvent2 = game.zoomOut
 	self.maxTime2 = 3
+	self.time2 = 0
 end
 
 function game:sendWinner()

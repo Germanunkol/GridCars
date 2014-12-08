@@ -26,7 +26,7 @@ function chat:draw()
 		CHAT_WIDTH, love.graphics.getFont():getHeight() + 10 )
 
 		love.graphics.setColor( 255, 255, 255, 255 )
-		if math.sin(self.time) > 0 then
+		if math.sin(self.time*3) > 0 then
 			love.graphics.print( "Enter text: " .. self.enterText .. "|", x + 5, y + 5 )
 		else
 			love.graphics.print( "Enter text: " .. self.enterText, x + 5, y + 5 )
@@ -59,7 +59,9 @@ function chat:keypressed( key )
 	if key == "return" then
 		if self.active then
 			if client then
-				client:send( CMD.CHAT, self.enterText )
+				if #self.enterText > 0 then
+					client:send( CMD.CHAT, self.enterText )
+				end
 			end
 			self.enterText = ""
 			self.active = false
@@ -72,15 +74,17 @@ function chat:keypressed( key )
 		if #self.enterText > 0 then
 			self.enterText = self.enterText:sub( 1, #self.enterText - 1 )
 		end
+	elseif key == "escape" then
+		self.enterText = ""
+		self.active = false
 	end
-	print(key)
 end
 
 function chat:textinput( letter )
 	if self.active then
 		if letter ~= "|" then
 			if love.graphics.getFont():getWidth( self.enterText ) < CHAT_WIDTH - 30 then
-			self.enterText = self.enterText .. letter
+				self.enterText = self.enterText .. letter
 			end
 		end
 	end

@@ -141,9 +141,9 @@ function map:newFromString( mapstring )
 			table.insert(map.subjects, s)
 		end
 
-
-		-- Move camera to
 	end
+
+	math.randomseed( os.time() )
 
 end
 
@@ -749,6 +749,15 @@ function map:getCarRound( id )
 		return car.round or -1
 	end
 	return -2
+end
+
+function map:getCarCenterVel( id )
+	local car = map.cars[id]
+	print("car:", car, id, map.cars)
+	if car then
+		print((car.x + car.vX)/GRIDSIZE, (car.y + car.vY)/GRIDSIZE, "vel")
+		return (car.x + car.vX)/GRIDSIZE, (car.y + car.vY)/GRIDSIZE
+	end
 end
 
 return map
