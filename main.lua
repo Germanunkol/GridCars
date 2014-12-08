@@ -1,3 +1,12 @@
+--[[print = function(...)
+	args = {...}
+	str = ""
+	for k, v in pairs(args) do
+		str = str .. v .. "\t"
+	end
+	love.filesystem.append( "log.txt", str .. "\r\n" )
+end]]
+
 
 network = require( "network.network" )
 config = require( "config" )
@@ -29,6 +38,8 @@ MAX_PLAYERS = 16
 port = 3410
 
 function love.load( args )
+
+	love.filesystem.write("log.txt", "")
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
 	ROUND_TIME = tonumber(config.getValue( "ROUND_TIME" )) or 10
@@ -168,6 +179,8 @@ function love.draw()
 		game:draw()
 	elseif STATE == "Lobby" then
 		lobby:draw()
+	elseif STATE == "Menu" then
+		menu:draw()
 	end
 
 	if STATE == "Game" or STATE == "Lobby" then
