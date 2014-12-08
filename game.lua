@@ -134,10 +134,12 @@ function game:draw()
 			local users = network:getUsers()
 			if users and users[game.winnerID] then
 				love.graphics.setColor( 0, 0, 0, 200 )
-				love.graphics.rectangle( "fill", love.graphics.getWidth()/4, love.graphics.getHeight()/2-20, love.graphics.getWidth()/2, 40 )
+				love.graphics.rectangle( "fill",
+					love.graphics.getWidth()/4, love.graphics.getHeight()/2 - 100,
+					love.graphics.getWidth()/2, 40 )
 				love.graphics.setColor( 64,255,64, 255 )
 				love.graphics.printf( users[game.winnerID].playerName .. " wins the round!",
-					love.graphics.getWidth()/4, love.graphics.getHeight()/2-10,
+					love.graphics.getWidth()/4, love.graphics.getHeight()/2-90,
 					love.graphics.getWidth()/2, "center" )
 			end
 		end
