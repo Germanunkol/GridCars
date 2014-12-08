@@ -24,19 +24,21 @@ function menu:init()
 
 	y = y + 40
 
-	scr:addText( "centerPanel", "h1", 10, y, nil, 7, "{h}Server:")
+	--scr:addText( "centerPanel", "h1", 10, y, nil, 7, "{h}Server:")
+	scr:addHeader( "centerPanel", "h1", 0, y, "Server:" )
 	y = y + 20
 	scr:addFunction( "centerPanel", "server", 10, y, "Start Server", "s", menu.startServer )
 	y = y + 40
 
-	scr:addText( "centerPanel", "h2", 10, y, nil, 7, "{h}Client:")
+	--scr:addText( "centerPanel", "h2", 10, y, nil, 7, "{h}Client:")
+	scr:addHeader( "centerPanel", "h2", 0, y, "Client:" )
 	y = y + 20
 	scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
 	y = y + 20
 	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.connect )
 	y = y + 40
 
-	scr:addFunction( "centerPanel", "help", 10, y, "Help", "h", menu.showHelp )
+	scr:addFunction( "centerPanel", "help", 10, y, "Help", "h", menu.toggleHelp )
 	y = y + 20
 	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
 
@@ -60,6 +62,7 @@ end
 
 function menu:draw()
 	x, y, tbl = love.window.getMode()
+	love.graphics.setColor( 255,255,255,255 )
 	love.graphics.draw(images["Logo.png"], x/2, 50, 0, 1, 1, 0, 0, 0, 0)
 --love.graphics.draw(images["Logo.png"], 0, 0, 0, 1, 1, 0, 0, 0, 0)
 end
@@ -119,6 +122,25 @@ function menu:authorized( auth, reason )
 		local commands = {}
 		commands[1] = { txt = "Ok", key = "y" }
 		scr:newMsgBox( "Could not connect:",reason, nil, nil, nil, commands)
+	end
+end
+
+function menu:toggleHelp()
+	if scr:panelByName( "helpPanel" ) ~= nil then
+		scr:removePanel( "helpPanel" )
+	else
+		local width = 600
+		local x = math.min( 450, love.graphics.getWidth() - width - 50 )
+		local y = 0
+		scr:addPanel( "helpPanel",
+			x,
+			love.graphics.getHeight()/2-150,
+			width, 320 )
+		scr:addHeader( "helpPanel", "h1", 0, y, "Help:" )
+		y = y + 30
+
+		--scr:addText( "helpPanel", "helpText1", 10, y, nil, 7, "Press {f}'p'{p}")
+		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "To change a server's setting or your window size, go to:{g}\n    " .. love.filesystem.getSaveDirectory() .. "/config.txt{p}\n\nPress {f}'p'{p} to change your playername.\n{f}'s'{p} starts a server.\nUsing {f}'i'{p} you can enter an IP (v4) address of the server you want to join.\nIf the server is not in your LAN, but on the web, then the server must probably port-forward port 3410 on his/her router.\n\nTo play your own maps, put them into the following folder:\n{g}    " ..love.filesystem.getSaveDirectory() .. "/maps/" )
 	end
 end
 

@@ -36,9 +36,22 @@ CMD = {
 MAX_PLAYERS = 16
 port = 3410
 
-function love.load( args )
+-- If no config file was found, write it:
+function createConfigIfEmpty()
+	local contents = love.filesystem.read( "config.txt" )
+	if not contents then
+		config.setValue( "PLAYERNAME", PLAYERNAME )
+		config.setValue( "ROUND_TIME", ROUND_TIME )
+		config.setValue( "WIDTH", WIDTH )
+		config.setValue( "HEIGHT", HEIGHT )
+		config.setValue( "LAPS", LAPS )
+		config.setValue( "MAX_PLAYERS", MAX_PLAYERS )
+		config.setValue( "TRAIL_LENGTH", TRAIL_LENGTH )
+		config.setValue( "SKIP_ROUNDS_ON_CRASH", SKIP_ROUNDS_ON_CRASH )
+	end
+end
 
-	love.filesystem.write("log.txt", "")
+function love.load( args )
 
 	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
 	ROUND_TIME = tonumber(config.getValue( "ROUND_TIME" )) or 10
@@ -50,12 +63,14 @@ function love.load( args )
 	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
 
 	if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
-		love.window.setMode( WIDTH, HEIGHT )
+		assert(love.window.setMode( WIDTH, HEIGHT ), "Cannot change window size. Change in your config.txt")
 	end
 
 	-- Remove any pipe symbols from the player name:
 	PLAYERNAME = string.gsub( PLAYERNAME, "|", "" )
 	print( "Player name: '" .. PLAYERNAME .. "'" )
+
+	createConfigIfEmpty()
 
 	images:load()	-- preload all images
 	chat:init()
@@ -222,3 +237,4 @@ function clientReceived( command, msg )
 		lobby:show()
 	end
 end
+
