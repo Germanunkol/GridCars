@@ -61,9 +61,27 @@ function map:newFromString( mapstring )
 		print("error loading map: ", msg)
 		lobby:errorMsg( msg )
 		map:reset()
+		return
 	else
 		map:getBoundary()
-		map:camZoom(0.02, 1)
+
+		local max = math.max( math.abs(map.Boundary.maxX - map.Boundary.minX),
+			math.abs(map.Boundary.maxY - map.Boundary.minY ))
+
+		print("max", max)
+		max = math.max( max, 1000 )
+		map:camZoom( 800/max, 4.5 )
+		
+		local cX = map.Boundary.minX + (map.Boundary.maxX - map.Boundary.minX)*0.5
+		local cY = map.Boundary.minY + (map.Boundary.maxY - map.Boundary.minY)*0.5
+		map:camSwingToPos( cX, cY, 5 )
+
+		if server and not map.msgSent then
+			map.msgSent = true
+			server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!")
+		end
+
+		math.randomseed( utility.numFromString( mapstring:sub(1, 100 ) ) )
 
 		--ZoomTarget = 50/MapScale -- startzoom depends on MapScale
 
@@ -122,6 +140,9 @@ function map:newFromString( mapstring )
 			local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
 			table.insert(map.subjects, s)
 		end
+
+
+		-- Move camera to
 	end
 
 end
@@ -295,6 +316,8 @@ function map:reset()
 	map.startLine = nil
 	map.startPositions = {}
 	map.driveAngle = 0
+
+	map:camSwingAbort()
 end
 
 function map:import( mapstring )

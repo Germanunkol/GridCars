@@ -126,4 +126,12 @@ function utility.segSegIntersection( seg1, seg2 )
 	return true, t, u
 end
 
+function utility.numFromString( str )
+	local num = 0
+	for k = 1, #str do
+		num = num + string.byte( str:sub(k,k) )
+	end
+	return num
+end
+
 return utility

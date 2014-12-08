@@ -14,6 +14,19 @@ local game = {
 	winnerID = nil
 }
 
+local tease = {
+	"Server: Hah, you crashed, ",
+	"Server: Drunk driving, ",
+	"Server: Come on, ",
+	"Server: ",
+}
+local tease2 = {
+	"!",
+	"!",
+	"what was that?!",
+	" that was embarrassing...",
+}
+
 -- Possible gamestates:
 -- "startup": camera should move to start line
 -- "move": players are allowed to make their move.
@@ -233,6 +246,12 @@ function game:startMovementRound()
 
 			-- On all crashed users, count one down because we're starting a new round...
 			if game.crashedUsers[u.id] then
+
+				-- If this is the first crash round:
+				if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
+					local i = math.random(#tease)
+					server:send( CMD.CHAT, tease[i] .. u.playerName .. tease2[i] )
+				end
 				game.crashedUsers[u.id] = game.crashedUsers[u.id] - 1
 				if game.crashedUsers[u.id] <= 0 then
 					-- If I've waited long enough, let me rejoin the game:
@@ -292,7 +311,6 @@ function game:validateCarMovement( id, x, y )
 			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
-	
 
 			-- Step along the path and check if there's a collision. If so, stop there.
 			local p = {x = oldX, y = oldY }
