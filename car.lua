@@ -25,7 +25,11 @@ function Car:new( x, y, color, angle, bodyType )
 	c.r = angle or 0 -- rotation
 	c.vX = 0
 	c.vY = 0
-	c.color = color
+	c.color = {
+		color[1] or 0,
+		color[2] or 0,
+		color[3] or 0,
+		255}
 	c.scale = 0.5
 	c.body = images["car.png"]
 	bodyType = bodyType or 1

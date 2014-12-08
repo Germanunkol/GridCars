@@ -341,7 +341,7 @@ function map:import( mapstring )
 				line = string.sub(line, startpos+1)
 				startpos = 0
 				endpos = string.find(line," ")
-				vertices[counterV][value] = string.sub(line, startpos, endpos) * MapScale
+				vertices[counterV][value] = tonumber(string.sub(line, startpos, endpos)) * MapScale
 			end
 			--print("Vertex  No",counterV, vertices[counterV].x, vertices[counterV].y,  vertices[counterV].z)
 			-- jeder dritte Vertex ergibt ein Dreieck
