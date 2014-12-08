@@ -3,8 +3,8 @@ package.path = package.path .. ";" .. _PATH .. "/?.lua"
 
 _PATH = _PATH
 
-local Server = require( "server" )
-local Client = require( "client" )
+local Server = require( "network/server" )
+local Client = require( "network/client" )
 
 local network = {}
 
