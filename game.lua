@@ -75,7 +75,7 @@ function game:show()
 
 	-- Do a cool camera startup swing:
 	map:camSwingAbort()
-	map:camSwingToPos( map.endPoint.x, map.endPoint.y, 1.5 )
+	map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
 	map:camZoom( 0.6, 1.5 )
 	self.timerEvent2 = function()
 		if client then
