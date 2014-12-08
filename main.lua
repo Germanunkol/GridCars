@@ -134,20 +134,25 @@ function love.update( dt )
 		menu:update( dt )
 	end
 	ui:update( dt )
+	chat:update( dt )
 end
-
-local chatLines = { "", "", "", "", "", "", "" }
-local text = ""
 
 function love.keypressed( key, unicode )
 	--chat:keypressed( key )
-	ui:keypressed( key, unicode )
-	map:keypressed( key )
+	if chat.active then
+		chat:keypressed( key )
+	elseif not ui:keypressed( key, unicode ) then
+		map:keypressed( key )
+		chat:keypressed( key )
+	end
 end
 
 function love.textinput( letter )
 	--chat:textinput( letter )
-	ui:textinput( letter )
+	if chat.active then
+		chat:textinput( letter )
+	elseif (not ui:textinput( letter )) then
+	end
 end
 
 function love.mousepressed( x, y, button )

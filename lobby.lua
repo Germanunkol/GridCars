@@ -65,6 +65,10 @@ function lobby:show()
 		scr:addFunction( "topPanel", "start", love.graphics.getWidth()/2 - 20, 0, "Start", "s",
 			function() lobby:attemptGameStart() end )
 	end
+
+	if client then
+		chat:show()
+	end
 end
 
 function lobby:update( dt )

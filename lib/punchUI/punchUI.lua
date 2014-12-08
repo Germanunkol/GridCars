@@ -153,7 +153,6 @@ end
 
 -- check to see if an active function has the pressed key. If so, execute the function and return.
 function UI:keypressed( key, unicode )
-	print(key, unicode)
 	if #self.msgBoxList > 0 then
 		for k, p in ipairs(self.msgBoxList) do
 			for k, v in pairs( p.funcList ) do
