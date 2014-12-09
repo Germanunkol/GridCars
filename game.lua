@@ -41,7 +41,7 @@ function game:show()
 	map:removeAllCars()
 
 	game.winnerID = nil
-
+	
 	if server then
 		for id, u in pairs( server:getUsers() ) do
 			local col = {
@@ -69,6 +69,8 @@ function game:show()
 		end
 		self.maxTime = 3
 		self.time = 0
+
+		server:send( CMD.CHAT, "Server: Game starting. You have " .. ROUND_TIME .. " seconds for each move." )
 	end
 
 	if not DEDICATED then
