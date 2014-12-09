@@ -216,11 +216,12 @@ function lobby:chooseMap( levelname )
 		print("\t->loaded!" )
 	end
 end
+
 function lobby:sendMap( user )
 	-- SERVER ONLY!
 	if not server then return end
 
-	print("sending map...", self.currentMapString:sub( 1, 20 ) )
+	print("sending map...", self.currentMapString:sub( 1, 20 ), user )
 
 	if self.currentMapString then
 
