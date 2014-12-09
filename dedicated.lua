@@ -15,8 +15,9 @@ lobby = require( "lobby" )
 map = require( "map" )
 utility = require( "utility" )		-- helper functions
 require( "callbacks" )		-- helper functions
+Timer = require("timer")
 
-local dedicated = {
+dedicated = {
 	currentMapName = nil
 }
 
@@ -36,7 +37,6 @@ function dedicated:startServer()
 		-- set client callbacks:
 		setServerCallbacks( server )
 		lobby:show()
-		dedicated:chooseMap()
 	else
 		-- If I can't start a server for some reason, let user know and exit:
 		print(server)
@@ -51,17 +51,23 @@ function dedicated:update( dt )
 		-- Wait for at least one user:
 		if server:getNumUsers() > 0 then
 			-- Check if all clients are ready and if so start game
-			if lobby:attemptGameStart() then
-				game:show()
+			if not self.postMatchLocked then
+				if lobby:attemptGameStart() then
+					game:show()
+				end
 			end
 		end
 	elseif STATE == "Game" then
 		-- Let's hope it never gets below 0... :P
 		if server:getNumUsers() <= 0 then
 			lobby:show()
-			dedicated:chooseMap()
 		end
 	end
+end
+
+-- Show the old map for a set period of time.
+function dedicated:postMatchLock()
+	self.postMatchLocked = true
 end
 
 function getDirectoryItems( dir )
@@ -82,21 +88,23 @@ function dedicated:chooseMap()
 	end
 
 	-- first map?
-	if dedicated.currentMapName == nil then
-		dedicated.currentMapName = files[1]
+	if self.currentMapName == nil then
+		self.currentMapName = files[1]
 	else
 		for k, f in ipairs(files) do
-			if f == dedicated.currentMapName then
+			if f == self.currentMapName then
 				if files[k+1] then
-					dedicated.currentMapName = files[k+1]
+					self.currentMapName = files[k+1]
 				else
-					dedicated.currentMapName = files[1]
+					self.currentMapName = files[1]
 				end
 				break
 			end
 		end
 	end
-	lobby:chooseMap( dedicated.currentMapName )
+	lobby:chooseMap( self.currentMapName )
+
+	self.postMatchLocked = false
 end
 
 -- Call the function to start the server right at startup

@@ -20,6 +20,7 @@ if not DEDICATED then
 end
 utility = require( "utility" )		-- helper functions
 require( "callbacks" )		-- helper functions
+Timer = require("timer")
 
 server = nil
 client = nil

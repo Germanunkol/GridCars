@@ -3,6 +3,7 @@ local lobby = {
 	currentMapString = nil,
 	ready = false,
 	locked = false,
+	timers = {},
 }
 
 lobby.colors = {
@@ -46,8 +47,20 @@ function lobby:show()
 	self.currentMapString = nil
 	self.locked = false
 
+	self.timers = {}
+
+	if server then
+		for k, u in pairs( server:getUsers() ) do
+			server:setUserValue( u, "ready", false )
+		end
+		if DEDICATED then
+			local t = Timer:new( 5, function() dedicated:chooseMap() end )
+			table.insert( self.timers, t )
+			dedicated:postMatchLock()
+		end
+	end
+
 	if client then
-		client:setUserValue( "ready", self.ready )
 		ui:setActiveScreen( scr )
 		self.ready = false
 		-- In case I was a server before, remove the server settings:
@@ -56,20 +69,19 @@ function lobby:show()
 			scr:removeList( levelNameList.name )
 			levelNameList = nil
 		end
+		chat:show()
+		if map.loaded then
+			map:zoomOut()
+		end
 	end
 
 	-- If I'm the server, then let me choose the map:
 	if server and client then
 		self:createLevelList()
-		--self:chooseMap( "map6.stl" )
 		levelListStart = 1	
 
 		scr:addFunction( "topPanel", "start", love.graphics.getWidth()/2 - 20, 0, "Start", "s",
 			function() lobby:attemptGameStart() end )
-	end
-
-	if client then
-		chat:show()
 	end
 end
 
@@ -85,6 +97,14 @@ function lobby:update( dt )
 
 			map:camZoom( 0.05 + math.random( 0, 1 )*0.05, 2)
 			self.camMoveTime = self.camMoveTime - 4
+		end
+	end
+
+	-- Continue any timers:
+	for k, t in ipairs( self.timers ) do
+		-- if the timer fires, delete it:
+		if t:updateAndFire( dt ) then
+			table.remove( self.timers, k )
 		end
 	end
 end
@@ -224,8 +244,8 @@ end
 
 function lobby:toggleReady()
 	if client then
-		self.ready = not self.ready
-		client:setUserValue( "ready", self.ready )
+		local ready = client:getUserValue( "ready" )
+		client:setUserValue( "ready", not ready )
 	end
 end
 

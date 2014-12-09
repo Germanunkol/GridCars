@@ -293,7 +293,6 @@ function game:roundTimeout()
 	local found = false
 	if server then
 		for k, u in pairs( server:getUsers() ) do
-			print("...", k, u, u.id)
 			if not self.usersMoved[u.id] then
 				local x, y = map:getCarCenterVel( u.id )
 				game:validateCarMovement( u.id, x, y )
@@ -317,8 +316,8 @@ function game:moveAll()
 			end
 		end
 	end
-	self.timerEvent = function()
 
+	self.timerEvent = function()
 		game:checkForWinner()
 
 		if not game.winnerID then
@@ -445,8 +444,11 @@ function game:checkForRoundEnd()
 end
 
 function game:checkForWinner()
+	print("Checking for winner")
 	if server and not game.winnerID then
+		print(1)
 		for k, u in pairs( server:getUsers() ) do
+		print(2, map:getCarRound( u.id), LAPS + 1)
 			if map:getCarRound( u.id ) >= LAPS + 1 then
 				game.winnerID = u.id
 				print("WINNER FOUND!", u.id)
@@ -483,6 +485,9 @@ end
 function game:sendBackToLobby()
 	if server then
 		server:send( CMD.BACK_TO_LOBBY, "" )
+		if DEDICATED then
+			lobby:show()
+		end
 	end
 end
 

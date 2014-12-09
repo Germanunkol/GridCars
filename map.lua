@@ -78,11 +78,7 @@ function map:newFromString( mapstring )
 	else
 		map:getBoundary()
 
-		local max = math.max( math.abs(map.Boundary.maxX - map.Boundary.minX),
-			math.abs(map.Boundary.maxY - map.Boundary.minY ))
-
-		max = math.max( max, 1000 )
-		map:camZoom( 800/max, 4.5 )
+		map:zoomOut()
 		
 		local cX = map.Boundary.minX + (map.Boundary.maxX - map.Boundary.minX)*0.5
 		local cY = map.Boundary.minY + (map.Boundary.maxY - map.Boundary.minY)*0.5
@@ -649,6 +645,7 @@ function map:setCarPosDirectly(id, posX, posY) --car-id as number, pos as Gridpo
 	posX = map:TransCoordGtP(posX)
 	posY = map:TransCoordGtP(posY)
 	map.cars[id]:setPos(posX, posY)
+	map:checkRoundTransition( id )
 end
 
 function map:getCarPos(id)
@@ -684,27 +681,27 @@ function map:checkRoundTransition( id )
 	local intersects = utility.segSegIntersection( map.startLine, drivenLine )
 	print("intersects?", intersects)
 
-		local distToEnd = utility.dist( p, map.endPoint )
-		local distToStart = utility.dist( p, map.startPoint )
+	local distToEnd = utility.dist( p, map.endPoint )
+	local distToStart = utility.dist( p, map.startPoint )
 
-		print( "dist to end:", distToEnd)
-		print( "dist to start:", distToStart)
+	print( "dist to end:", distToEnd)
+	print( "dist to start:", distToStart)
 
-		if car.closerToEnd then
-			if distToStart < distToEnd then
-				car.closerToEnd = false
-				if intersects then
-					car.round = car.round + 1
-				end
-			end
-		else
-			if distToEnd < distToStart then
-				car.closerToEnd = true
-				if intersects then
-				car.round = car.round - 1
-			end
+	if car.closerToEnd then
+		if distToStart < distToEnd then
+			car.closerToEnd = false
+			if intersects then
+				car.round = car.round + 1
 			end
 		end
+	else
+		if distToEnd < distToStart then
+			car.closerToEnd = true
+			if intersects then
+				car.round = car.round - 1
+			end
+		end
+	end
 end
 
 function map:newCar( id, x, y, color )
@@ -761,6 +758,15 @@ function map:getCarCenterVel( id )
 	local car = map.cars[id]
 	if car then
 		return (car.x + car.vX)/GRIDSIZE, (car.y + car.vY)/GRIDSIZE
+	end
+end
+
+function map:zoomOut()
+	if map.loaded then
+		local max = math.max( math.abs(map.Boundary.maxX - map.Boundary.minX),
+			math.abs(map.Boundary.maxY - map.Boundary.minY ))
+		max = math.max( max, 1000 )
+		map:camZoom( 700/max, 4.5 )
 	end
 end
 
