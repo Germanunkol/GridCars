@@ -44,7 +44,7 @@ function lobby:show()
 	print("Starting lobby")
 	STATE = "Lobby"
 
-	self.currentMapString = nil
+	--self.currentMapString = nil
 	self.locked = false
 
 	self.timers = {}
@@ -191,7 +191,7 @@ function lobby:chooseMap( levelname )
 
 	print("Loading map: " .. levelname )
 
-	map.currentMapString = nil
+	self.currentMapString = nil
 
 	-- Mapstring is the map, in serialized form:
 	local mapstring
