@@ -163,6 +163,7 @@ end
 
 function Server:synchronizeUser( user )
 
+	print("synchronizing user...")
 	-- Synchronize: Send all other users to this user:
 	for k, u in pairs( userList ) do
 		if u.synchronized then
