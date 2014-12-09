@@ -43,18 +43,31 @@ function map:load()
 end
 
 --wird zum laden neuer Maps öfters aufgerufen
-function map:new(dateiname) -- Parameterbeispiel: "testtrackstl.stl"
+-- ACHTUNG: Bitte nur noch map:newFromString aufrufen!
+--[[function map:new( mapstring ) -- Parameterbeispiel: "testtrackstl.stl"
 
 	-- Read full file and save it in mapstring:
-	local mapstring = love.filesystem.read( dateiname )
+	local mapstring
+	if not DEDICATED then
+		mapstring = love.filesystem.read( dateiname )
+	else
+		local f = io.open(dateiname, "r")
+		if f then
+			mapstring = f:read("*all")
+			f:close()
+		end
+	end
 
 	self:newFromString( mapstring )
-
-end
+end]]
 
 function map:newFromString( mapstring )
 
 	map.loaded = false
+	if not mapstring or #mapstring == 0 then
+		print("Trying to load map from empty string!")
+		return
+	end
 
 	local success, msg = map:import(mapstring)
 	if not success then
@@ -68,7 +81,6 @@ function map:newFromString( mapstring )
 		local max = math.max( math.abs(map.Boundary.maxX - map.Boundary.minX),
 			math.abs(map.Boundary.maxY - map.Boundary.minY ))
 
-		print("max", max)
 		max = math.max( max, 1000 )
 		map:camZoom( 800/max, 4.5 )
 		
@@ -81,52 +93,54 @@ function map:newFromString( mapstring )
 			server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!")
 		end
 
-		math.randomseed( utility.numFromString( mapstring:sub(1, 100 ) ) )
 
-		--ZoomTarget = 50/MapScale -- startzoom depends on MapScale
+		if not DEDICATED then
+			math.randomseed( utility.numFromString( mapstring:sub(1, 100 ) ) )
 
-		-- create Environment
-		-- plant Subjects with big Pivots
-		for i = 1, maxS_QuadPivot, 1 do
-			--search fitting positon
-			local x = math.random(map.Boundary.minX, map.Boundary.maxX)
-			local y = math.random(map.Boundary.minY, map.Boundary.maxY)
+			--ZoomTarget = 50/MapScale -- startzoom depends on MapScale
 
-			-- check every pivot, ugly as shit but workes
-			local onRoad = 0
-			local pivotX = x + GridSizeBigStep
-			local pivotY = y + GridSizeBigStep
-			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
-				onRoad = onRoad + 1
-			end
-			local pivotX = x - GridSizeBigStep
-			local pivotY = y + GridSizeBigStep
-			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
-				onRoad = onRoad + 1
-			end
-			local pivotX = x + GridSizeBigStep
-			local pivotY = y - GridSizeBigStep
-			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
-				onRoad = onRoad + 1
-			end
-			local pivotX = x - GridSizeBigStep
-			local pivotY = y - GridSizeBigStep
-			if map:isPointOnRoad(pivotX, pivotY, 0) == true then
-				onRoad = onRoad + 1
-			end
-			if onRoad == 0 then
-				local nSubject = math.random(1, utility.tablelength(SubjectListQuadPivot))
-				local s = mapSubject:new(SubjectListQuadPivot[nSubject], x, y) -- choose random subject
-				for key, str in pairs(noShadows) do 
-					if str == SubjectListQuadPivot[nSubject] then
-						s.castshadow = false
-						--print(SubjectListQuadPivot[nSubject], "has no shadow")
-					end
+			-- create Environment
+			-- plant Subjects with big Pivots
+			for i = 1, maxS_QuadPivot, 1 do
+				--search fitting positon
+				local x = math.random(map.Boundary.minX, map.Boundary.maxX)
+				local y = math.random(map.Boundary.minY, map.Boundary.maxY)
+
+				-- check every pivot, ugly as shit but workes
+				local onRoad = 0
+				local pivotX = x + GridSizeBigStep
+				local pivotY = y + GridSizeBigStep
+				if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+					onRoad = onRoad + 1
 				end
-				table.insert(map.subjects, s)
-				--s.r = math.pi
+				local pivotX = x - GridSizeBigStep
+				local pivotY = y + GridSizeBigStep
+				if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+					onRoad = onRoad + 1
+				end
+				local pivotX = x + GridSizeBigStep
+				local pivotY = y - GridSizeBigStep
+				if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+					onRoad = onRoad + 1
+				end
+				local pivotX = x - GridSizeBigStep
+				local pivotY = y - GridSizeBigStep
+				if map:isPointOnRoad(pivotX, pivotY, 0) == true then
+					onRoad = onRoad + 1
+				end
+				if onRoad == 0 then
+					local nSubject = math.random(1, utility.tablelength(SubjectListQuadPivot))
+					local s = mapSubject:new(SubjectListQuadPivot[nSubject], x, y) -- choose random subject
+					for key, str in pairs(noShadows) do 
+						if str == SubjectListQuadPivot[nSubject] then
+							s.castshadow = false
+							--print(SubjectListQuadPivot[nSubject], "has no shadow")
+						end
+					end
+					table.insert(map.subjects, s)
+					--s.r = math.pi
+				end
 			end
-		end
 		-- plant Subjects with one Pivot
 		for i = 1, maxS_OnePivot, 1 do
 			--search fitting positon
@@ -140,10 +154,8 @@ function map:newFromString( mapstring )
 			local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
 			table.insert(map.subjects, s)
 		end
-
+		end
 	end
-
-	math.randomseed( os.time() )
 
 end
 
@@ -164,11 +176,11 @@ function map:update( dt )
 			CamZoomTime = nil
 		end
 		cam:zoomTo(ZoomIs)
-	--else
+		--else
 		--cam:zoom(mul)
 	end
 
-    if CamSwingTime then
+	if CamSwingTime then
 		CamSwingTimePassed = CamSwingTimePassed + dt
 		if CamSwingTimePassed < CamSwingTime then
 			local amount = utility.interpolateCos(CamSwingTimePassed/CamSwingTime)
@@ -181,24 +193,26 @@ function map:update( dt )
 		end
 		cam:lookAt(CamX,CamY)
 	else
-		if STATE == "Game" then
-			local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
-			local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
-			dx = dx * (map.Boundary.maxX-map.Boundary.minX)/5 *dt  --GridSizeSmallStep 	--*dt
-			dy = dy * (map.Boundary.maxY-map.Boundary.minY)/5 *dt  --GridSizeSmallStep   --*dt
-		    cam:move(dx, dy)
+		if not DEDICATED then
+			if STATE == "Game" and not chat.active then
+				local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
+				local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
+				dx = dx * (map.Boundary.maxX-map.Boundary.minX)/5 *dt  --GridSizeSmallStep 	--*dt
+				dy = dy * (map.Boundary.maxY-map.Boundary.minY)/5 *dt  --GridSizeSmallStep   --*dt
+				cam:move(dx, dy)
+			end
 		end
 	end
-    --mul = 1
+	--mul = 1
 
-    for id, car in pairs(map.cars) do
-    	car:update(dt)
+	for id, car in pairs(map.cars) do
+		car:update(dt)
 		--[[if self:isPointOnRoad( car.x, car.y, 0 ) then
-			car.color = { 255, 128, 128, 255 }
+		car.color = { 255, 128, 128, 255 }
 		else
-			car.color = blue
+		car.color = blue
 		end]]
-    end
+	end
 end
 
 function map:draw()
@@ -208,33 +222,33 @@ function map:draw()
 
 	cam:attach()
 	-- draw World
-	 -- draw ground
-	 love.graphics.setColor( 40, 40, 40, 255 )
-	 		for key, triang in pairs(map.triangles) do
-	 			love.graphics.polygon( 'fill',
-	 				triang.vertices[1].x,
-	 				triang.vertices[1].y,
-	 				triang.vertices[2].x,
-	 				triang.vertices[2].y,
-	 				triang.vertices[3].x,
-	 				triang.vertices[3].y
-	 			)
-			end
+	-- draw ground
+	love.graphics.setColor( 40, 40, 40, 255 )
+	for key, triang in pairs(map.triangles) do
+		love.graphics.polygon( 'fill',
+		triang.vertices[1].x,
+		triang.vertices[1].y,
+		triang.vertices[2].x,
+		triang.vertices[2].y,
+		triang.vertices[3].x,
+		triang.vertices[3].y
+		)
+	end
 
 	if self.startLine then
 		love.graphics.setLineWidth( 30 )
 		love.graphics.setColor( 50, 50, 50, 100 )
 		--[[love.graphics.polygon( "fill", 
-			self.startTriangle[1].x,
-			self.startTriangle[1].y,
-			self.startTriangle[2].x,
-			self.startTriangle[2].y,
-			self.startTriangle[3].x,
-			self.startTriangle[3].y
+		self.startTriangle[1].x,
+		self.startTriangle[1].y,
+		self.startTriangle[2].x,
+		self.startTriangle[2].y,
+		self.startTriangle[3].x,
+		self.startTriangle[3].y
 		)]]
 		love.graphics.setColor( 150, 150, 150, 100 )
 		love.graphics.line( self.startLine.p1.x, self.startLine.p1.y,
-				self.startLine.p2.x, self.startLine.p2.y )
+		self.startLine.p2.x, self.startLine.p2.y )
 		love.graphics.circle( "fill", self.startProjPoint.x, self.startProjPoint.y, 5 )
 
 		--[[love.graphics.setColor( 0, 255,0, 255 )
@@ -243,16 +257,16 @@ function map:draw()
 		love.graphics.circle( "fill", self.endPoint.x, self.endPoint.y, 5 )]]
 	end
 
-	 -- draw grid
+	-- draw grid
 	map:drawGrid()
-	 -- draw player
+	-- draw player
 	for id, c in pairs(map.cars) do
-    	c:draw()
-    end
-     -- draw environment
-    for id, s in ipairs(map.subjects) do
-    	s:draw()
-    end
+		c:draw()
+	end
+	-- draw environment
+	for id, s in ipairs(map.subjects) do
+		s:draw()
+	end
 	cam:detach()
 end
 
@@ -431,8 +445,6 @@ function map:import( mapstring )
 							y = map.startPoint.y - map.startProjPoint.y
 						}
 						map.driveAngle = math.atan2( driveDir.x, -driveDir.y )
-						print("drive angle", map.driveAngle, driveDir.x, driveDir.y )
-
 					end
 				elseif vertices[counterV].z == MapScale*3 and vertices[counterV-1].z == MapScale*3 and
 						vertices[counterV-2].z == MapScale*3 then
@@ -443,13 +455,12 @@ function map:import( mapstring )
 					for k, s in pairs( map.startPositions ) do
 						if s.x == x and s.y == y then
 							found = true
-							print("\tduplicate start pos", x, y)
+							print("\tDuplicate start pos! Removing.", x, y)
 							break
 						end
 					end
 					if not found then
 						table.insert( map.startPositions, {x = x, y = y} )
-						print("\tnew start pos", x, y)
 					end
 				end
 			end
@@ -578,7 +589,6 @@ function map:getBoundary() -- liefert maximale und minimale x und y Koordinaten
 	map.Boundary.maxY = map.Boundary.maxY + 4*GridSizeBigStep
 	map.Boundary.maxY = map.Boundary.maxY - map.Boundary.maxY % GridSizeBigStep
 
-	print(map.Boundary.minX, map.Boundary.maxX)
 end
 
 function map:keypressed( key )
@@ -701,15 +711,11 @@ function map:newCar( id, x, y, color )
 	print("new car!", id, x, y, color[1], color[2], color[3], color[4] )
 	local users = network:getUsers()
 	local bodyType = 1
-	print("bodytype")
 	if users then
-		print(1)
 		if users[id] then
-		print(2)
 			bodyType = users[id].customData.body
 		end
 	end
-		print("..", bodyType)
 	map.cars[id] = Car:new( x, y, color, map.driveAngle, bodyType )
 end
 

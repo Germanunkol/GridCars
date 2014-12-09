@@ -3,7 +3,7 @@
 -- Takes into account colours, newlines, font type.
 -- Returns a table of line fragments.
 
-local PATH = (...):match("(.-)[^%.]+$")
+local PATH = (...):match("(.-)[^%.^/]+$")
 local class = require( PATH .. "middleclass" )
 local col = require(PATH .. "colors")
 local COLORS, COLORS_INACTIVE = col[1], col[2]

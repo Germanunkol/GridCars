@@ -81,7 +81,7 @@ end
 function menu.startServer()
 	local success
 	success, server = pcall( function()
-		return network:startServer( MAX_PLAYERS, port )
+		return network:startServer( MAX_PLAYERS, PORT )
 	end)
 
 	if success then
@@ -107,7 +107,7 @@ function menu.connect()
 
 	local success
 	success, client = pcall( function()
-		return network:startClient( menu.ip, PLAYERNAME, port )
+		return network:startClient( menu.ip, PLAYERNAME, PORT )
 	end)
 
 	if success then
@@ -145,7 +145,7 @@ function menu:toggleHelp()
 		y = y + 30
 
 		--scr:addText( "helpPanel", "helpText1", 10, y, nil, 7, "Press {f}'p'{p}")
-		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "To change a server's setting or your window size, go to:{g}\n    " .. love.filesystem.getSaveDirectory() .. "/config.txt{p}\n\nPress {f}'p'{p} to change your playername.\n{f}'s'{p} starts a server.\nUsing {f}'i'{p} you can enter an IP (v4) address of the server you want to join.\nIf the server is not in your LAN, but on the web, then the server must probably port-forward port 3410 on his/her router.\n\nTo play your own maps, put them into the following folder:\n{g}    " ..love.filesystem.getSaveDirectory() .. "/maps/" )
+		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "To change a server's setting or your window size, go to:{g}\n    " .. love.filesystem.getSaveDirectory() .. "/config.txt{p}\n\nPress {f}'p'{p} to change your playername.\n{f}'s'{p} starts a server.\nUsing {f}'i'{p} you can enter an IP (v4) address of the server you want to join.\nIf the server is not in your LAN, but on the web, then the server must probably port-forward port " .. PORT .. " on his/her router.\n\nTo play your own maps, put them into the following folder:\n{g}    " ..love.filesystem.getSaveDirectory() .. "/maps/" )
 	end
 end
 

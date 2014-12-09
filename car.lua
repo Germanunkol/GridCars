@@ -30,14 +30,16 @@ function Car:new( x, y, color, angle, bodyType )
 		color[2] or 0,
 		color[3] or 0,
 		255}
-	c.scale = 0.5
-	c.body = images["car.png"]
-	bodyType = bodyType or 1
-	c.detail = images["detail" .. bodyType .. ".png"]
-	c.head = images["head" .. bodyType .. ".png"]
-	c.driveTime = nil
-	c.driveTimePassed = 0
-	c.targetX = x
+		c.scale = 0.5
+		if not DEDICATED then
+			c.body = images["car.png"]
+			bodyType = bodyType or 1
+			c.detail = images["detail" .. bodyType .. ".png"]
+			c.head = images["head" .. bodyType .. ".png"]
+		end
+		c.driveTime = nil
+		c.driveTimePassed = 0
+		c.targetX = x
 	c.targetY = y
 	c.startX = x
 	c.startY = y

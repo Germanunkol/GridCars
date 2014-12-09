@@ -24,7 +24,7 @@ local tease2 = {
 	"!",
 	"!",
 	"what was that?!",
-	" that was embarrassing...",
+	", that was embarrassing...",
 }
 
 -- Possible gamestates:
@@ -37,7 +37,6 @@ end
 
 function game:show()
 	STATE = "Game"
-	ui:setActiveScreen( nil )
 
 	map:removeAllCars()
 
@@ -62,7 +61,6 @@ function game:show()
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
 
 			crashedUsers = {}
-
 		end
 
 		-- Start the round after 3 seconds!
@@ -73,17 +71,21 @@ function game:show()
 		self.time = 0
 	end
 
-	-- Do a cool camera startup swing:
-	map:camSwingAbort()
-	map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
-	map:camZoom( 0.6, 1.5 )
-	self.timerEvent2 = function()
-		if client then
-			game:camToCar( client:getID() )
+	if not DEDICATED then
+		ui:setActiveScreen( nil )
+
+		-- Do a cool camera startup swing:
+		map:camSwingAbort()
+		map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
+		map:camZoom( 0.6, 1.5 )
+		self.timerEvent2 = function()
+			if client then
+				game:camToCar( client:getID() )
+			end
 		end
+		self.maxTime2 = 2
+		self.time2 = 0
 	end
-	self.maxTime2 = 2
-	self.time2 = 0
 end
 
 function game:camToCar( id )
@@ -310,6 +312,9 @@ function game:moveAll()
 			--local x, y = map:getCarPos( u.id )
 			local x,y = self.newUserPositions[u.id].x, self.newUserPositions[u.id].y
 			server:send( CMD.MOVE_CAR, u.id .. "|" .. x .. "|" .. y )
+			if DEDICATED then
+				map:setCarPosDirectly( u.id, x, y )
+			end
 		end
 	end
 	self.timerEvent = function()
@@ -338,6 +343,7 @@ function game:validateCarMovement( id, x, y )
 			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
+			print( "\tget car pos:", oldX, oldY)
 
 			-- Step along the path and check if there's a collision. If so, stop there.
 			local p = {x = oldX, y = oldY }
@@ -365,7 +371,6 @@ function game:validateCarMovement( id, x, y )
 					crashed = true
 				end
 			end
-
 
 			-- If I managed to move the full distance, then check if there's already a car there
 			if movedDist == dist then
@@ -405,6 +410,7 @@ function game:validateCarMovement( id, x, y )
 			end
 
 			self.usersMoved[id] = true
+			print("\t>1 Set pos to", id, x, y )
 			self.newUserPositions[id] = {x=x, y=y}
 
 			local user = server:getUsers()[id]

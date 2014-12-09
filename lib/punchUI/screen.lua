@@ -1,5 +1,5 @@
 
-local PATH = (...):match("(.-)[^%.]+$")
+local PATH = (...):match("(.-)[^%.^/]+$")
 
 local class = require(PATH .. "middleclass")
 local Panel = require(PATH .. "panel")

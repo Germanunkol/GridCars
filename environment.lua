@@ -6,8 +6,6 @@ local shadowOffsetX = 50
 local shadowOffsetY = 50
 local shadowSize = 1
 
-Images = require "images"
-
 function MapSubject:new(item, x, y)
 	local o = {}
 	setmetatable( o, MapSubject )

@@ -28,6 +28,8 @@ local CONFIG_FILE = "config.txt"	-- default file name if none is given.
 -- If an entry with the same name exists, it's overwritten.
 function config.setValue( name, value, filename )
 
+	if DEDICATED then return end
+
 	filename = filename or CONFIG_FILE	-- default to configfile
 	
 	if not name or not value == nil then
@@ -91,16 +93,25 @@ function config.getValue( name, filename )
 	
 	filename = filename or CONFIG_FILE	-- default to configfile
 
-	if not love.filesystem.isFile(filename) then
+	if not DEDICATED and not love.filesystem.isFile(filename) then
 		--print("Could not find config file.", name, filename)
 		return nil
 	end
-	local ok, file = pcall(love.filesystem.newFile, filename )
+
 	local data
-	if ok and file then
-		file:open('r')
-		data = file:read()
-		file:close()
+	if not DEDICATED then
+		local ok, file = pcall(love.filesystem.newFile, filename )
+		if ok and file then
+			file:open('r')
+			data = file:read()
+			file:close()
+		end
+	else
+		local f = io.open(filename, "r")
+		if f then
+			data = f:read("*all")
+			f:close()
+		end
 	end
 	if data then
 		for k, v in string.gmatch(data, "([^ \r\n]+) = ([^\r\n]*)") do
@@ -113,6 +124,55 @@ function config.getValue( name, filename )
 	end
 	print("Value for '" .. name .. "' not found in config file. Using default.")
 	return nil
+end
+
+function config.load()
+	PLAYERNAME = config.getValue( "PLAYERNAME" ) or "Unknown"
+	ROUND_TIME = tonumber(config.getValue( "ROUND_TIME" )) or 10
+	LAPS = tonumber(config.getValue( "LAPS" )) or 1
+	MAX_PLAYERS = tonumber(config.getValue( "MAX_PLAYERS" )) or 16
+	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
+	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
+	PORT = tonumber(config.getValue( "PORT" )) or 3410
+
+
+	if not DEDICATED then
+		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
+		HEIGHT = tonumber(config.getValue( "HEIGHT" )) or love.graphics.getHeight()
+		if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
+			assert(love.window.setMode( WIDTH, HEIGHT ), "Cannot change window size. Change in your config.txt")
+		end
+	end
+
+	-- Remove any pipe symbols from the player name:
+	PLAYERNAME = string.gsub( PLAYERNAME, "|", "" )
+	print( "Player name: '" .. PLAYERNAME .. "'" )
+
+	if not DEDICATED then
+		config.createIfEmpty()
+	end
+end
+
+
+-- If no config file was found, write it:
+function config.createIfEmpty()
+
+	-- Don't let dedicated server write:
+	if DEDICATED then return end
+
+	local contents = love.filesystem.read( "config.txt" )
+
+	if not contents then
+		config.setValue( "PLAYERNAME", PLAYERNAME )
+		config.setValue( "ROUND_TIME", ROUND_TIME )
+		config.setValue( "WIDTH", WIDTH )
+		config.setValue( "HEIGHT", HEIGHT )
+		config.setValue( "LAPS", LAPS )
+		config.setValue( "MAX_PLAYERS", MAX_PLAYERS )
+		config.setValue( "TRAIL_LENGTH", TRAIL_LENGTH )
+		config.setValue( "SKIP_ROUNDS_ON_CRASH", SKIP_ROUNDS_ON_CRASH )
+		config.setValue( "PORT", PORT )
+	end
 end
 
 return config

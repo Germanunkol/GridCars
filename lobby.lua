@@ -1,6 +1,6 @@
 local lobby = {
 	camMoveTime = 5,
-	currentLevel = nil,
+	currentMapString = nil,
 	ready = false,
 	locked = false,
 }
@@ -40,32 +40,30 @@ function lobby:init()
 end
 
 function lobby:show()
+	print("Starting lobby")
 	STATE = "Lobby"
-	ui:setActiveScreen( scr )
 
-	self.ready = false
-	self.currentLevel = nil
+	self.currentMapString = nil
 	self.locked = false
 
 	if client then
 		client:setUserValue( "ready", self.ready )
-	end
-	
-	-- In case I was a server before, remove the server settings:
-	if levelNameList ~= nil then
-		scr:removeFunction( "topPanel", "start" )
-		scr:removeList( levelNameList.name )
-		levelNameList = nil
+		ui:setActiveScreen( scr )
+		self.ready = false
+		-- In case I was a server before, remove the server settings:
+		if levelNameList ~= nil then
+			scr:removeFunction( "topPanel", "start" )
+			scr:removeList( levelNameList.name )
+			levelNameList = nil
+		end
 	end
 
 	-- If I'm the server, then let me choose the map:
-	if server then
+	if server and client then
 		self:createLevelList()
 		--self:chooseMap( "map6.stl" )
 		levelListStart = 1	
-	end
 
-	if server then
 		scr:addFunction( "topPanel", "start", love.graphics.getWidth()/2 - 20, 0, "Start", "s",
 			function() lobby:attemptGameStart() end )
 	end
@@ -171,24 +169,39 @@ function lobby:chooseMap( levelname )
 
 	if not server then return end
 
-	map:new( "maps/" .. levelname )
+	print("Loading map: " .. levelname )
+
+	map.currentMapString = nil
+
+	-- Mapstring is the map, in serialized form:
+	local mapstring
+	if not DEDICATED then
+		mapstring = love.filesystem.read( "maps/" .. levelname )
+	else
+		local f = io.open( "maps/" .. levelname, "r")
+		if f then
+			mapstring = f:read("*all")
+			f:close()
+		end
+	end
+
+	map:newFromString(mapstring)
 
 	if map.loaded then
-		self.currentLevel = levelname
+		-- Remember for later:
+		self.currentMapString = mapstring
 		self:sendMap()
+		print("\t->loaded!" )
 	end
 end
 function lobby:sendMap( user )
 	-- SERVER ONLY!
 	if not server then return end
 
-	if self.currentLevel then
+	if self.currentMapString then
 
-		-- Mapstring is the map, in serialized form:
-		local mapstring = love.filesystem.read( "maps/" .. self.currentLevel )
 		-- Remove linebreaks and replace by pipe symbol for sending.
-		mapstring = mapstring:gsub( "\n", "|" )
-
+		mapstring = self.currentMapString:gsub( "\n", "|" )
 		if user then
 			-- Send to single user?
 			server:send( CMD.MAP, mapstring, user )
@@ -222,10 +235,12 @@ function lobby:attemptGameStart()
 	if not server then return end
 
 	if not map.loaded then
-		local commands = {}
-		commands[1] = { txt = "Ok", key = "y" }
-		scr:newMsgBox( "Cannot start:", "No valid map file loaded.", nil, nil, nil, commands)
-		return
+		if not DEDICATED then
+			local commands = {}
+			commands[1] = { txt = "Ok", key = "y" }
+			scr:newMsgBox( "Cannot start:", "No valid map file loaded.", nil, nil, nil, commands)
+		end
+		return false
 	end
 
 	local allReady = true
@@ -242,11 +257,13 @@ function lobby:attemptGameStart()
 	if allReady then
 		self.locked = true		-- don't let any more users join!
 		server:send( CMD.START_GAME )
-	else
+		return true
+	elseif not DEDICATED then
 		local commands = {}
 		commands[1] = { txt = "Ok", key = "y" }
 		scr:newMsgBox( "Cannot start:", "All users must be ready.", nil, nil, nil, commands)
 	end
+	return false
 end
 
 function lobby:authorize( user )
@@ -260,6 +277,7 @@ end
 function lobby:setUserColor( user )
 	-- SERVER ONLY!
 	if server then
+		math.randomseed( os.time() )
 		local col = lobby.colors[ math.random(#lobby.colors) ]
 		print("COLOR:", col[1], col[2], col[3] )
 		server:setUserValue( user, "red", col[1] )
