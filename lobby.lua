@@ -54,9 +54,10 @@ function lobby:show()
 			server:setUserValue( u, "ready", false )
 		end
 		if DEDICATED then
-			local t = Timer:new( 5, function() dedicated:chooseMap() end )
+			--[[local t = Timer:new( 5, function() dedicated:chooseMap() end )
 			table.insert( self.timers, t )
-			dedicated:postMatchLock()
+			dedicated:postMatchLock()]]
+			dedicated:chooseMap()
 		end
 	end
 
@@ -210,6 +211,7 @@ function lobby:chooseMap( levelname )
 	if map.loaded then
 		-- Remember for later:
 		self.currentMapString = mapstring
+		print("Current map string...", self.currentMapString:sub(1, 20) )
 		self:sendMap()
 		print("\t->loaded!" )
 	end
@@ -217,6 +219,8 @@ end
 function lobby:sendMap( user )
 	-- SERVER ONLY!
 	if not server then return end
+
+	print("sending map...", self.currentMapString:sub( 1, 20 ) )
 
 	if self.currentMapString then
 
