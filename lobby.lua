@@ -230,6 +230,7 @@ function lobby:sendMap( user )
 		if user then
 			-- Send to single user?
 			server:send( CMD.MAP, mapstring, user )
+			print("sent:",CMD.MAP, mapstring, user)
 		else
 			-- Broadcast to all:
 			server:send( CMD.MAP, mapstring )
