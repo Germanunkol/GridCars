@@ -226,7 +226,7 @@ function lobby:sendMap( user )
 
 		-- Remove linebreaks and replace by pipe symbol for sending.
 		mapstring = self.currentMapString:gsub( "\n", "|" )
-		print("sending map...", mapstring, user "\n" )
+		print("sending map...", mapstring, user, "\n" )
 		if user then
 			-- Send to single user?
 			server:send( CMD.MAP, mapstring, user )
