@@ -129,7 +129,7 @@ function Client:received( command, msg )
 			self.callbacks.connected()
 		end
 		print( "new playername",  msg )
-		self.conn:settimeout(nil)
+		self.conn:settimeout(5)
 		print("changed timeout.")
 	elseif command == CMD.USER_VALUE then
 		local id, keyType, key, valueType, value = string.match( msg, "(.*)|(.*)|(.*)|(.*)|(.*)" )

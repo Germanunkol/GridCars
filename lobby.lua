@@ -221,7 +221,7 @@ function lobby:sendMap( user )
 	-- SERVER ONLY!
 	if not server then return end
 
-	print("sending map...", self.currentMapString:sub( 1, 20 ), user )
+	print("sending map...", self.currentMapString, user, #self.currentMapString )
 
 	if self.currentMapString then
 
