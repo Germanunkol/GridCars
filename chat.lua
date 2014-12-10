@@ -43,8 +43,10 @@ function chat:draw()
 end
 
 function chat:update( dt )
-	if self.active then
-		self.time = self.time + dt
+	if STATE == "Lobby" or STATE == "Game" then
+		if self.active then
+			self.time = self.time + dt
+		end
 	end
 end
 
@@ -56,35 +58,39 @@ function chat:newLine( text )
 end
 
 function chat:keypressed( key )
-	if key == "return" then
-		if self.active then
-			if client then
-				if #self.enterText > 0 then
-					client:send( CMD.CHAT, self.enterText )
+	if STATE == "Game" or STATE == "Lobby" then
+		if key == "return" then
+			if self.active then
+				if client then
+					if #self.enterText > 0 then
+						client:send( CMD.CHAT, self.enterText )
+					end
+				end
+				self.enterText = ""
+				self.active = false
+			else
+				if client then
+					self.active = true
 				end
 			end
+		elseif key == "backspace" then
+			if #self.enterText > 0 then
+				self.enterText = self.enterText:sub( 1, #self.enterText - 1 )
+			end
+		elseif key == "escape" then
 			self.enterText = ""
 			self.active = false
-		else
-			if client then
-				self.active = true
-			end
 		end
-	elseif key == "backspace" then
-		if #self.enterText > 0 then
-			self.enterText = self.enterText:sub( 1, #self.enterText - 1 )
-		end
-	elseif key == "escape" then
-		self.enterText = ""
-		self.active = false
 	end
 end
 
 function chat:textinput( letter )
-	if self.active then
-		if letter ~= "|" then
-			if love.graphics.getFont():getWidth( self.enterText ) < CHAT_WIDTH - 30 then
-				self.enterText = self.enterText .. letter
+	if STATE == "Game" or STATE == "Lobby" then
+		if self.active then
+			if letter ~= "|" then
+				if love.graphics.getFont():getWidth( self.enterText ) < CHAT_WIDTH - 30 then
+					self.enterText = self.enterText .. letter
+				end
 			end
 		end
 	end

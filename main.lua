@@ -80,13 +80,14 @@ function love.update( dt )
 	network:update( dt )
 	if STATE == "Game" then
 		game:update( dt )
+		chat:update( dt )
 	elseif STATE == "Lobby" then
 		lobby:update( dt )
+		chat:update( dt )
 	elseif STATE == "Menu" then
 		menu:update( dt )
 	end
 	ui:update( dt )
-	chat:update( dt )
 end
 
 function love.keypressed( key, unicode )

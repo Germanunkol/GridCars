@@ -134,7 +134,7 @@ function config.load()
 	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
 	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
 	PORT = tonumber(config.getValue( "PORT" )) or 3410
-
+	ADDRESS = config.getValue( "ADDRESS" ) or "localhost"
 
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()

@@ -4,7 +4,7 @@ local menu = {
 
 local scr
 Images = require "images"
-local playernameInput
+local playernameInput, addressInput
 
 function menu:init()
 	
@@ -35,7 +35,8 @@ function menu:init()
 	--scr:addText( "centerPanel", "h2", 10, y, nil, 7, "{h}Client:")
 	scr:addHeader( "centerPanel", "h2", 0, y, "Client:" )
 	y = y + 20
-	scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
+	addressInput = scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
+	addressInput:setContent( ADDRESS )
 	y = y + 20
 	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.connect )
 	y = y + 40
@@ -60,6 +61,10 @@ end
 function menu:show()
 	STATE = "Menu"
 	ui:setActiveScreen( scr )
+	menu.ip = ADDRESS
+	if addressInput then
+		addressInput:setContent( ADDRESS )
+	end
 end
 
 function menu:update( dt )
@@ -105,21 +110,33 @@ end
 
 function menu.connect()
 
+	scr:addPanel( "connectPanel",
+			love.graphics.getWidth()/2 - 50,
+			love.graphics.getHeight()-100,
+			100, 50 )
+	scr:addHeader( "connectPanel", "hConnect", 0, y, "Connecting" )
+	scr:addText( "connectPanel", "connectTxt", 10, y, nil, 7, "Connecting to: '" .. menu.ip .. "'.")
+
+
 	local success
 	success, client = pcall( function()
 		return network:startClient( menu.ip, PLAYERNAME, PORT )
 	end)
 
+	scr:removePanel( "connectPanel" )
+
 	if success then
 		-- set client callbacks:
 		setClientCallbacks( client )
+		config.setValue( "ADDRESS", menu.ip )
+		ui:setActiveScreen( nil )
 	else
+		print("Could not conect:", client )
 		local commands = {}
 		commands[1] = { txt = "Ok", key = "y" }
-		scr:newMsgBox( "Error:",client, nil, nil, nil, commands)
+		scr:newMsgBox( "Error:", "Could not connect.", nil, nil, nil, commands)
 	end
 
-	ui:setActiveScreen( nil )
 end
 
 function menu:authorized( auth, reason )
