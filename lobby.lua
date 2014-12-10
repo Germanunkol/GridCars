@@ -221,12 +221,12 @@ function lobby:sendMap( user )
 	-- SERVER ONLY!
 	if not server then return end
 
-	print("sending map...", self.currentMapString, user, #self.currentMapString )
 
 	if self.currentMapString then
 
 		-- Remove linebreaks and replace by pipe symbol for sending.
 		mapstring = self.currentMapString:gsub( "\n", "|" )
+		print("sending map...", mapstring, user "\n" )
 		if user then
 			-- Send to single user?
 			server:send( CMD.MAP, mapstring, user )
