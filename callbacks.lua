@@ -39,6 +39,7 @@ function newUser( user )
 	if DEDICATED then
 		server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!", user )
 	end
+	print("New player:", user.id, user.playerName )
 end
 
 -- Called when client is disconnected from the server
