@@ -4,6 +4,7 @@ local lobby = {
 	ready = false,
 	locked = false,
 	timers = {},
+	countdown = nil,
 }
 
 lobby.colors = {
@@ -48,6 +49,7 @@ function lobby:show()
 	self.locked = false
 
 	self.timers = {}
+	self.countdown = nil
 
 	if server then
 		for k, u in pairs( server:getUsers() ) do
@@ -106,6 +108,14 @@ function lobby:update( dt )
 		-- if the timer fires, delete it:
 		if t:updateAndFire( dt ) then
 			table.remove( self.timers, k )
+		end
+	end
+
+	if self.countdown then
+		self.countdown = self.countdown - dt
+		if self.countdown < 5 and not self.sentCountdownTimes[math.ceil(self.countdown)] then
+			server:send( CMD.CHAT, math.ceil(self.countdown))
+			self.sentCountdownTimes[math.ceil(self.countdown)] = true
 		end
 	end
 end
@@ -266,19 +276,39 @@ function lobby:attemptGameStart()
 	end
 
 	local allReady = true
+	local usersReady = 0
 	local users = network:getUsers()
 	for k, u in pairs( users ) do
-		if not u.customData.ready then
+		if u.customData.ready then
+			usersReady = usersReady + 1
+		else
 			allReady = false
-			break
+		end
+	end
+
+	-- ON DEDICATED ONLY!
+	if DEDICATED and not allReady then
+		if usersReady == 0 then
+			if self.countdown then
+				self.countdown = nil
+				server:send( CMD.CHAT, "Server halted countdown. No one is ready." )
+			end
+		else
+			if self.countdown == nil then
+				self.countdown = 60
+				self.sentCountdownTimes = {}
+				server:send( CMD.CHAT, "Server started countdown. Game starts in 60 seconds." )
+			end
 		end
 	end
 
 	-- If all clients are ready, then they must also all be synchronized.
 	-- So we're ok to start.
-	if allReady then
+	if allReady or (self.countdown and self.countdown <= 0 ) then
 		self.locked = true		-- don't let any more users join!
 		server:send( CMD.START_GAME )
+		lobby:kickAllWhoArentReady()
+		self.countdown = nil
 		return true
 	elseif not DEDICATED then
 		local commands = {}
@@ -312,6 +342,17 @@ function lobby:errorMsg( msg )
 	local commands = {}
 	commands[1] = { txt = "Ok", key = "y" }
 	scr:newMsgBox( "Error loading map:", msg, nil, nil, nil, commands)
+end
+
+function lobby:kickAllWhoArentReady()
+	if server then
+		local users = network:getUsers()
+		for k, u in pairs( users ) do
+			if not u.customData.ready then
+				server:kickUser( u, "Game started, and you were not ready." )
+			end
+		end
+	end
 end
 
 return lobby

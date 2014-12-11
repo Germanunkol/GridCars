@@ -11,7 +11,7 @@ local COMMANDS =
 	USER_VALUE = 5,
 	PLAYER_LEFT = 6,
 
-	LONG_MSG = 7,
+	KICKED = 7,
 }
 
 return COMMANDS

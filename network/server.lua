@@ -268,6 +268,11 @@ function Server:getNumUsers()
 	return numberOfUsers
 end
 
+function Server:kickUser( user, msg )
+	self:send( CMD.KICKED, msg, user )
+	user.connection:shutdown()
+end
+
 function Server:close()
 	if self.conn then
 		for k, u in pairs( userList ) do

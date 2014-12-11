@@ -18,7 +18,7 @@ function setServerCallbacks( server )
 	server.callbacks.received = serverReceived
 	server.callbacks.synchronize = synchronize
 	server.callbacks.authorize = function( user ) return lobby:authorize( user ) end
-	server.callbacks.userFullyConnected = function( user ) lobby:setUserColor( user ) end
+	server.callbacks.userFullyConnected = newUser
 end
 function setClientCallbacks( client )
 	-- set client callbacks:
@@ -33,10 +33,20 @@ end
 function connected()
 	lobby:show()
 end
+-- Called on server when client is connected to server:
+function newUser( user )
+	lobby:setUserColor( user )
+	if DEDICATED then
+		server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!", user )
+	end
+end
 
 -- Called when client is disconnected from the server
-function disconnected()
+function disconnected( msg )
 	menu:show()
+	if msg and #msg > 0 then
+		menu:errorMsg( "You have been kicked:", msg )
+	end
 	client = nil
 	server = nil
 end
@@ -60,6 +70,7 @@ function serverReceived( command, msg, user )
 end
 
 function clientReceived( command, msg )
+	print("Client received:", command, msg:sub(1, 100 ) )
 	if command == CMD.CHAT then
 		chat:newLine( msg )
 	elseif command == CMD.MAP then

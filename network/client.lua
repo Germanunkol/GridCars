@@ -49,6 +49,9 @@ function Client:new( address, port, playerName )
 
 	numberOfUsers = 0
 
+	-- Filled if user is kicked:
+	o.kickMsg = ""
+
 	return o
 end
 
@@ -75,7 +78,7 @@ function Client:update( dt )
 				--self.conn:shutdown()
 				print("[NET] Disconnected.")
 				if self.callbacks.disconnected then
-					self.callbacks.disconnected()
+					self.callbacks.disconnected( self.kickMsg )
 				end
 				self.conn = nil
 				return false
@@ -141,6 +144,10 @@ function Client:received( command, msg )
 		if self.callbacks.customDataChanged then
 			self.callback.customDataChanged( user, value, key )
 		end
+	elseif command == CMD.KICKED then
+
+		self.kickMsg = msg
+		print("[NET] Kicked from server: " .. msg )
 
 	elseif self.callbacks.received then
 		self.callbacks.received( command, msg )

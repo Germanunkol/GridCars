@@ -93,9 +93,7 @@ function menu.startServer()
 		-- set client callbacks:
 		setServerCallbacks( server )
 	else
-		local commands = {}
-		commands[1] = { txt = "Ok", key = "y" }
-		scr:newMsgBox( "Error:",server, nil, nil, nil, commands)
+		menu:errorMsg( "Error:", server )
 	end
 
 	-- Also start a client!
@@ -132,19 +130,21 @@ function menu.connect()
 		ui:setActiveScreen( nil )
 	else
 		print("Could not conect:", client )
-		local commands = {}
-		commands[1] = { txt = "Ok", key = "y" }
-		scr:newMsgBox( "Error:", "Could not connect.", nil, nil, nil, commands)
+		scr:errorMsg( "Error:", "Could not connect." )
 	end
 
 end
 
 function menu:authorized( auth, reason )
 	if not auth then
-		local commands = {}
-		commands[1] = { txt = "Ok", key = "y" }
-		scr:newMsgBox( "Could not connect:",reason, nil, nil, nil, commands)
+		self:errorMsg( "Could not connect: ", reason )
 	end
+end
+
+function menu:errorMsg( header, msg )
+	local commands = {}
+	commands[1] = { txt = "Ok", key = "y" }
+	scr:newMsgBox( header, msg, nil, nil, nil, commands)
 end
 
 function menu:toggleHelp()

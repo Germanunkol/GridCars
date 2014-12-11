@@ -135,6 +135,7 @@ function config.load()
 	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
 	PORT = tonumber(config.getValue( "PORT" )) or 3410
 	ADDRESS = config.getValue( "ADDRESS" ) or "localhost"
+	COUNTDOWN = tonumber(config.getValue( "COUNTDOWN" )) or 60
 
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
@@ -172,6 +173,7 @@ function config.createIfEmpty()
 		config.setValue( "TRAIL_LENGTH", TRAIL_LENGTH )
 		config.setValue( "SKIP_ROUNDS_ON_CRASH", SKIP_ROUNDS_ON_CRASH )
 		config.setValue( "PORT", PORT )
+		config.setValue( "COUNTDOWN", COUNTDOWN )
 	end
 end
 

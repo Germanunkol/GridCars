@@ -59,9 +59,9 @@ function game:show()
 			map:newCar( u.id, x, y, col )
 
 			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
-
-			crashedUsers = {}
 		end
+
+		game.crashedUsers = {}
 
 		-- Start the round after 3 seconds!
 		self.timerEvent = function()
@@ -189,18 +189,18 @@ end
 
 function game:mousepressed( x, y, button )
 	if button == "l" then
-	if client then
-		if self.GAMESTATE == "move" then
-			-- Turn screen coordinates into grid coordinates:
-			local gX, gY = map:screenToGrid( x, y )
-			gX = math.floor( gX + 0.5 )
-			gY = math.floor( gY + 0.5 )
-			if map:clickAtTargetPosition( client:getID(), gX, gY ) then
-				self:sendNewCarPosition( gX, gY )
+		if client then
+			if self.GAMESTATE == "move" then
+				-- Turn screen coordinates into grid coordinates:
+				local gX, gY = map:screenToGrid( x, y )
+				gX = math.floor( gX + 0.5 )
+				gY = math.floor( gY + 0.5 )
+				if map:clickAtTargetPosition( client:getID(), gX, gY ) then
+					self:sendNewCarPosition( gX, gY )
+				end
 			end
 		end
 	end
-end
 end
 
 function game:setState( state )
@@ -304,6 +304,7 @@ function game:roundTimeout()
 end
 
 function game:moveAll()
+	print("Move all", debug.traceback())
 	if server then
 		for k, u in pairs( server:getUsers() ) do
 			--local x, y = map:getCarPos( u.id )

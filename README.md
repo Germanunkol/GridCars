@@ -8,7 +8,6 @@ Multiplayer only! This game is intended as an "in-betweener" at LAN Parties.
 
 All cars are grid based. You have 10 seconds to make your move. Your velocity is "saved" between moves -
 so the faster you went last round, the further you can go this round!
-Careful: you WILL probably crash.
 
 NOTE: In the main menu, press 'i' to enter ip address, then 'c' to connect.
 
@@ -65,7 +64,3 @@ http://germanunkol.de/gridcars/downloads/GridCars.love
 
 Source code on Github: 
 https://github.com/Germanunkol/Cars
-
-Known Issues:
-----------------------
-Sometimes the map is not fully sent to the client. In this case (if the map is no closed loop on the client), simply reload the map on the server. This has never happened in the LAN, but has been seen when playing with other servers on the web.
