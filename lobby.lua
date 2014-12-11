@@ -289,7 +289,7 @@ function lobby:attemptGameStart()
 	end
 
 	-- ON DEDICATED ONLY!
-	if DEDICATED and not allReady then
+	--[[if DEDICATED and not allReady then
 		if usersReady == 0 then
 			if self.countdown then
 				self.countdown = nil
@@ -303,14 +303,14 @@ function lobby:attemptGameStart()
 				server:send( CMD.CHAT, "Server started countdown. Game starts in 60 seconds." )
 			end
 		end
-	end
+	end]]
 
 	-- If all clients are ready, then they must also all be synchronized.
 	-- So we're ok to start.
-	if allReady or (self.countdown and self.countdown <= 0 ) then
+	if allReady then --or (self.countdown and self.countdown <= 0 ) then
 		self.locked = true		-- don't let any more users join!
 		server:send( CMD.START_GAME )
-		lobby:kickAllWhoArentReady()
+		--lobby:kickAllWhoArentReady()
 		self.countdown = nil
 		return true
 	elseif not DEDICATED then
