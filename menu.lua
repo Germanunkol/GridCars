@@ -130,7 +130,7 @@ function menu.connect()
 		ui:setActiveScreen( nil )
 	else
 		print("Could not conect:", client )
-		scr:errorMsg( "Error:", "Could not connect." )
+		menu:errorMsg( "Error:", "Could not connect." )
 	end
 
 end

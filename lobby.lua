@@ -114,8 +114,10 @@ function lobby:update( dt )
 	if self.countdown then
 		self.countdown = self.countdown - dt
 		if self.countdown < 5 and not self.sentCountdownTimes[math.ceil(self.countdown)] then
-			server:send( CMD.CHAT, math.ceil(self.countdown))
-			self.sentCountdownTimes[math.ceil(self.countdown)] = true
+			if math.ceil(self.countdown) > 0 then
+				server:send( CMD.CHAT, math.ceil(self.countdown))
+				self.sentCountdownTimes[math.ceil(self.countdown)] = true
+			end
 		end
 	end
 end
@@ -297,6 +299,7 @@ function lobby:attemptGameStart()
 			if self.countdown == nil then
 				self.countdown = 60
 				self.sentCountdownTimes = {}
+				server:send( CMD.CHAT, "  Press 'R' to join in." )
 				server:send( CMD.CHAT, "Server started countdown. Game starts in 60 seconds." )
 			end
 		end
