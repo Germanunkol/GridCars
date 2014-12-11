@@ -137,19 +137,19 @@ function map:newFromString( mapstring )
 					--s.r = math.pi
 				end
 			end
-		-- plant Subjects with one Pivot
-		for i = 1, maxS_OnePivot, 1 do
-			--search fitting positon
-			local x = math.random(map.Boundary.minX, map.Boundary.maxX)
-			local y = math.random(map.Boundary.minY, map.Boundary.maxY)
-			while map:isPointOnRoad(x, y, 0) == true do
-				x = math.random(map.Boundary.minX, map.Boundary.maxX)
-				y = math.random(map.Boundary.minY, map.Boundary.maxY)
+			-- plant Subjects with one Pivot
+			for i = 1, maxS_OnePivot, 1 do
+				--search fitting positon
+				local x = math.random(map.Boundary.minX, map.Boundary.maxX)
+				local y = math.random(map.Boundary.minY, map.Boundary.maxY)
+				while map:isPointOnRoad(x, y, 0) == true do
+					x = math.random(map.Boundary.minX, map.Boundary.maxX)
+					y = math.random(map.Boundary.minY, map.Boundary.maxY)
+				end
+				local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
+				local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
+				table.insert(map.subjects, s)
 			end
-			local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
-			local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
-			table.insert(map.subjects, s)
-		end
 		end
 	end
 
@@ -679,13 +679,9 @@ function map:checkRoundTransition( id )
 	local drivenLine = { p1=pStart, p2=p }
 
 	local intersects = utility.segSegIntersection( map.startLine, drivenLine )
-	print("intersects?", intersects)
 
 	local distToEnd = utility.dist( p, map.endPoint )
 	local distToStart = utility.dist( p, map.startPoint )
-
-	print( "dist to end:", distToEnd)
-	print( "dist to start:", distToStart)
 
 	if car.closerToEnd then
 		if distToStart < distToEnd then
@@ -705,7 +701,6 @@ function map:checkRoundTransition( id )
 end
 
 function map:newCar( id, x, y, color )
-	print("new car!", id, x, y, color[1], color[2], color[3], color[4] )
 	local users = network:getUsers()
 	local bodyType = 1
 	if users then

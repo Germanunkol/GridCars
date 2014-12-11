@@ -205,7 +205,6 @@ end
 
 function game:setState( state )
 	self.GAMESTATE = state
-	print("Set game state", state)
 	if self.GAMESTATE == "move" then
 		if client then
 			map:resetCarNextMovement( client:getID() )
