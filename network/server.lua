@@ -20,14 +20,13 @@ function Server:new( maxNumberOfPlayers, port )
 	local o = {}
 	setmetatable( o, self )
 
-	print("Initialising Server...") o.conn = assert(socket.bind("*", port)) o.conn:settimeout(0)
+	print("[NET] Initialising Server...") o.conn = assert(socket.bind("*", port)) o.conn:settimeout(0)
 	if o.conn then
-		print("\t-> started.")
+		print("[NET]\t-> started.")
 	end
 
 	o.callbacks = {
 		received = nil,
-		receivedPlayername = nil,
 		disconnectedUser = nil,
 		authorize = nil,
 		customDataChanged = nil,
@@ -60,7 +59,7 @@ function Server:update( dt )
 
 			self:newUser( newUser )
 
-			print( "Client attempting to connect", id )
+			print( "[NET] Client attempting to connect", id )
 		end
 
 		for k, user in pairs(userList) do			
@@ -98,7 +97,7 @@ function Server:update( dt )
 						userListByName[ user.playerName ] = nil
 					end
 				else
-					print("Err Received:", msg, data)
+					print("[NET] Err Received:", msg, data)
 				end
 			end
 		end
@@ -110,7 +109,6 @@ function Server:update( dt )
 end
 
 function Server:received( command, msg, user )
-	print( "server received:", command, msg )
 	if command == CMD.PLAYERNAME then
 		-- Check if there is another user with this name.
 		-- If so, increase the number at the end of the name...
@@ -152,18 +150,17 @@ function Server:received( command, msg, user )
 		self:send( CMD.USER_VALUE, user.id .. "|" .. msg )
 
 		if self.callbacks.customDataChanged then
-			self.callback.customDataChanged( user, value, key )
+			self.callbacks.customDataChanged( user, value, key )
 		end
 
 	elseif self.callbacks.received then
-		-- If the command is not known, then send it on: 
+		-- If the command is not known by the engine, then send it on to the above layer:
 		self.callbacks.received( command, msg, user )
 	end
 end
 
 function Server:synchronizeUser( user )
 
-	print("synchronizing user...")
 	-- Synchronize: Send all other users to this user:
 	for k, u in pairs( userList ) do
 		if u.synchronized then
@@ -199,21 +196,27 @@ end
 function Server:send( command, msg, user )
 	-- Send to only one user:
 	if user then
-		user.connection:send( string.char(command) .. (msg or "") .. "\n" )
-		print( user.connection, command, msg:sub(1,100) )
+		local fullMsg = string.char(command) .. (msg or "") .. "\n"
+		--user.connection:send( string.char(command) .. (msg or "") .. "\n" )
+		local result, err, num = user.connection:send( fullMsg )
+		while err == "timeout" do
+			fullMsg = fullMsg:sub( num+1, #fullMsg )
+			result, err, num = user.connection:send( fullMsg )
+		end
+
 		return
 	end
 
 	-- If no user is given, broadcast to all.
 	for k, u in pairs( userList ) do
 		if u.connection and u.synchronized then
-			u.connection:send( string.char(command) .. (msg or "") .. "\n" )
+			self:send( command, msg, u )
 		end
 	end
 end
 
 function Server:newUser( user )
-	print("New Client! Number of Clients: " .. numberOfUsers )
+	print("[NET] New Client! Number of Clients: " .. numberOfUsers )
 
 	local authorized = true
 	local reason = ""
@@ -236,12 +239,12 @@ function Server:newUser( user )
 end
 
 function Server:disconnectedUser( user )
-	print("Client left. Clients: " .. numberOfUsers )
+	print("[NET] Client left. Clients: " .. numberOfUsers )
 
 	-- If the other clients already know about this client,
 	-- then tell them to delete him.
 	if user.synchronized then
-		self:send( CMD.PLAYER_LEFT, user.id )
+		self:send( CMD.PLAYER_LEFT, tostring(user.id) )
 	end
 	
 	if self.callbacks.disconnectedUser then

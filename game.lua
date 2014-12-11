@@ -102,7 +102,6 @@ end
 
 function game:update( dt )
 	map:update( dt )
-	-- print(self.timerEvent)
 	-- Timer1:
 	if self.maxTime > 0 then
 		self.time = self.time + dt
@@ -112,6 +111,7 @@ function game:update( dt )
 			self.timerEvent()
 		end
 	end
+	-- Timer2:
 	if self.maxTime2 > 0 then
 		self.time2 = self.time2 + dt
 		if self.time2 >= self.maxTime2 then
@@ -219,10 +219,8 @@ function game:newCar( msg )
 		id = tonumber(id)
 		x = tonumber(x)
 		y = tonumber(y)
-		print("new car?", id, x, y)
 		local users = client:getUsers()
 		local u = users[id]
-		print("user:", u, users[id])
 		if u then
 			local col = {
 				u.customData.red,
@@ -246,7 +244,7 @@ end
 
 function game:startMovementRound()
 	--SERVER ONLY!
-	print("starting new round.")
+	print("Starting new round.")
 	if server then
 		self.SERVERGAMESTATE = "move"
 		game.usersMoved = {}
@@ -283,7 +281,6 @@ function game:startMovementRound()
 				self.maxTime = ROUND_TIME
 				self.time = 0
 			end
-			print( u.id, "crashed?", game.crashedUsers[u.id], game.usersMoved[u.id] )
 		end
 
 		-- If all users crashed, continue:
@@ -344,7 +341,6 @@ function game:validateCarMovement( id, x, y )
 			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
-			print( "\tget car pos:", oldX, oldY)
 
 			-- Step along the path and check if there's a collision. If so, stop there.
 			local p = {x = oldX, y = oldY }
@@ -378,8 +374,6 @@ function game:validateCarMovement( id, x, y )
 				for id2, bool in pairs( self.usersMoved ) do
 					if bool then
 						if self.newUserPositions[id2] then
-							print( "other user is at:", self.newUserPositions[id2].x, self.newUserPositions[id2].y)
-							print(" -> i'm trying to go to", x, y )
 							if self.newUserPositions[id2].x == x and
 								self.newUserPositions[id2].y == y then
 
@@ -411,7 +405,6 @@ function game:validateCarMovement( id, x, y )
 			end
 
 			self.usersMoved[id] = true
-			print("\t>1 Set pos to", id, x, y )
 			self.newUserPositions[id] = {x=x, y=y}
 
 			local user = server:getUsers()[id]
@@ -429,28 +422,22 @@ end
 
 function game:checkForRoundEnd()
 	-- Check if all users have sent their move:
-	print("DONE with the round?")
 	local doneMoving = true
 	for k, u in pairs( server:getUsers() ) do
 		if not self.usersMoved[u.id] then
-			print("not done moving", u.id)
 			doneMoving = false
 			break
 		end
 	end
 	-- If all users have sent the move, go on to next round:
 	if doneMoving then
-		print("\tdone.")
 		self:moveAll()
 	end
 end
 
 function game:checkForWinner()
-	print("Checking for winner")
 	if server and not game.winnerID then
-		print(1)
 		for k, u in pairs( server:getUsers() ) do
-		print(2, map:getCarRound( u.id), LAPS + 1)
 			if map:getCarRound( u.id ) >= LAPS + 1 then
 				game.winnerID = u.id
 				print("WINNER FOUND!", u.id)

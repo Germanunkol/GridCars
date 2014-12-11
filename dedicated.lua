@@ -114,7 +114,7 @@ function sleep(sec)
     socket.select(nil, nil, sec)
 end
 -- Continue running for ever:
-local time = os.clock()
+local time = socket.gettime()
 local dt = 0
 local t = 0
 while true do

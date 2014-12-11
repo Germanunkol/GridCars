@@ -211,7 +211,6 @@ function lobby:chooseMap( levelname )
 	if map.loaded then
 		-- Remember for later:
 		self.currentMapString = mapstring
-		print("Current map string...", self.currentMapString:sub(1, 20) )
 		self:sendMap()
 		print("\t->loaded!" )
 	end
@@ -221,16 +220,13 @@ function lobby:sendMap( user )
 	-- SERVER ONLY!
 	if not server then return end
 
-
 	if self.currentMapString then
 
 		-- Remove linebreaks and replace by pipe symbol for sending.
 		mapstring = self.currentMapString:gsub( "\n", "|" )
-		print("sending map...", mapstring, user, "\n" )
 		if user then
 			-- Send to single user?
 			server:send( CMD.MAP, mapstring, user )
-			print("sent:",CMD.MAP, mapstring:sub(1,10), user)
 		else
 			-- Broadcast to all:
 			server:send( CMD.MAP, mapstring )
@@ -305,7 +301,6 @@ function lobby:setUserColor( user )
 	if server then
 		math.randomseed( os.time() )
 		local col = lobby.colors[ math.random(#lobby.colors) ]
-		print("COLOR:", col[1], col[2], col[3] )
 		server:setUserValue( user, "red", col[1] )
 		server:setUserValue( user, "green", col[2] )
 		server:setUserValue( user, "blue", col[3] )
