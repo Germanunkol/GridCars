@@ -299,7 +299,7 @@ function lobby:attemptGameStart()
 			if self.countdown == nil then
 				self.countdown = 60
 				self.sentCountdownTimes = {}
-				server:send( CMD.CHAT, "  Press 'R' to join in." )
+				server:send( CMD.CHAT, "    Press 'R' to join in." )
 				server:send( CMD.CHAT, "Server started countdown. Game starts in 60 seconds." )
 			end
 		end
