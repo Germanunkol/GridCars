@@ -243,7 +243,6 @@ end
 
 function game:startMovementRound()
 	--SERVER ONLY!
-	print("Starting new round.")
 	if server then
 		self.SERVERGAMESTATE = "move"
 		game.usersMoved = {}
@@ -304,7 +303,6 @@ function game:roundTimeout()
 end
 
 function game:moveAll()
-	print("Move all", debug.traceback())
 	if server then
 		for k, u in pairs( server:getUsers() ) do
 			--local x, y = map:getCarPos( u.id )
@@ -338,7 +336,6 @@ function game:validateCarMovement( id, x, y )
 		-- if this user has not moved yet:
 		if self.usersMoved[id] == nil then
 --			map:setCarPos( id, x, y )
-			print( "server moving car to:", x, y)
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
 

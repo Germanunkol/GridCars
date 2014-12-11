@@ -70,7 +70,6 @@ function serverReceived( command, msg, user )
 end
 
 function clientReceived( command, msg )
-	print("Client received:", command, msg:sub(1, 100 ) )
 	if command == CMD.CHAT then
 		chat:newLine( msg )
 	elseif command == CMD.MAP then
