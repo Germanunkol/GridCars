@@ -116,10 +116,9 @@ function menu.connect()
 	scr:addHeader( "connectPanel", "hConnect", 0, y, "Connecting" )
 	scr:addText( "connectPanel", "connectTxt", 10, y, nil, 7, "Connecting to: '" .. menu.ip .. "'.")
 
-
 	local success
 	success, client = pcall( function()
-		return network:startClient( menu.ip, PLAYERNAME, PORT )
+		return network:startClient( menu.ip, PLAYERNAME, PORT, VERSION )
 	end)
 
 	scr:removePanel( "connectPanel" )

@@ -43,7 +43,7 @@ function love.load( args )
 
 	menu:show()
 
-	local startServer = false
+	--[[local startServer = false
 	local startClient = false
 	if args[2] == "client" then
 		startClient = true
@@ -70,7 +70,7 @@ function love.load( args )
 		else
 			print( "Error. To start as client, you should give the address as the argument after 'client'." )
 		end
-	end
+	end]]
 
 	--love.graphics.setBackgroundColor(25,25,25,255)
 	love.graphics.setBackgroundColor( 20,80,20,255)

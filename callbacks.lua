@@ -1,6 +1,7 @@
 -- This defines all the callbacks needed by server and client.
 -- Callbacks are called when certain events happen.
---
+
+VERSION = "VERSION 0.3"
 
 -- These are all possible commands clients of the server can send:
 CMD = {
@@ -17,7 +18,7 @@ CMD = {
 function setServerCallbacks( server )
 	server.callbacks.received = serverReceived
 	server.callbacks.synchronize = synchronize
-	server.callbacks.authorize = function( user ) return lobby:authorize( user ) end
+	server.callbacks.authorize = function( user, msg ) return lobby:authorize( user, msg ) end
 	server.callbacks.userFullyConnected = newUser
 end
 function setClientCallbacks( client )

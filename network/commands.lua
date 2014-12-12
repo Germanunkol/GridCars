@@ -12,6 +12,8 @@ local COMMANDS =
 	PLAYER_LEFT = 6,
 
 	KICKED = 7,
+
+	AUTHORIZATION_REQUREST = 8,
 }
 
 return COMMANDS

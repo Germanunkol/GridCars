@@ -15,9 +15,12 @@ local numberOfUsers = 0
 local partMessage = ""
 local piecesOfLargeMessage = {}
 
-function Client:new( address, port, playerName )
+function Client:new( address, port, playerName, authMsg )
 	local o = {}
 	setmetatable( o, self )
+
+	print(authMsg, "auth msg")
+	authMsg = authMsg or ""
 
 	print("[NET] Initialising Client...")
 	o.conn = socket.tcp()
@@ -26,6 +29,7 @@ function Client:new( address, port, playerName )
 	--ok, o.conn = pcall(o.conn.connect, o.conn, address, port)
 	if ok and o.conn then
 		o.conn:settimeout(0)
+		self.send( o, CMD.AUTHORIZATION_REQUREST, authMsg )
 		print("[NET] -> Client connected", o.conn)
 	else
 		o.conn = nil

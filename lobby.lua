@@ -328,12 +328,19 @@ function lobby:attemptGameStart()
 	return false
 end
 
-function lobby:authorize( user )
+function lobby:authorize( user, authorizationRequest )
 	--[[if self.locked then
 		return false, "Game already started."
-	else]]
+	else
 		return true
-	--end
+	end]]
+	-- Let only users running the correct version authorize:
+	print("auth", authorizationRequest )
+	if authorizationRequest == VERSION then
+		return true
+	else
+		return false, "Wrong version. Get the newest version online!"
+	end
 end
 
 function lobby:setUserColor( user )
