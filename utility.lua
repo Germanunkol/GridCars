@@ -134,4 +134,13 @@ function utility.numFromString( str )
 	return num
 end
 
+function utility.log( str, filename )
+	filename = filename or "log.txt"
+	ok, file = pcall( io.open, filename, "a" )
+	if file then
+		file:write( str .. "\n" )
+		file:close()
+	end
+end
+
 return utility

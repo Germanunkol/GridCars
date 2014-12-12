@@ -351,6 +351,14 @@ function game:moveAll()
 			self.timerEvent = game.sendBackToLobby
 			self.maxTime = 5
 			self.time = 0
+			if DEDICATED then
+				if server:getUsers()[game.winnerID] and
+						server:getUsers()[game.winnerID].playerName then
+
+					utility.log( "[" .. os.time() .. "] Winner: " ..
+						server:getUsers()[game.winnerID].playerName )
+				end
+			end
 		end
 	end
 	self.maxTime = 1.2

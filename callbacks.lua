@@ -20,6 +20,7 @@ function setServerCallbacks( server )
 	server.callbacks.synchronize = synchronize
 	server.callbacks.authorize = function( user, msg ) return lobby:authorize( user, msg ) end
 	server.callbacks.userFullyConnected = newUser
+	server.callbacks.disconnectedUser = disconnectedUser
 end
 function setClientCallbacks( client )
 	-- set client callbacks:
@@ -40,6 +41,8 @@ function newUser( user )
 	server:setUserValue( user, "moved", true )
 	if DEDICATED then
 		server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!", user )
+		utility.log( "[" .. os.time() .. "] New user: " ..
+			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end
 	print("New player:", user.id, user.playerName )
 end
@@ -52,6 +55,14 @@ function disconnected( msg )
 	end
 	client = nil
 	server = nil
+end
+
+-- Called on server when user disconnects:
+function disconnectedUser( user )
+	if DEDICATED then
+		utility.log( "[" .. os.time() .. "] User left: " ..
+			user.playerName .. " (" .. server:getNumUsers() .. ")" )
+	end
 end
 
 -- Called on server when new client is in the process of
