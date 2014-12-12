@@ -188,11 +188,17 @@ function game:drawUserList()
 				love.graphics.setColor( 255, 255, 128, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString ) + 20
 				love.graphics.print( "[Waiting for move]", x + dx, y )
+				dx = dx + love.graphics.getFont():getWidth( "[Waiting for move]" ) + 20
 			elseif not u.customData.ingame == true then
 				love.graphics.setColor( 128, 128, 255, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString )
 				love.graphics.print( "[spectate]", x + dx, y )
 			end
+
+			if map:hasCar( u.id) then
+				map:getCar( u.id ):drawOnUI( 380, y + 5, 0.2 )
+			end
+
 			y = y + 20
 			i = i + 1
 		end

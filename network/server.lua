@@ -285,7 +285,7 @@ end
 
 -- Find an empty slot in the user list:
 function findFreeID()
-	for k = 1, numberOfUsers + 1 do
+	for k = 1, numberOfUsers + 100 do
 		if not userList[k] then
 			return k
 		end

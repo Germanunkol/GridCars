@@ -79,6 +79,26 @@ function Car:draw()
 	 -- draw heads
 	love.graphics.draw(self.head, self.headX, self.headY, self.r, 1, 1, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
 	love.graphics.pop()
+end
+
+function Car:drawOnUI( x, y, scale )
+
+	scale = scale or 1
+	love.graphics.setColor(self.color)
+
+	-- draw Car
+	love.graphics.push()
+	love.graphics.translate( x, y )
+	--love.graphics.scale(self.scale, self.scale)
+	 -- draw body
+	love.graphics.setColor(self.color)
+	love.graphics.draw(self.body, 0, 0, .5, scale, scale, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
+	love.graphics.setColor(255,255,255,255)
+	 -- draw decoration
+	love.graphics.draw(self.detail, 0, 0, .5, scale, scale, self.detail:getWidth()/2, self.detail:getHeight()/2, 0, 0)
+	 -- draw heads
+	love.graphics.draw(self.head, 0, 0, .5, scale, scale, self.head:getWidth()/2, self.head:getHeight()/2, 0, 0)
+	love.graphics.pop()
 
 end
 
