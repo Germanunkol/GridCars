@@ -328,6 +328,8 @@ function map:reset()
 	map.driveAngle = 0
 
 	map:camSwingAbort()
+
+	map.loaded = false
 end
 
 function map:import( mapstring )

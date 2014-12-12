@@ -309,6 +309,23 @@ function lobby:attemptGameStart()
 	-- If all clients are ready, then they must also all be synchronized.
 	-- So we're ok to start.
 	if allReady or (self.countdown and self.countdown <= 0 ) then
+		lobby:startGame()
+	elseif not DEDICATED then
+		if usersReady >= 1 then
+		local commands = {}
+		commands[1] = { txt = "Yes", key = "y", event = function() lobby:startGame() end }
+		commands[2] = { txt = "No, wait", key = "n" }
+		scr:newMsgBox( "Are you sure you want to start?", "Some users aren't ready yet. They won't be part of the round if you start now.", nil, nil, nil, commands)
+		else
+		local commands = {}
+		commands[1] = { txt = "Ok", key = "y" }
+		scr:newMsgBox( "Cannot start:", "No one is ready yet.", nil, nil, nil, commands)
+	end
+	end
+	return false
+end
+
+function lobby:startGame()
 		--self.locked = true		-- don't let any more users join!
 		server:send( CMD.START_GAME )
 		--lobby:kickAllWhoArentReady()
@@ -319,13 +336,6 @@ function lobby:attemptGameStart()
 				server:setUserValue( u, "ingame", true )	-- everyone else is spectating!
 			end
 		end
-		return true
-	elseif not DEDICATED then
-		local commands = {}
-		commands[1] = { txt = "Ok", key = "y" }
-		scr:newMsgBox( "Cannot start:", "All users must be ready.", nil, nil, nil, commands)
-	end
-	return false
 end
 
 function lobby:authorize( user, authorizationRequest )
