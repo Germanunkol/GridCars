@@ -11,8 +11,11 @@ function chat:init()
 	CHAT_WIDTH = math.min(love.graphics.getWidth()/2, 500)
 end
 
-function chat:show()
+function chat:reset()
 	self.lines = { "", "", "", "", "", "", "", "Press enter to chat.", "Welcome!" }
+end
+
+function chat:show()
 end
 
 function chat:draw()

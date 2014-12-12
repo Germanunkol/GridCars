@@ -59,8 +59,8 @@ function dedicated:update( dt )
 		end
 	elseif STATE == "Game" then
 		-- Let's hope it never gets below 0... :P
-		if server:getNumUsers() <= 0 then
-			lobby:show()
+		if game:getNumUsersPlaying() <= 0 then
+			game:sendBackToLobby()
 		end
 	end
 end

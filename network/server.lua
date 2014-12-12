@@ -285,6 +285,8 @@ end
 
 function Server:setUserValue( user, key, value )
 
+	assert( user.synchronized, "Do not use server:setUserValue() before synchronization is done." )
+
 	user.customData[key] = value
 
 	-- Broadcast to other users:

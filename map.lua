@@ -649,9 +649,20 @@ function map:setCarPosDirectly(id, posX, posY) --car-id as number, pos as Gridpo
 end
 
 function map:getCarPos(id)
-	local x = map.cars[id].x/GRIDSIZE
-	local y = map.cars[id].y/GRIDSIZE
-	return x, y
+	if map.cars[id] then
+		local x = map.cars[id].x/GRIDSIZE
+		local y = map.cars[id].y/GRIDSIZE
+		return x, y
+	else
+		return nil,nil
+	end
+end
+
+function map:hasCar(id)
+	return map.cars[id] ~= nil
+end
+function map:getCar(id)
+	return map.cars[id]
 end
 
 function map:getGridPos(GridNx,GridNy)
@@ -709,6 +720,7 @@ function map:newCar( id, x, y, color )
 		end
 	end
 	map.cars[id] = Car:new( x, y, color, map.driveAngle, bodyType )
+	print("created car:", id, x, y, map.cars[id], #map.cars )
 end
 
 function map:removeAllCars()
@@ -736,7 +748,6 @@ function map:clickAtTargetPosition( id, x, y )
 end
 
 function map:setCarNextMovement( id, x, y )
-
 end
 function map:resetCarNextMovement( id )
 end

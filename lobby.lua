@@ -2,7 +2,7 @@ local lobby = {
 	camMoveTime = 5,
 	currentMapString = nil,
 	ready = false,
-	locked = false,
+	--locked = false,
 	timers = {},
 	countdown = nil,
 }
@@ -46,7 +46,7 @@ function lobby:show()
 	STATE = "Lobby"
 
 	--self.currentMapString = nil
-	self.locked = false
+	--self.locked = false
 
 	self.timers = {}
 	self.countdown = nil
@@ -54,6 +54,7 @@ function lobby:show()
 	if server then
 		for k, u in pairs( server:getUsers() ) do
 			server:setUserValue( u, "ready", false )
+			server:setUserValue( u, "ingame", false )
 		end
 		if DEDICATED then
 			--[[local t = Timer:new( 5, function() dedicated:chooseMap() end )
@@ -243,6 +244,7 @@ function lobby:sendMap( user )
 			-- Broadcast to all:
 			server:send( CMD.MAP, mapstring )
 		end
+
 	end
 end
 
@@ -289,7 +291,7 @@ function lobby:attemptGameStart()
 	end
 
 	-- ON DEDICATED ONLY!
-	--[[if DEDICATED and not allReady then
+	if DEDICATED and not allReady then
 		if usersReady == 0 then
 			if self.countdown then
 				self.countdown = nil
@@ -297,21 +299,26 @@ function lobby:attemptGameStart()
 			end
 		else
 			if self.countdown == nil then
-				self.countdown = 60
+				self.countdown = COUNTDOWN
 				self.sentCountdownTimes = {}
-				server:send( CMD.CHAT, "    Press 'R' to join in." )
-				server:send( CMD.CHAT, "Server started countdown. Game starts in 60 seconds." )
+				server:send( CMD.CHAT, "Round starts in " .. COUNTDOWN .. " seconds. Get ready to play! ('R' to join this round.)" )
 			end
 		end
-	end]]
+	end
 
 	-- If all clients are ready, then they must also all be synchronized.
 	-- So we're ok to start.
-	if allReady then --or (self.countdown and self.countdown <= 0 ) then
-		self.locked = true		-- don't let any more users join!
+	if allReady or (self.countdown and self.countdown <= 0 ) then
+		--self.locked = true		-- don't let any more users join!
 		server:send( CMD.START_GAME )
 		--lobby:kickAllWhoArentReady()
 		self.countdown = nil
+
+		for k, u in pairs( server:getUsers() ) do
+			if u.customData.ready then
+				server:setUserValue( u, "ingame", true )	-- everyone else is spectating!
+			end
+		end
 		return true
 	elseif not DEDICATED then
 		local commands = {}
@@ -322,11 +329,11 @@ function lobby:attemptGameStart()
 end
 
 function lobby:authorize( user )
-	if self.locked then
+	--[[if self.locked then
 		return false, "Game already started."
-	else
+	else]]
 		return true
-	end
+	--end
 end
 
 function lobby:setUserColor( user )

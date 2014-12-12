@@ -36,6 +36,7 @@ end
 -- Called on server when client is connected to server:
 function newUser( user )
 	lobby:setUserColor( user )
+	server:setUserValue( user, "moved", true )
 	if DEDICATED then
 		server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!", user )
 	end
@@ -58,6 +59,10 @@ function synchronize( user )
 	-- If the server has a map chosen, let the new client know
 	-- about it:
 	lobby:sendMap( user )
+	if STATE == "Game" then
+		server:send( CMD.START_GAME, "", user )
+		game:synchronizeCars( user )
+	end
 end
 
 function serverReceived( command, msg, user )
@@ -71,6 +76,7 @@ function serverReceived( command, msg, user )
 end
 
 function clientReceived( command, msg )
+	print(command, msg:sub(1,20))
 	if command == CMD.CHAT then
 		chat:newLine( msg )
 	elseif command == CMD.MAP then

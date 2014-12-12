@@ -133,6 +133,7 @@ function Client:received( command, msg )
 		--print("changed timeout.")
 	elseif command == CMD.USER_VALUE then
 		local id, keyType, key, valueType, value = string.match( msg, "(.*)|(.*)|(.*)|(.*)|(.*)" )
+		print("user value", id, key, value)
 
 		key = stringToType( key, keyType )
 		value = stringToType( value, valueType )

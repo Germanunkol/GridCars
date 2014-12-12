@@ -65,6 +65,7 @@ function menu:show()
 	if addressInput then
 		addressInput:setContent( ADDRESS )
 	end
+	chat:reset()
 end
 
 function menu:update( dt )

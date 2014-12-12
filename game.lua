@@ -38,27 +38,33 @@ end
 function game:show()
 	STATE = "Game"
 
-	map:removeAllCars()
-
 	game.winnerID = nil
+	map:removeAllCars()
 	
 	if server then
+
 		for id, u in pairs( server:getUsers() ) do
-			local col = {
-				u.customData.red,
-				u.customData.green,
-				u.customData.blue,
-				255
-			}
+			if u.customData.ingame then
+				local col = {
+					u.customData.red,
+					u.customData.green,
+					u.customData.blue,
+					255
+				}
 
-			local x, y = 0,0
-			if map.startPositions[id] then
-				x, y = map.startPositions[id].x, map.startPositions[id].y
+				local x, y = 0,0
+				if map.startPositions[id] then
+					x, y = map.startPositions[id].x, map.startPositions[id].y
+				end
+
+				map:newCar( u.id, x, y, col )
+
+				server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
+			else
+				-- If the client is not racing this round, let him look like he's 
+				-- already moved:
+				server:setUserValue( u, "moved", true )
 			end
-			
-			map:newCar( u.id, x, y, col )
-
-			server:send( CMD.NEW_CAR, u.id .. "|" .. x .. "|" .. y )
 		end
 
 		game.crashedUsers = {}
@@ -92,11 +98,13 @@ end
 
 function game:camToCar( id )
 	if client then
-		local x, y = map:getCarPos( id )
-		x = x*GRIDSIZE
-		y = y*GRIDSIZE
-		map:camSwingToPos( x, y, 1 )
-		map:camZoom( 0.5, 1 )
+		if map:hasCar( id ) then
+			local x, y = map:getCarPos( id )
+			x = x*GRIDSIZE
+			y = y*GRIDSIZE
+			map:camSwingToPos( x, y, 1 )
+			map:camZoom( 0.5, 1 )
+		end
 	end
 end
 
@@ -164,8 +172,11 @@ function game:drawUserList()
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
 
 			local dx = love.graphics.getFont():getWidth( u.playerName ) + 40
-			local lapString = "Lap: " .. map:getCarRound( u.id )
-			love.graphics.print( lapString, x + dx, y )
+			local lapString = ""
+			if map:hasCar( u.id ) then
+				lapString = "Lap: " .. map:getCarRound( u.id )
+				love.graphics.print( lapString, x + dx, y )
+			end
 
 			-- Show crashed users in list:
 			if u.customData.crashed == true then
@@ -177,6 +188,10 @@ function game:drawUserList()
 				love.graphics.setColor( 255, 255, 128, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString ) + 20
 				love.graphics.print( "[Waiting for move]", x + dx, y )
+			elseif not u.customData.ingame == true then
+				love.graphics.setColor( 128, 128, 255, 255 )
+				dx = dx + love.graphics.getFont():getWidth( lapString )
+				love.graphics.print( "[spectate]", x + dx, y )
 			end
 			y = y + 20
 			i = i + 1
@@ -205,11 +220,11 @@ end
 
 function game:setState( state )
 	self.GAMESTATE = state
-	if self.GAMESTATE == "move" then
+	--[[if self.GAMESTATE == "move" then
 		if client then
 			map:resetCarNextMovement( client:getID() )
 		end
-	end
+	end]]
 end
 
 function game:newCar( msg )
@@ -237,7 +252,7 @@ function game:sendNewCarPosition( x, y )
 	if client then
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
 
-		map:setCarNextMovement( client:getID(), x, y )
+		--map:setCarNextMovement( client:getID(), x, y )
 	end
 end
 
@@ -271,15 +286,19 @@ function game:startMovementRound()
 				-- Consider this user to be finished...
 				game.usersMoved[u.id] = true
 			else
-				-- Only let users move if they haven't crashed:
-				server:send( CMD.GAMESTATE, "move", u )
-				server:setUserValue( u, "moved", false )
 
-				self.timerEvent = function() game:roundTimeout() end
-				self.maxTime = ROUND_TIME
-				self.time = 0
+				-- Only let users move if they haven't crashed and aren't spectating:
+				if u.customData.ingame then
+					server:send( CMD.GAMESTATE, "move", u )
+					server:setUserValue( u, "moved", false )
+				end
+
 			end
 		end
+
+		self.timerEvent = function() game:roundTimeout() end
+		self.maxTime = ROUND_TIME
+		self.time = 0
 
 		-- If all users crashed, continue:
 		game:checkForRoundEnd()
@@ -290,8 +309,12 @@ function game:roundTimeout()
 	local found = false
 	if server then
 		for k, u in pairs( server:getUsers() ) do
-			if not self.usersMoved[u.id] then
+
+			-- If the user did not move their car in time, move it according to last velocity:
+			if not self.usersMoved[u.id] and u.customData.ingame == true then
 				local x, y = map:getCarCenterVel( u.id )
+
+				-- Check for crashes:
 				game:validateCarMovement( u.id, x, y )
 				found = true
 			end
@@ -305,11 +328,13 @@ end
 function game:moveAll()
 	if server then
 		for k, u in pairs( server:getUsers() ) do
-			--local x, y = map:getCarPos( u.id )
-			local x,y = self.newUserPositions[u.id].x, self.newUserPositions[u.id].y
-			server:send( CMD.MOVE_CAR, u.id .. "|" .. x .. "|" .. y )
-			if DEDICATED then
-				map:setCarPosDirectly( u.id, x, y )
+			if u.customData.ingame and map:hasCar( u.id ) then
+				--local x, y = map:getCarPos( u.id )
+				local x,y = self.newUserPositions[u.id].x, self.newUserPositions[u.id].y
+				server:send( CMD.MOVE_CAR, u.id .. "|" .. x .. "|" .. y )
+				if DEDICATED then
+					map:setCarPosDirectly( u.id, x, y )
+				end
 			end
 		end
 	end
@@ -421,7 +446,7 @@ function game:checkForRoundEnd()
 	-- Check if all users have sent their move:
 	local doneMoving = true
 	for k, u in pairs( server:getUsers() ) do
-		if not self.usersMoved[u.id] then
+		if u.customData.ingame and not self.usersMoved[u.id] then
 			doneMoving = false
 			break
 		end
@@ -435,10 +460,12 @@ end
 function game:checkForWinner()
 	if server and not game.winnerID then
 		for k, u in pairs( server:getUsers() ) do
-			if map:getCarRound( u.id ) >= LAPS + 1 then
-				game.winnerID = u.id
-				print("WINNER FOUND!", u.id)
-				break
+			if u.customData.ingame then
+				if map:getCarRound( u.id ) >= LAPS + 1 then
+					game.winnerID = u.id
+					print("WINNER FOUND!", u.id)
+					break
+				end
 			end
 		end
 	end
@@ -456,11 +483,13 @@ function game:moveCar( msg )
 end
 
 function game:playerWins( msg )
-	game.winnerID = tonumber(msg)	
-	game:camToCar( game.winnerID )
-	self.timerEvent2 = game.zoomOut
-	self.maxTime2 = 3
-	self.time2 = 0
+	if client then
+		game.winnerID = tonumber(msg)	
+		game:camToCar( game.winnerID )
+		self.timerEvent2 = game.zoomOut
+		self.maxTime2 = 3
+		self.time2 = 0
+	end
 end
 
 function game:sendWinner()
@@ -481,6 +510,29 @@ function game:zoomOut()
 	local cX = map.Boundary.minX + (map.Boundary.maxX - map.Boundary.minX)*0.5
 	local cY = map.Boundary.minY + (map.Boundary.maxY - map.Boundary.minY)*0.5
 	map:camSwingToPos( cX, cY )
+end
+
+function game:synchronizeCars( user )
+	if server then
+		for k, u in pairs( server:getUsers() ) do
+			if u.customData.ingame then
+				if map:hasCar( u.id ) then
+					local c = map:getCar( u.id )
+					server:send( CMD.NEW_CAR, u.id .. "|" .. c.targetX .. "|" .. c.targetY, user )
+				end
+			end
+		end
+	end
+end
+
+function game:getNumUsersPlaying()
+	local num = 0
+	for k, u in pairs( server:getUsers() ) do
+		if u.customData.ingame == true then
+			num = num + 1
+		end
+	end
+		return num
 end
 
 return game
