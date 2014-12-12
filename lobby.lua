@@ -310,6 +310,7 @@ function lobby:attemptGameStart()
 	-- So we're ok to start.
 	if allReady or (self.countdown and self.countdown <= 0 ) then
 		lobby:startGame()
+		return true
 	elseif not DEDICATED then
 		if usersReady >= 1 then
 		local commands = {}

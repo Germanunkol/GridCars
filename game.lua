@@ -268,8 +268,10 @@ function game:startMovementRound()
 
 				-- If this is the first crash round:
 				if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
-					local i = math.random(#tease)
-					server:send( CMD.CHAT, tease[i] .. u.playerName .. tease2[i] )
+					if math.random(20) == 1 then
+						local i = math.random(#tease)
+						server:send( CMD.CHAT, tease[i] .. u.playerName .. tease2[i] )
+					end
 				end
 				game.crashedUsers[u.id] = game.crashedUsers[u.id] - 1
 				if game.crashedUsers[u.id] <= 0 then
