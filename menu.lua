@@ -52,6 +52,7 @@ function menu.playername( name )
 	name = name:gsub( " ", "" )
 	if #name > 0 then
 		PLAYERNAME = name
+		config.setValue( "PLAYERNAME", PLAYERNAME )
 	end
 	if playernameInput then
 		playernameInput:setContent( PLAYERNAME )
