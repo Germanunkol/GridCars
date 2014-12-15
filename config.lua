@@ -140,8 +140,9 @@ function config.load()
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
 		HEIGHT = tonumber(config.getValue( "HEIGHT" )) or love.graphics.getHeight()
+		FULLSCREEN = config.getValue( "FULLSCREEN" ) or false
 		if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
-			assert(love.window.setMode( WIDTH, HEIGHT ), "Cannot change window size. Change in your config.txt")
+			assert(love.window.setMode( WIDTH, HEIGHT, {fullscreen = FULLSCREEN} ), "Cannot change window size. Change or remove your config.txt")
 		end
 	end
 
@@ -174,6 +175,7 @@ function config.createIfEmpty()
 		config.setValue( "SKIP_ROUNDS_ON_CRASH", SKIP_ROUNDS_ON_CRASH )
 		config.setValue( "PORT", PORT )
 		config.setValue( "COUNTDOWN", COUNTDOWN )
+		config.setValue( "FULLSCREEN", false )
 	end
 end
 

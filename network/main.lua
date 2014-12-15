@@ -15,7 +15,7 @@ local chatLines = { "", "", "", "", "", "", "" }
 local server = nil
 local client = nil
 
-local port = 3410
+local port = 3411
 
 function love.load( args )
 
@@ -31,7 +31,6 @@ function love.load( args )
 		server = network:startServer( 16, port )
 		-- Connect to the server.
 		client = network:startClient( 'localhost', "Germanunkol", port )
-
 		-- set server callbacks:
 		server.callbacks.received = serverReceived
 
@@ -80,7 +79,7 @@ function love.draw()
 	if users then
 		local x, y = 20, 10
 		for k, u in pairs( users ) do
-			love.graphics.print( u.playerName, x, y )
+			love.graphics.print( u.playerName .. " [" .. u:getPing() .. " ms]", x, y )
 			y = y + 20
 		end
 
