@@ -6,9 +6,10 @@ local chat = {
 }
 
 local CHAT_WIDTH = 300
+local chatSide = "left"
 
 function chat:init()
-	CHAT_WIDTH = math.min(love.graphics.getWidth()/2, 500)
+	CHAT_WIDTH = math.min(love.graphics.getWidth()/2 - 40, 500)
 end
 
 function chat:reset()
@@ -19,30 +20,59 @@ function chat:show()
 end
 
 function chat:draw()
-	local x, y = 20, love.graphics.getHeight() - 20*(#self.lines+5)
-	love.graphics.setColor( 0, 0, 0, 200 )
-	love.graphics.rectangle( "fill", x, y + 40,
-			CHAT_WIDTH, 20*(#self.lines) + 10 )
-	if self.active then
-		love.graphics.setColor( 0, 0, 0, 200 )
-		love.graphics.rectangle( "fill", x, y,
-		CHAT_WIDTH, love.graphics.getFont():getHeight() + 10 )
+	local fontHeight = love.graphics.getFont():getHeight()
+	local x
+	local y = love.graphics.getHeight() - 20*(#self.lines+1) - 70
 
-		love.graphics.setColor( 255, 255, 255, 255 )
-		if math.sin(self.time*3) > 0 then
-			love.graphics.print( "Enter text: " .. self.enterText .. "|", x + 5, y + 5 )
-		else
-			love.graphics.print( "Enter text: " .. self.enterText, x + 5, y + 5 )
+	if map.loaded and client and client:getID() then
+		if map:hasCar( client:getID() ) then
+			local c = map:getCar( client:getID() )
+			if c.vY > 0 then
+			if chatSide == "left" then
+				if c.vX < 0 then
+					chatSide = "right"
+				end
+			else
+				if c.vX > 0 then
+					chatSide = "left"
+				end
+			end
 		end
-		y = y + 40
+		end
+	end
+	
+	if chatSide == "left" then
+		x = 20
+	else
+		x = love.graphics.getWidth() - 20 - CHAT_WIDTH
 	end
 
-	local x, y = 25, love.graphics.getHeight() - 20*(#self.lines+2) - 10
+	love.graphics.setColor( 0, 0, 0, 200 )
+	love.graphics.rectangle( "fill", x, y,
+			CHAT_WIDTH, 20*(#self.lines) + 10 )
+
 	love.graphics.setColor( 255, 255, 255, 255 )
-	for k = #self.lines, 1, -1 do
+	x = x + 5
+	y = y + 10
+	for k = 1, #self.lines do
 		love.graphics.print( self.lines[k], x, y )
 		y = y + 20
 	end
+
+	local x, y = 20, love.graphics.getHeight() - 70
+	if self.active then
+		love.graphics.setColor( 0, 0, 0, 200 )
+		love.graphics.rectangle( "fill",
+			x, y, CHAT_WIDTH, fontHeight + 10 )
+
+		love.graphics.setColor( 255, 255, 255, 255 )
+		if math.sin(self.time*3) > 0 then
+			love.graphics.print( "Say: " .. self.enterText .. "|", x + 5, y + 5 )
+		else
+			love.graphics.print( "Say: " .. self.enterText, x + 5, y + 5 )
+		end
+	end
+
 end
 
 function chat:update( dt )
@@ -91,7 +121,7 @@ function chat:textinput( letter )
 	if STATE == "Game" or STATE == "Lobby" then
 		if self.active then
 			if letter ~= "|" then
-				if love.graphics.getFont():getWidth( self.enterText ) < CHAT_WIDTH - 30 then
+				if love.graphics.getFont():getWidth( "Say: " .. self.enterText .. letter ) < CHAT_WIDTH - 50 then
 					self.enterText = self.enterText .. letter
 				end
 			end
