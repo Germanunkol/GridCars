@@ -67,6 +67,11 @@ function menu:show()
 	end
 	chat:reset()
 	map:reset()
+	menu:closeConnectPanel()
+end
+
+function menu:closeConnectPanel()
+	scr:removePanel( "connectPanel" )
 end
 
 function menu:update( dt )
@@ -110,28 +115,28 @@ end
 
 function menu.connect()
 
+	local y = 0
 	scr:addPanel( "connectPanel",
-			love.graphics.getWidth()/2 - 50,
+			love.graphics.getWidth()/2 - 175,
 			love.graphics.getHeight()-100,
-			100, 50 )
-	scr:addHeader( "connectPanel", "hConnect", 0, y, "Connecting" )
-	scr:addText( "connectPanel", "connectTxt", 10, y, nil, 7, "Connecting to: '" .. menu.ip .. "'.")
+			350, 50 )
+	scr:addHeader( "connectPanel", "hConnect", 0, 0, "Connecting" )
+	scr:addText( "connectPanel", "connectTxt", 10, 15, nil, 7, "Connecting to: '" .. menu.ip .. "'...")
 
 	local success
 	success, client = pcall( function()
 		return network:startClient( menu.ip, PLAYERNAME, PORT, VERSION )
 	end)
 
-	scr:removePanel( "connectPanel" )
-
 	if success then
 		-- set client callbacks:
 		setClientCallbacks( client )
 		config.setValue( "ADDRESS", menu.ip )
-		ui:setActiveScreen( nil )
+		--ui:setActiveScreen( nil )
 	else
 		print("Could not conect:", client )
 		menu:errorMsg( "Error:", "Could not connect." )
+		menu:closeConnectPanel()
 	end
 
 end
@@ -139,6 +144,7 @@ end
 function menu:authorized( auth, reason )
 	if not auth then
 		self:errorMsg( "Could not connect: ", reason )
+		menu:closeConnectPanel()
 	end
 end
 
