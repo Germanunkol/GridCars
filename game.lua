@@ -65,6 +65,7 @@ function game:show()
 				-- already moved:
 				server:setUserValue( u, "moved", true )
 			end
+			server:setUserValue( u, "crashed", false )
 		end
 
 		game.crashedUsers = {}
