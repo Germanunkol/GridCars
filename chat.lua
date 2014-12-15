@@ -109,6 +109,12 @@ function chat:keypressed( key )
 		elseif key == "backspace" then
 			if #self.enterText > 0 then
 				self.enterText = self.enterText:sub( 1, #self.enterText - 1 )
+				-- Check if the last char is part of an umlaut or similar. If so, remove it:
+				local last = self.enterText:sub(-1)
+				local byte = string.byte(last)
+				if byte and byte >= 194 then
+					self.enterText = self.enterText:sub( 1, #self.enterText - 1 )
+				end
 			end
 		elseif key == "escape" then
 			self.enterText = ""

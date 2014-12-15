@@ -148,7 +148,6 @@ function config.load()
 
 	-- Remove any pipe symbols from the player name:
 	PLAYERNAME = string.gsub( PLAYERNAME, "|", "" )
-	print( "Player name: '" .. PLAYERNAME .. "'" )
 
 	if not DEDICATED then
 		config.createIfEmpty()
