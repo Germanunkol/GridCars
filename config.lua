@@ -134,7 +134,7 @@ function config.load()
 	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
 	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
 	PORT = tonumber(config.getValue( "PORT" )) or 3410
-	ADDRESS = config.getValue( "ADDRESS" ) or "localhost"
+	ADDRESS = config.getValue( "ADDRESS" ) or "germanunkol.de"
 	COUNTDOWN = tonumber(config.getValue( "COUNTDOWN" )) or 60
 
 	if not DEDICATED then

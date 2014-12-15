@@ -35,7 +35,6 @@ end
 function connected()
 	lobby:show()
 	menu:closeConnectPanel()
-	print("LOBBY")
 end
 -- Called on server when client is connected to server:
 function newUser( user )
