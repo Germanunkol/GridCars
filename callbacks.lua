@@ -1,7 +1,7 @@
 -- This defines all the callbacks needed by server and client.
 -- Callbacks are called when certain events happen.
 
-VERSION = "VERSION 0.4"
+VERSION = "0.4"
 
 -- These are all possible commands clients of the server can send:
 CMD = {
@@ -45,7 +45,6 @@ function newUser( user )
 		utility.log( "[" .. os.time() .. "] New user: " ..
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end
-	print("New player:", user.id, user.playerName )
 end
 
 -- Called when client is disconnected from the server
@@ -89,7 +88,6 @@ function serverReceived( command, msg, user )
 end
 
 function clientReceived( command, msg )
-	print(command, msg:sub(1,20))
 	if command == CMD.CHAT then
 		chat:newLine( msg )
 	elseif command == CMD.MAP then

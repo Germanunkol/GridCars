@@ -346,11 +346,11 @@ function lobby:authorize( user, authorizationRequest )
 		return true
 	end]]
 	-- Let only users running the correct version authorize:
-	print("auth", authorizationRequest )
 	if authorizationRequest == VERSION then
 		return true
 	else
-		return false, "Wrong version. Get the newest version online!"
+		return false, "Version mismatch. You're running version " .. authorizationRequest ..
+		", server version is " .. VERSION .. "."
 	end
 end
 
