@@ -7,13 +7,13 @@ Images = require "images"
 local playernameInput, addressInput
 
 function menu:init()
-	
+
 	scr = ui:newScreen( "menu" )
 
 	scr:addPanel( "centerPanel",
 			50,
 			love.graphics.getHeight()/2-200,
-			300, 320 )
+			300, 350 )
 
 	local y = 0
 	scr:addHeader( "centerPanel", "welcome", 0, y, "Welcome!" )
@@ -41,6 +41,8 @@ function menu:init()
 	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.connect )
 	y = y + 40
 
+	scr:addFunction( "centerPanel", "options", 10, y, "Options", "o", menu.toggleOptions )
+	y = y + 20
 	scr:addFunction( "centerPanel", "help", 10, y, "Help", "h", menu.toggleHelp )
 	y = y + 20
 	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
@@ -158,6 +160,9 @@ function menu:errorMsg( header, msg )
 end
 
 function menu:toggleHelp()
+	if scr:panelByName( "optionsPanel" ) ~= nil then
+		scr:removePanel( "optionsPanel" )
+	end
 	if scr:panelByName( "helpPanel" ) ~= nil then
 		scr:removePanel( "helpPanel" )
 	else
@@ -173,6 +178,82 @@ function menu:toggleHelp()
 
 		--scr:addText( "helpPanel", "helpText1", 10, y, nil, 7, "Press {f}'p'{p}")
 		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "To change a server's setting or your window size, go to:{g}\n    " .. love.filesystem.getSaveDirectory() .. "/config.txt{p}\n\nPress {f}'p'{p} to change your playername.\n{f}'s'{p} starts a server.\nUsing {f}'i'{p} you can enter an IP (v4) address of the server you want to join.\nIf the server is not in your LAN, but on the web, then the server must probably port-forward port " .. PORT .. " on his/her router.\n\nTo play your own maps, put them into the following folder:\n{g}    " ..love.filesystem.getSaveDirectory() .. "/maps/" )
+	end
+end
+
+function menu:toggleOptions()
+	if scr:panelByName( "helpPanel" ) ~= nil then
+		scr:removePanel( "helpPanel" )
+	end
+	if scr:panelByName( "optionsPanel" ) ~= nil then
+		scr:removePanel( "optionsPanel" )
+	else
+		local width = 300
+		local x = math.min( 450, love.graphics.getWidth() - width - 50 )
+		local y = 0
+		scr:addPanel( "optionsPanel",
+			x,
+			love.graphics.getHeight()/2-150,
+			width, 320 )
+		scr:addHeader( "optionsPanel", "h1", 0, y, "Options:" )
+		y = y + 30
+
+		scr:addHeader( "optionsPanel", "h2", 0, y, "Width and Height:" )
+		y = y + 20
+		local input
+		local w, h, flags = love.window.getMode()
+		input = scr:addInput( "optionsPanel", "width", 10, y, nil, 20, "1", menu.widthEntered )
+		input:setContent( tostring(w) )
+		y = y + 20
+		input = scr:addInput( "optionsPanel", "height", 10, y, nil, 20, "2", menu.heightEntered )
+		input:setContent( tostring(h) )
+		y = y + 40
+
+		if flags.fullscreen then
+			scr:addFunction( "optionsPanel", "fullscreen", 10, y, "Fullscreen (on)", "f", menu.fullscreen )
+		else
+			scr:addFunction( "optionsPanel", "fullscreen", 10, y, "Fullscreen (off)", "f", menu.fullscreen )
+		end
+
+	end
+end
+
+function menu.widthEntered( txt )
+	local num = tonumber(txt)
+	if num then
+		ok = pcall( love.window.setMode, num, HEIGHT, {fullscreen = FULLSCREEN} )
+		if ok then
+			WIDTH = num
+			config.setValue( "WIDTH", num )
+			love.load()
+			menu:toggleOptions()
+		end
+	end
+end
+
+function menu.heightEntered( txt )
+	local num = tonumber(txt)
+	if num then
+		ok = pcall( love.window.setMode, WIDTH, num, {fullscreen = FULLSCREEN} )
+		if ok then
+			HEIGHT = num
+			config.setValue( "HEIGHT", num )
+			love.load()
+			menu:toggleOptions()
+		end
+	end
+end
+
+function menu.fullscreen()
+
+	local w, h, flags = love.window.getMode()
+	local fscr = not flags.fullscreen
+	ok = pcall( love.window.setMode, WIDTH, HEIGHT, {fullscreen = fscr} )
+	if ok then
+		config.setValue( "FULLSCREEN", fscr )
+		FULLSCREEN = fscr
+		love.load()
+		menu:toggleOptions()
 	end
 end
 

@@ -224,7 +224,7 @@ function Panel:keypressed( key, unicode )
 						f.tooltip()
 					end
 				elseif f.event then
-					f.event()
+					f.event( f )
 				end
 				return true
 			end

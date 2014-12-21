@@ -41,7 +41,6 @@ function Screen:newTooltip( msg )
 end
 
 function Screen:addPanel( name, x, y, minWidth, minHeight, font, padding, corners )
-
 	-- no duplicate panels allowed!
 	local old = self:panelByName( name )
 	if old then
@@ -50,7 +49,6 @@ function Screen:addPanel( name, x, y, minWidth, minHeight, font, padding, corner
 	local pan = Panel:new( name, x, y, minWidth, minHeight, font or self.font, padding, corners )
 	table.insert( self.panels, pan )
 	return pan
-
 end
 
 function Screen:removePanel( name )
