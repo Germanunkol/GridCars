@@ -132,7 +132,9 @@ function menu.connect()
 	if success then
 		-- set client callbacks:
 		setClientCallbacks( client )
-		config.setValue( "ADDRESS", menu.ip )
+		if not server then		-- only save address if this is not a server (in this case ADDRESS would be localhost)
+			config.setValue( "ADDRESS", menu.ip )
+		end
 		--ui:setActiveScreen( nil )
 	else
 		print("Could not conect:", client )

@@ -141,7 +141,8 @@ function config.load()
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
 		HEIGHT = tonumber(config.getValue( "HEIGHT" )) or love.graphics.getHeight()
 		FULLSCREEN = config.getValue( "FULLSCREEN" ) or false
-		if WIDTH ~= love.graphics.getHeight() or HEIGHT ~= love.graphic.getWidth() then
+		local w, h, flags = love.window.getMode()
+		if WIDTH ~= w or HEIGHT ~= h or FULLSCREEN ~= flags.fullscreen then
 			assert(love.window.setMode( WIDTH, HEIGHT, {fullscreen = FULLSCREEN} ), "Cannot change window size. Change or remove your config.txt")
 		end
 	end
