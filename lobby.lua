@@ -52,7 +52,7 @@ function lobby:show()
 	self.countdown = nil
 
 	if server then
-		for k, u in pairs( network:getUsers() ) do
+		for k, u in pairs( server:getUsers() ) do
 			server:setUserValue( u, "ready", false )
 			server:setUserValue( u, "ingame", false )
 		end
