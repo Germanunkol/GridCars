@@ -56,11 +56,14 @@ However, we started a little early (half day) on the network library, because of
 
 Links + Download:
 ----------------------
-Game (Win): 
-http://germanunkol.de/gridcars/downloads/GridCars.zip
+There are binaries available at:
+http://germanunkol.de/gridcars/
 
-Game (Linux and Max - Install the love 2d engine from your repositories or from love2d.org):
-http://germanunkol.de/gridcars/downloads/GridCars.love
+Also, this source code can be run with the (Löve2D engine)[https://love2d.org/] directly:
+```bash
+cd Path/To/GridCars
+love .
+```
 
 Source code on Github: 
 https://github.com/Germanunkol/Cars
