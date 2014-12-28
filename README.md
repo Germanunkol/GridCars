@@ -59,7 +59,7 @@ Links + Download:
 There are binaries available at:
 http://germanunkol.de/gridcars/
 
-Also, this source code can be run with the (Löve2D engine)[https://love2d.org/] directly:
+Also, this source code can be run with the [Löve2D engine](https://love2d.org/) directly:
 ```bash
 cd Path/To/GridCars
 love .
