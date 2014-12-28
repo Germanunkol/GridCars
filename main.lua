@@ -21,6 +21,7 @@ end
 utility = require( "utility" )		-- helper functions
 require( "callbacks" )		-- helper functions
 Timer = require("timer")
+Sounds = require("sounds")
 
 server = nil
 client = nil
@@ -35,6 +36,7 @@ function love.load( args )
 	config.load()
 
 	images:load()	-- preload all images
+	Sounds:load()
 	chat:init()
 	lobby:init()
 	menu:init()

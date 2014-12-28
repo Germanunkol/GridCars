@@ -26,7 +26,9 @@ function Server:new( maxNumberOfPlayers, port, pingTime )
 	local o = {}
 	setmetatable( o, self )
 
-	print("[NET] Initialising Server...") o.conn = assert(socket.bind("*", port)) o.conn:settimeout(0)
+	print("[NET] Initialising Server...")
+	o.conn = assert(socket.bind("*", port))
+	o.conn:settimeout(0)
 	if o.conn then
 		print("[NET]\t-> started.")
 	end
@@ -43,7 +45,7 @@ function Server:new( maxNumberOfPlayers, port, pingTime )
 	userListByName = {}
 	numberOfUsers = 0
 	partMessage = ""
-	PINGTIME = pingTime or 2
+	PINGTIME = pingTime or 5
 
 	MAX_PLAYERS = maxNumberOfPlayers or 16
 
@@ -134,8 +136,6 @@ function Server:update( dt )
 				end
 			end
 			user.ping.timer = user.ping.timer + dt
-
-
 		end
 
 		return true

@@ -27,6 +27,7 @@ function setClientCallbacks( client )
 	client.callbacks.received = clientReceived
 	client.callbacks.connected = connected
 	client.callbacks.disconnected = disconnected
+	client.callbacks.newUser = newUser
 	-- Called when user is authorized or not (in the second case, a reason is given):
 	client.callbacks.authorized = function( auth, reason ) menu:authorized( auth, reason ) end
 end
@@ -74,6 +75,12 @@ function synchronize( user )
 	if STATE == "Game" then
 		server:send( CMD.START_GAME, "", user )
 		game:synchronizeCars( user )
+	end
+end
+
+function newUser( user )
+	if client and client.authorized then
+		Sounds:play( "beep" )
 	end
 end
 

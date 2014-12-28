@@ -64,3 +64,9 @@ http://germanunkol.de/gridcars/downloads/GridCars.love
 
 Source code on Github: 
 https://github.com/Germanunkol/Cars
+
+License:
+----------------------
+Released under MIT license (see License.txt).
+For the licenses of the libraries, check out the respective License files.
+Beep sound from "jobro" on freesound.org: http://www.freesound.org/people/jobro/sounds/33788/ (Creative Commons)
