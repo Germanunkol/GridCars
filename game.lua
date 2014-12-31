@@ -23,7 +23,7 @@ local tease = {
 local tease2 = {
 	"!",
 	"!",
-	"what was that?!",
+	", what was that?!",
 	", that was embarrassing...",
 }
 

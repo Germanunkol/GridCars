@@ -348,13 +348,19 @@ function map:import( mapstring )
 			-- separiere Koordinaten mit Hilfe der Leerzeichen
 			-- Aufbau in stl: "vertex 2.954973 2.911713 1.000000"
 			-- -> "vertex[leer](-)[8xNum][leer](-)[8xNum][leer](-)[8xNum]"
+			print(line)
+			local x,y,z = string.match( line, "vertex (-?%d*.?%d*) (-?%d*.?%d*) (-?%d*.?%d*)" )
+			vertices[counterV].x = tonumber(x) * MapScale
+			vertices[counterV].y = tonumber(y) * MapScale
+			vertices[counterV].z = tonumber(z) * MapScale
+			--[[
 			for key, value in ipairs(positions) do
 				startpos = string.find(line," ")
 				line = string.sub(line, startpos+1)
 				startpos = 0
 				endpos = string.find(line," ")
 				vertices[counterV][value] = tonumber(string.sub(line, startpos, endpos)) * MapScale
-			end
+			end]]
 			--print("Vertex  No",counterV, vertices[counterV].x, vertices[counterV].y,  vertices[counterV].z)
 			-- jeder dritte Vertex ergibt ein Dreieck
 			if counterV%3 == 0 then
