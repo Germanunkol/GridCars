@@ -122,7 +122,7 @@ end
 
 function updateAdvertisement()
 	if server then
-		local players, num = server:getUsers()
+		local players, num = network:getUsers()
 		if num then
 			serverInfo.numPlayers = num
 		end
