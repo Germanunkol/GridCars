@@ -41,8 +41,8 @@ end
 function newUser( user )
 	lobby:setUserColor( user )
 	server:setUserValue( user, "moved", true )
+	server:send( CMD.CHAT, WELCOME_MSG, user )
 	if DEDICATED then
-		server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!", user )
 		utility.log( "[" .. os.time() .. "] New user: " ..
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end

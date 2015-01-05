@@ -136,6 +136,8 @@ function config.load()
 	PORT = tonumber(config.getValue( "PORT" )) or 3410
 	ADDRESS = config.getValue( "ADDRESS" ) or "germanunkol.de"
 	COUNTDOWN = tonumber(config.getValue( "COUNTDOWN" )) or 60
+	WELCOME_MSG = tonumber(config.getValue( "WELCOME_MSG" )) or "Welcome!"
+	SERVER_NAME = tonumber(config.getValue( "SERVER_NAME" )) or "Default Server"
 
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
@@ -176,6 +178,7 @@ function config.createIfEmpty()
 		config.setValue( "PORT", PORT )
 		config.setValue( "COUNTDOWN", COUNTDOWN )
 		config.setValue( "FULLSCREEN", false )
+		config.setValue( "WELCOME_MSG", "Welcome!" )
 	end
 end
 

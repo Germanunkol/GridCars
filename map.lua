@@ -84,11 +84,10 @@ function map:newFromString( mapstring )
 		local cY = map.Boundary.minY + (map.Boundary.maxY - map.Boundary.minY)*0.5
 		map:camSwingToPos( cX, cY, 5 )
 
-		if server and not map.msgSent then
+		--[[if server and not map.msgSent then
 			map.msgSent = true
-			server:send( CMD.CHAT, "Server: See? Entire Game fits onto one screen!")
-		end
-
+			server:send( CMD.CHAT, WELCOME_MSG )
+		end]]
 
 		if not DEDICATED then
 			math.randomseed( utility.numFromString( mapstring:sub(1, 100 ) ) )

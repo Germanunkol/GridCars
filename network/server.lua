@@ -461,14 +461,13 @@ function Server:advertise( data, id, url, portUDP )
 	assert( data, "server:advertise called without any information." )
 	assert( not data:find("%s"),
 		"Data passed to server:advertise must not contain whitespace. Remove all space and tab characters!" )
-	assert( not data:find("[^a-zA-Z0-9%.,:;/-]"),
-		"Data passed to server:advertise must not contain special characters! Allowed characters are: a-z A-Z 0-9 , . : ; / -" )
+	assert( not data:find("[^a-zA-Z0-9%.,:;/%-_%%%(%)%[%]!%?]"),
+		"Data passed to server:advertise contains invalid characters! Allowed characters are: a-z A-Z 0-9 , . : ; / - _ % ( ) [ ] ! ?" )
 
 	if id then
-	assert( not id:find("[^a-zA-Z0-9%.,:;/-]"),
-		"ID passed to server:advertise must not contain special characters! Allowed characters are: a-z A-Z 0-9 , . : ; / -" )
+		assert( not id:find("[^a-zA-Z0-9%.,:;/%-_%%%(%)%[%]!%?]"),
+			"ID passed to server:advertise contains invalid characters! Allowed characters are: a-z A-Z 0-9 , . : ; / - _ % ( ) [ ] ! ?" )
 	end
-
 
 	local firstAdvertisement = false
 	if not self.advertisement.data then
