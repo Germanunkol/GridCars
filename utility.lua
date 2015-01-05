@@ -143,4 +143,17 @@ function utility.log( str, filename )
 	end
 end
 
+serverInfo = {
+	numPlayers = 0,
+	map = "-",
+	state = "Lobby",
+}
+
+function utility.createServerInfo()
+	local str = "Map:" .. serverInfo.map .. ","
+	str = str .. "Players:" .. serverInfo.map .. "/" .. MAX_PLAYERS .. ","
+	str = str .. "State:" .. serverInfo.state
+	return str
+end
+
 return utility

@@ -62,6 +62,8 @@ function lobby:show()
 			dedicated:postMatchLock()]]
 			dedicated:chooseMap()
 		end
+
+		updateAdvertiement()
 	end
 
 	if client then
@@ -219,6 +221,8 @@ function lobby:chooseMap( levelname )
 		end
 	end
 
+	map:setName( levelname )
+
 	map:newFromString(mapstring)
 
 	if map.loaded then
@@ -226,6 +230,7 @@ function lobby:chooseMap( levelname )
 		self.currentMapString = mapstring
 		self:sendMap()
 		print("\t->loaded!" )
+		updateAdvertiement()
 	end
 end
 

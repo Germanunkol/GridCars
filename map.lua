@@ -784,4 +784,11 @@ function map:zoomOut()
 	end
 end
 
+function map:setName( name )
+	self.name = name
+end
+function map:getName()
+	return self.name or "Unknown"
+end
+
 return map

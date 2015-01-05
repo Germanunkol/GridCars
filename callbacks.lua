@@ -1,7 +1,7 @@
 -- This defines all the callbacks needed by server and client.
 -- Callbacks are called when certain events happen.
 
-VERSION = "0.4"
+VERSION = "0.5"
 
 -- These are all possible commands clients of the server can send:
 CMD = {
@@ -46,6 +46,9 @@ function newUser( user )
 		utility.log( "[" .. os.time() .. "] New user: " ..
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end
+
+	-- update advertisement:
+	updateAdvertiement()
 end
 
 -- Called when client is disconnected from the server
@@ -64,6 +67,9 @@ function disconnectedUser( user )
 		utility.log( "[" .. os.time() .. "] User left: " ..
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end
+
+	-- update advertisement:
+	updateAdvertisement()
 end
 
 -- Called on server when new client is in the process of
@@ -111,6 +117,20 @@ function clientReceived( command, msg )
 		game:playerWins( msg )
 	elseif command == CMD.BACK_TO_LOBBY then
 		lobby:show()
+	end
+end
+
+function updateAdvertiement()
+	if server then
+		local players, num = server:getUsers()
+		serverInfo.numPlayers = num
+		if STATE == "Game" then
+			serverInfo.state = "Game"
+		else
+			serverInfo.state = "Lobby"
+		end
+		serverInfo.map = map:getName()
+		server:advertise( utility.createServerInfo(), GAME_ID, MAIN_SERVER_URL )
 	end
 end
 

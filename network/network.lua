@@ -166,7 +166,7 @@ function network:requestServerList( id, url )
 		self.serverlistRemote.url = url .. "/getList.php"
 	end
 	
-	local t = love.thread.newThread( BASE .. "serverlist/getList.lua" )
+	local t = love.thread.newThread( BASE:sub(1,#BASE-1) .. "/serverlist/getList.lua" )
 	local cin = love.thread.newChannel()
 	local cout = love.thread.newChannel()
 

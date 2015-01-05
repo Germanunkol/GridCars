@@ -78,6 +78,8 @@ function game:show()
 		self.time = 0
 
 		server:send( CMD.CHAT, "Server: Game starting. You have " .. ROUND_TIME .. " seconds for each move." )
+
+		updateAdvertiement()
 	end
 
 	if not DEDICATED then

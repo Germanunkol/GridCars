@@ -27,6 +27,9 @@ config.load()
 game:init()
 map:load()
 
+MAIN_SERVER_URL = "http://germanunkol.de/gridcars/serverlist"
+GAME_ID = "GridCars" .. VERSION
+
 function dedicated:startServer()
 	local success
 	success, server = pcall( function()

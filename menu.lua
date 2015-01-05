@@ -38,7 +38,7 @@ function menu:init()
 	addressInput = scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
 	addressInput:setContent( ADDRESS )
 	y = y + 20
-	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.connect )
+	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.showServerList )
 	y = y + 40
 
 	scr:addFunction( "centerPanel", "options", 10, y, "Options", "o", menu.toggleOptions )
@@ -46,7 +46,31 @@ function menu:init()
 	scr:addFunction( "centerPanel", "help", 10, y, "Help", "h", menu.toggleHelp )
 	y = y + 20
 	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
+end
 
+function menu.showServerList()
+	if serverList ~= nil then
+		scr:removeList( serverList.name )
+	end
+
+	network.callbacks.newServerEntryRemote = newServerListEntry
+
+	local list = {}
+	serverList = scr:newList( 60, 60, love.graphics.getWidth() - 120, list )
+end
+
+function newServerListEntry( entry )
+	if serverList then
+		-- Event to be called when clicking the button:
+		local event = function()
+			menu.connect(address, port)
+		end
+		local item = {
+			txt = address .. "\t" .. entry.info:gsub(",","\t"),
+			event = event
+		}
+		serverList:addListItem( item )
+	end
 end
 
 function menu.playername( name )
@@ -116,7 +140,7 @@ function menu.ipEntered( ip )
 	menu.ip = ip
 end
 
-function menu.connect()
+function menu.connect( ip, port )
 
 	local y = 0
 	scr:addPanel( "connectPanel",
@@ -124,11 +148,12 @@ function menu.connect()
 			love.graphics.getHeight()-100,
 			350, 50 )
 	scr:addHeader( "connectPanel", "hConnect", 0, 0, "Connecting" )
-	scr:addText( "connectPanel", "connectTxt", 10, 15, nil, 7, "Connecting to: '" .. menu.ip .. "'...")
+	scr:addText( "connectPanel", "connectTxt", 10, 15, nil, 7, "Connecting to: '" ..
+			(ip or menu.ip) .. "'...")
 
 	local success
 	success, client = pcall( function()
-		return network:startClient( menu.ip, PLAYERNAME, PORT, VERSION )
+		return network:startClient( ip or menu.ip, PLAYERNAME, port or PORT, VERSION )
 	end)
 
 	if success then
