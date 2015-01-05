@@ -63,7 +63,7 @@ function lobby:show()
 			dedicated:chooseMap()
 		end
 
-		updateAdvertiement()
+		updateAdvertisement()
 	end
 
 	if client then
@@ -230,7 +230,7 @@ function lobby:chooseMap( levelname )
 		self.currentMapString = mapstring
 		self:sendMap()
 		print("\t->loaded!" )
-		updateAdvertiement()
+		updateAdvertisement()
 	end
 end
 

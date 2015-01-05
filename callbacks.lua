@@ -48,7 +48,7 @@ function newUser( user )
 	end
 
 	-- update advertisement:
-	updateAdvertiement()
+	updateAdvertisement()
 end
 
 -- Called when client is disconnected from the server
@@ -120,7 +120,7 @@ function clientReceived( command, msg )
 	end
 end
 
-function updateAdvertiement()
+function updateAdvertisement()
 	if server then
 		local players, num = server:getUsers()
 		serverInfo.numPlayers = num

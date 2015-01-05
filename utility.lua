@@ -151,7 +151,7 @@ serverInfo = {
 
 function utility.createServerInfo()
 	local str = "Map:" .. serverInfo.map .. ","
-	str = str .. "Players:" .. serverInfo.map .. "/" .. MAX_PLAYERS .. ","
+	str = str .. "Players:" .. serverInfo.numPlayers .. "/" .. MAX_PLAYERS .. ","
 	str = str .. "State:" .. serverInfo.state
 	return str
 end

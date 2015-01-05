@@ -2,7 +2,7 @@ local menu = {
 	ip = ""
 }
 
-local scr
+local scr, listScr
 Images = require "images"
 local playernameInput, addressInput
 
@@ -46,6 +46,8 @@ function menu:init()
 	scr:addFunction( "centerPanel", "help", 10, y, "Help", "h", menu.toggleHelp )
 	y = y + 20
 	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
+
+	listScr = ui:newScreen( "Serverlist" )
 end
 
 function menu.showServerList()
@@ -57,16 +59,18 @@ function menu.showServerList()
 
 	local list = {}
 	serverList = scr:newList( 60, 60, love.graphics.getWidth() - 120, list )
+
+	network:requestServerList( GAME_ID, MAIN_SERVER_URL )
 end
 
 function newServerListEntry( entry )
 	if serverList then
 		-- Event to be called when clicking the button:
 		local event = function()
-			menu.connect(address, port)
+			menu.connect( entry.address, entry.port)
 		end
 		local item = {
-			txt = address .. "\t" .. entry.info:gsub(",","\t"),
+			txt = entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
 			event = event
 		}
 		serverList:addListItem( item )
@@ -270,7 +274,6 @@ function menu.heightEntered( txt )
 end
 
 function menu.fullscreen()
-
 	local w, h, flags = love.window.getMode()
 	local fscr = not flags.fullscreen
 	ok = pcall( love.window.setMode, WIDTH, HEIGHT, {fullscreen = fscr} )

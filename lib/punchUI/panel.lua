@@ -292,20 +292,21 @@ function Panel:addListItem( item )
 			item.event()
 		end
 	end
-	local tip = item.tooltip or "Choose option " .. k .. "."
+	local tip = item.tooltip or "Choose option " .. #self.events + 1 .. "."
 	local tooltipEv = function()
 		self:newTooltip( tip )
 	end
 
 	local key = item.key or tostring( #self.events + 1 )
 
-	ev, w, h = listPanel:addFunction( key, 0, curY, v.txt, key, ev, tooltipEv )
-	maxWidth = math.max( listPanel.w - 12, w )
+	ev, w, h = self:addFunction( key, 0, curY, item.txt, key, ev, tooltipEv )
+	maxWidth = math.max( self.w - 12, w )
 	curY = curY + self.font:getHeight() + 8
 
 	self.h = curY
 	self.w = maxWidth + 12
 
+	self:calcBorder()
 end
 
 return Panel
