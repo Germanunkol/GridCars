@@ -115,7 +115,9 @@ function config.getValue( name, filename )
 	end
 	if data then
 		for k, v in string.gmatch(data, "([^ \r\n]+) = ([^\r\n]*)") do
+			print(k, v)
 			if k == name then
+				print("\t", match)
 				if v == "false" then return false end
 				if v == "true" then return true end
 				return v
@@ -138,6 +140,8 @@ function config.load()
 	COUNTDOWN = tonumber(config.getValue( "COUNTDOWN" )) or 60
 	WELCOME_MSG = tonumber(config.getValue( "WELCOME_MSG" )) or "Welcome!"
 	SERVER_NAME = tonumber(config.getValue( "SERVER_NAME" )) or "Default Server"
+
+	print(WELCOME_MSG, SERVER_NAME)
 
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
