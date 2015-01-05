@@ -75,5 +75,16 @@ function UI:draw()
 	end
 end
 
+function UI:mousepressed( x, y, button )
+	if self.actScreen then
+		return self.actScreen:mousepressed( x, y, button )
+	end
+end
+function UI:mousemoved( x, y )
+	if self.actScreen then
+		self.actScreen:mousemoved( x, y )
+	end
+end
+
 -- only expose one single instance to the public:
 return UI:new()

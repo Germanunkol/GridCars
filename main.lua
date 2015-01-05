@@ -92,6 +92,7 @@ function love.update( dt )
 		menu:update( dt )
 	end
 	ui:update( dt )
+	ui:mousemoved( love.mouse.getPosition() )
 end
 
 function love.keypressed( key, unicode )
@@ -113,11 +114,16 @@ function love.textinput( letter )
 end
 
 function love.mousepressed( x, y, button )
+	if ui:mousepressed( x, y, button ) then
+		return
+	end
 	map:mousepressed( x, y, button )
 	if STATE == "Game" then
 		game:mousepressed( x, y, button )
 	end
 end
+
+
 
 function love.draw()
 

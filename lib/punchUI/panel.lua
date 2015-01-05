@@ -3,6 +3,7 @@ local START_TIME = 0.3
 
 local PATH = (...):match("(.-)[^%.^/]+$")
 local class = require( PATH .. "middleclass" )
+local utility = require( PATH .. "utility" )
 
 local TextBlock = require( PATH .. "textBlock" )
 local InputBlock = require( PATH .. "inputBlock" )
@@ -145,6 +146,13 @@ function Panel:draw( inactive )
 	for k, l in ipairs( self.lines ) do
 		love.graphics.line( l.x1, l.y1, l.x2, l.y2 )
 	end
+	for k, e in ipairs( self.events ) do
+		if e.highlight then
+			love.graphics.setColor( COL.HLIGHT[1], COL.HLIGHT[2], COL.HLIGHT[3], COL.HLIGHT[4]*self.alpha )
+			love.graphics.rectangle( "fill", e.x, e.y,
+				e.w, e.h )
+		end
+	end
 	for k, v in ipairs( self.texts ) do
 		v:draw( inactive )
 	end
@@ -163,6 +171,10 @@ function Panel:addFunction( name, x, y, txt, key, event, tooltip )
 		key = key,
 		event = event,
 		tooltip = tooltip,
+		x = x + self.padding - 1,
+		y = y + self.padding - 1,
+		w = w + 2,
+		h = h + 2,
 	}
 	table.insert( self.events, newEvent )
 	return newEvent, w, h
@@ -307,6 +319,26 @@ function Panel:addListItem( item )
 	self.w = maxWidth + 12
 
 	self:calcBorder()
+end
+
+function Panel:mousemoved( x, y )
+	for k, e in pairs( self.events ) do
+		if utility.isInside( x, y, e.x + self.x, e.y + self.y, e.w, e.h ) then
+			e.highlight = true
+			return e
+		end
+	end
+end
+
+function Panel:mousepressed( x, y, button )
+	for k, e in pairs( self.events ) do
+		if utility.isInside( x, y, e.x + self.x, e.y + self.y, e.w, e.h ) then
+			if e.event then
+				e.event( e )
+			end
+			return e
+		end
+	end
 end
 
 return Panel

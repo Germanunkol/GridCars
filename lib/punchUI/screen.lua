@@ -3,6 +3,7 @@ local PATH = (...):match("(.-)[^%.^/]+$")
 
 local class = require(PATH .. "middleclass")
 local Panel = require(PATH .. "panel")
+local utility = require(PATH .. "utility")
 local Screen = class("PunchUiScreen")
 
 local TOOL_TIP_TIME = 6
@@ -193,6 +194,85 @@ function Screen:textinput( letter )
 		end
 	end
 end
+function Screen:mousepressed( x, y, button )
+	if self.msgBox then
+		if utility.isInside( x, y, self.msgBox.x, self.msgBox.y, self.msgBox.w, self.msgBox.h ) then
+			self.msgBox:mousepressed( x, y, button )
+			return true
+		end
+	else
+		for k = #self.panels, 1, -1 do
+			local p = self.panels[k]
+			if utility.isInside( x, y, p.x, p.y, p.w, p.h ) then
+				p:mousepressed( x, y, button )
+				return true
+			end
+		end
+		for k = #self.lists, 1, -1 do
+			local p = self.lists[k]
+			if utility.isInside( x, y, p.x, p.y, p.w, p.h ) then
+				p:mousepressed( x, y, button )
+				return true
+			end
+		end
+		for k = #self.menus, 1, -1 do
+			local p = self.menus[k]
+			if utility.isInside( x, y, p.x, p.y, p.w, p.h ) then
+				p:mousepressed( x, y, button )
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function Screen:mousemoved( x, y )
+	if self.hoveredElement then
+		self.hoveredElement.highlight = false
+		self.hoveredElement = nil
+	end
+	if self.msgBox then
+		if utility.isInside( x, y, self.msgBox.x, self.msgBox.y, self.msgBox.w, self.msgBox.h ) then
+			local e = self.msgBox:mousemoved( x, y, button )
+			if e then
+				self.hoveredElement = e
+			end
+			return
+		end
+	else
+		for k = #self.panels, 1, -1 do
+			local p = self.panels[k]
+			if utility.isInside( x, y, p.x, p.y, p.w, p.h ) then
+				local e = p:mousemoved( x, y )
+				if e then
+					self.hoveredElement = e
+				end
+				return
+			end
+		end
+		for k = #self.lists, 1, -1 do
+			local p = self.lists[k]
+			if utility.isInside( x, y, p.x, p.y, p.w, p.h ) then
+				local e = p:mousemoved( x, y )
+				if e then
+					self.hoveredElement = e
+				end
+			end
+		end
+		for k = #self.menus, 1, -1 do
+			local p = self.menus[k]
+			if utility.isInside( x, y, p.x, p.y, p.w, p.h ) then
+				local e = p:mousemoved( x, y )
+				if e then
+					self.hoveredElement = e
+				end
+			end
+		end
+	end
+end
+
+function Screen:resetMouseHover()
+end
 
 function Screen:update( dt )
 	self.tooltipTime = self.tooltipTime - dt
@@ -219,15 +299,15 @@ function Screen:newMsgBox( header, msg, x, y, width, commands )
 	curY = curY + self.font:getHeight()
 	local t, width, height = msgBox:addText( "text", 10, curY, nil, 1, msg )
 	curY = curY + height + 10
-	
+
 	for k, c in ipairs( commands ) do
 		msgBox:addFunction( tostring(k), 10, curY, c.txt, c.key, 
-							function()
-								self:removeMsgBox()
-								if c.event then
-									c.event()
-								end
-							end )
+		function()
+			self:removeMsgBox()
+			if c.event then
+				c.event()
+			end
+		end )
 		curY = curY + self.font:getHeight()
 	end
 
@@ -246,7 +326,7 @@ function Screen:newMenu( x, y, minWidth, list )
 	y = y or 10
 	local ID = #self.menus + 1
 	local menuPanel = Panel:new( "menuPanel" .. ID, x, y, width, 100, self.font, 4, {0,0,3,3} )
-	
+
 	local curY = 0
 	local ev, w, h
 	local maxWidth = minWidth or 0
@@ -297,7 +377,7 @@ function Screen:newMenu( x, y, minWidth, list )
 			menuPanel:addLine( 4, curY , maxWidth + 4, curY )
 		end
 	end
-	
+
 	menuPanel.h = curY
 	menuPanel.w = 8 + maxWidth
 	menuPanel:calcBorder()
@@ -310,7 +390,7 @@ function Screen:newList( x, y, minWidth, list )
 	y = y or 10
 	local ID = #self.lists + 1
 	local listPanel = Panel:new( "listPanel" .. ID, x, y, width, 100, self.font, 4, {0,0,3,3} )
-	
+
 	local curY = 0
 	local ev, w, h
 	local maxWidth = minWidth or 0
@@ -340,7 +420,7 @@ function Screen:newList( x, y, minWidth, list )
 			listPanel:addLine( 4, curY , maxWidth + 4, curY )
 		end
 	end
-	
+
 	listPanel.h = curY
 	listPanel.w = 12 + maxWidth
 	listPanel:calcBorder()

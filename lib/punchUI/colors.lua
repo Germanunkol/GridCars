@@ -3,6 +3,7 @@
 
 local active = {
 	BORDER = { 255, 128, 0, 255, ID = "{|}" },
+	HLIGHT = { 255, 128, 0, 128, ID = "{|}" },
 
 	PANEL_BG = { 0, 0, 0, 230, ID = "{|}" },
 	PLAIN_TEXT = { 255, 255, 255, 255, ID = "{p}" },
@@ -21,6 +22,7 @@ local active = {
 local inactive = {
 	-- inactive:
 	BORDER = { 128, 64, 0, 128, ID = "{|}" },
+	HLIGHT = { 255, 128, 0, 64, ID = "{|}" },
 
 	PANEL_BG = { 0, 0, 0, 230, ID = "{|}" },
 	PLAIN_TEXT = { 255, 255, 255, 128, ID = "{p}" },
