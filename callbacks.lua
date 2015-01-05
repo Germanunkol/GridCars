@@ -27,7 +27,7 @@ function setClientCallbacks( client )
 	client.callbacks.received = clientReceived
 	client.callbacks.connected = connected
 	client.callbacks.disconnected = disconnected
-	client.callbacks.newUser = newUser
+	client.callbacks.newUser = newUserClient
 	-- Called when user is authorized or not (in the second case, a reason is given):
 	client.callbacks.authorized = function( auth, reason ) menu:authorized( auth, reason ) end
 end
@@ -46,6 +46,8 @@ function newUser( user )
 		utility.log( "[" .. os.time() .. "] New user: " ..
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end
+	
+	print("users", network:getUsers())
 
 	-- update advertisement:
 	updateAdvertisement()
@@ -84,7 +86,7 @@ function synchronize( user )
 	end
 end
 
-function newUser( user )
+function newUserClient( user )
 	if client and client.authorized then
 		Sounds:play( "beep" )
 	end

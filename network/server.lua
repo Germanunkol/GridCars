@@ -329,7 +329,6 @@ function Server:synchronizeUser( user )
 	if self.callbacks.userFullyConnected then
 		self.callbacks.userFullyConnected( user )
 	end
-
 end
 
 
