@@ -154,7 +154,7 @@ function utility.createServerInfo()
 	str = str .. "Map:" .. serverInfo.map .. ","
 	str = str .. "Players:" .. serverInfo.numPlayers .. "/" .. MAX_PLAYERS .. ","
 	str = str .. "State:" .. serverInfo.state
-	str = str:gsub("%s", "_"):gsub("[^a-zA-Z0-9%.,:;/%-%+_%%%(%)%[%]!%?']", ""):gsub("'","\'")
+	str = str:gsub("%s", "_"):gsub("[^a-zA-Z0-9%.,:;/%-%+_%%%(%)%[%]!%?]", "")
 	return str
 end
 
