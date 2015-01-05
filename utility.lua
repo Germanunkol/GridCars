@@ -150,11 +150,11 @@ serverInfo = {
 }
 
 function utility.createServerInfo()
-	local str = "Name:" .. SERVER_NAME:gsub("%s", "_"):gsub("[^a-zA-Z0-9%.,:;/-_%%%(%)%[%]!%?]", "") .. ","
+	local str = "Name:" .. SERVER_NAME .. ","
 	str = str .. "Map:" .. serverInfo.map .. ","
 	str = str .. "Players:" .. serverInfo.numPlayers .. "/" .. MAX_PLAYERS .. ","
 	str = str .. "State:" .. serverInfo.state
-	str:gsub("%s", "_"):gsub("[^a-zA-Z0-9%.,:;/%-_%%%(%)%[%]!%?]", "")
+	str:gsub("%s", "_"):gsub("[^a-zA-Z0-9%.,:;/%-_%%%(%)%[%]!%?']", "")
 	return str
 end
 
