@@ -102,6 +102,7 @@ function newServerListEntryRemote( entry )
 		local event = function()
 			menu.connect( entry.address, entry.port)
 		end
+		entry.info:gsub("\'", "'")
 		local item = {
 			txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
 			event = event
@@ -115,6 +116,7 @@ function newServerListEntryLocal( entry )
 		local event = function()
 			menu.connect( entry.address, entry.port)
 		end
+		entry.info:gsub("\'", "'")
 		local item = {
 			txt = "(LAN) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
 			event = event
