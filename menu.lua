@@ -35,9 +35,9 @@ function menu:init()
 	--scr:addText( "centerPanel", "h2", 10, y, nil, 7, "{h}Client:")
 	scr:addHeader( "centerPanel", "h2", 0, y, "Client:" )
 	y = y + 20
-	addressInput = scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
-	addressInput:setContent( ADDRESS )
-	y = y + 20
+	--addressInput = scr:addInput( "centerPanel", "ip", 10, y, nil, 20, "i", menu.ipEntered )
+	--addressInput:setContent( ADDRESS )
+	--y = y + 20
 	scr:addFunction( "centerPanel", "connect", 10, y, "Connect", "c", menu.showServerList )
 	y = y + 40
 
@@ -48,33 +48,11 @@ function menu:init()
 	scr:addFunction( "centerPanel", "close", 10, y, "Quit", "q", love.event.quit )
 
 	listScr = ui:newScreen( "Serverlist" )
-end
-
-function menu.showServerList()
-	if serverList ~= nil then
-		scr:removeList( serverList.name )
-	end
-
-	network.callbacks.newServerEntryRemote = newServerListEntry
-
-	local list = {}
-	serverList = scr:newList( 60, 60, love.graphics.getWidth() - 120, list )
-
-	network:requestServerList( GAME_ID, MAIN_SERVER_URL )
-end
-
-function newServerListEntry( entry )
-	if serverList then
-		-- Event to be called when clicking the button:
-		local event = function()
-			menu.connect( entry.address, entry.port)
-		end
-		local item = {
-			txt = entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
-			event = event
-		}
-		serverList:addListItem( item )
-	end
+	listScr:addPanel( "headerPanel",
+			60, 60,
+			love.graphics.getWidth()-120, 50 )
+	listScr:addHeader( "headerPanel", "h", 20, 10, "Servers:" )
+	listScr:addFunction( "headerPanel", "return", love.graphics.getWidth() - 260, 10, "Return", "q", menu.show )
 end
 
 function menu.playername( name )
@@ -100,6 +78,51 @@ function menu:show()
 	map:reset()
 	menu:closeConnectPanel()
 end
+
+function menu.showServerList()
+	if serverList ~= nil then
+		scr:removeList( serverList.name )
+	end
+
+	network.callbacks.newServerEntryRemote = newServerListEntryRemote
+	network.callbacks.newServerEntryLocal = newServerListEntryLocal
+
+	local list = {}
+	serverList = listScr:newList( 60, 120, love.graphics.getWidth() - 132, list )
+
+	network:requestServerList( GAME_ID, MAIN_SERVER_URL )
+	network:requestServerListLAN( GAME_ID )
+
+	ui:setActiveScreen( listScr )
+end
+
+function newServerListEntryRemote( entry )
+	if serverList then
+		-- Event to be called when clicking the button:
+		local event = function()
+			menu.connect( entry.address, entry.port)
+		end
+		local item = {
+			txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
+			event = event
+		}
+		serverList:addListItem( item )
+	end
+end
+function newServerListEntryLocal( entry )
+	if serverList then
+		-- Event to be called when clicking the button:
+		local event = function()
+			menu.connect( entry.address, entry.port)
+		end
+		local item = {
+			txt = "(LAN) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
+			event = event
+		}
+		serverList:addListItem( item )
+	end
+end
+
 
 function menu:closeConnectPanel()
 	scr:removePanel( "connectPanel" )

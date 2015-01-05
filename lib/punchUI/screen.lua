@@ -328,7 +328,7 @@ function Screen:newList( x, y, minWidth, list )
 
 		local key = v.key or tostring(k)
 
-		ev, w, h = listPanel:addFunction( key, 0, curY, v.txt, key, ev, tooltipEv )
+		ev, w, h = listPanel:addFunction( key, 5, curY, v.txt, key, ev, tooltipEv )
 		maxWidth = math.max( maxWidth, w )
 		curY = curY + self.font:getHeight() + 8
 	end

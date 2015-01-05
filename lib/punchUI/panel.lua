@@ -299,7 +299,7 @@ function Panel:addListItem( item )
 
 	local key = item.key or tostring( #self.events + 1 )
 
-	ev, w, h = self:addFunction( key, 0, curY, item.txt, key, ev, tooltipEv )
+	ev, w, h = self:addFunction( key, 5, curY, item.txt, key, ev, tooltipEv )
 	maxWidth = math.max( self.w - 12, w )
 	curY = curY + self.font:getHeight() + 8
 
