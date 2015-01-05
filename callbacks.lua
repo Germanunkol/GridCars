@@ -123,7 +123,9 @@ end
 function updateAdvertisement()
 	if server then
 		local players, num = server:getUsers()
-		serverInfo.numPlayers = num
+		if num then
+			serverInfo.numPlayers = num
+		end
 		if STATE == "Game" then
 			serverInfo.state = "Game"
 		else
