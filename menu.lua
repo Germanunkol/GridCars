@@ -81,7 +81,7 @@ end
 
 function menu.showServerList()
 	if serverList ~= nil then
-		scr:removeList( serverList.name )
+		listScr:removeList( serverList.name )
 	end
 
 	network.callbacks.newServerEntryRemote = newServerListEntryRemote
