@@ -5,6 +5,12 @@ local socket = require("socket")
 local User = require( BASE .. "user" )
 local CMD = require( BASE .. "commands" )
 
+local advertiseLAN = require( BASE .. "serverlist/advertiseLAN" )
+
+local utility = require( BASE .. "utility" )
+
+local ADVERTISEMENT_UPDATE_TIME = 60
+
 local Server = {}
 Server.__index = Server
 
@@ -14,6 +20,7 @@ local userListByName = {}
 local authorizationTimeout = {}
 
 local partMessage = ""
+local messageLength = nil
 
 local MAX_PLAYERS = 16
 
@@ -22,7 +29,7 @@ local AUTHORIZATION_TIMEOUT = 2
 local PINGTIME = 5
 local SYNCH_PINGS = true
 
-function Server:new( maxNumberOfPlayers, port, pingTime )
+function Server:new( maxNumberOfPlayers, port, pingTime, portUDP )
 	local o = {}
 	setmetatable( o, self )
 
@@ -49,6 +56,10 @@ function Server:new( maxNumberOfPlayers, port, pingTime )
 
 	MAX_PLAYERS = maxNumberOfPlayers or 16
 
+	o.port = port
+	o.portUDP = portUDP
+	o.advertisement = {}
+
 	return o
 end
 
@@ -73,8 +84,64 @@ function Server:update( dt )
 
 		for k, user in pairs(userList) do			
 
-			local data, msg, partOfLine = user.connection:receive()
+			local data, msg, partOfLine = user.connection:receive( 9999 )
 			if data then
+				partMessage = partMessage .. data
+			else
+
+				if msg == "timeout" then	-- only part of the message could be received
+					if #partOfLine > 0 then
+						partMessage = partMessage .. partOfLine
+					end
+				elseif msg == "closed" then
+					--broadcast("CHAT|[STAT]" .. clientList[k].playerName .. " left the game.")
+					--if client.character then
+						--broadcast("CHARACTERDEL|" .. client.playerName)
+					--end
+					numberOfUsers = numberOfUsers - 1
+
+					self:disconnectedUser( user )
+					
+					userList[k] = nil
+					if userListByName[ user.playerName ] then
+						userListByName[ user.playerName ] = nil
+					end
+				else
+					print("[NET] Err Received:", msg, data)
+				end
+			end
+
+			if not messageLength then
+				if #partMessage >= 1 then
+					local headerLength = nil
+					messageLength, headerLength = utility:headerToLength( partMessage:sub(1,5) )
+					if messageLength and headerLength then
+						partMessage = partMessage:sub(headerLength + 1, #partMessage )
+					end
+				end
+			end
+
+			-- if I already know how long the message should be:
+			if messageLength then
+				if #partMessage >= messageLength then
+					-- Get actual message:
+					local currentMsg = partMessage:sub(1, messageLength)
+
+					-- Remember rest of already received messages:
+					partMessage = partMessage:sub( messageLength + 1, #partMessage )
+
+					command, content = string.match( currentMsg, "(.)(.*)")
+					command = string.byte( command )
+
+					self:received( command, content, user )
+					messageLength = nil
+
+				end
+			end
+
+
+
+			--[[if data then
 				if #partMessage > 0 then
 					data = partMessage .. data
 					partMessage = ""
@@ -109,7 +176,7 @@ function Server:update( dt )
 				else
 					print("[NET] Err Received:", msg, data)
 				end
-			end
+			end]]
 
 			-- Fallback for backwards compability with clients which don't send an authorization
 			-- request:
@@ -136,6 +203,17 @@ function Server:update( dt )
 				end
 			end
 			user.ping.timer = user.ping.timer + dt
+		end
+
+		if self.advertisement.active then
+			self.advertisement.timer = self.advertisement.timer - dt
+			if self.advertisement.timer < 0 then
+				self:advertiseNow()
+			end
+			advertiseLAN:update( dt )
+		end
+		if self.advertisement.thread then
+			self:advertiseUpdate()
 		end
 
 		return true
@@ -200,13 +278,17 @@ function Server:received( command, msg, user )
 		local keyType, key, valueType, value = string.match( msg, "(.*)|(.*)|(.*)|(.*)" )
 		key = stringToType( key, keyType )
 		value = stringToType( value, valueType )
+
+		-- Remember what the value used to be:
+		local prevValue = user.customData[key]
+		-- Set new value:
 		user.customData[key] = value
 
 		-- Let others know about this value:
 		self:send( CMD.USER_VALUE, user.id .. "|" .. msg )
 
 		if self.callbacks.customDataChanged then
-			self.callbacks.customDataChanged( user, value, key )
+			self.callbacks.customDataChanged( user, value, key, prevValue )
 		end
 
 	elseif self.callbacks.received then
@@ -249,10 +331,17 @@ function Server:synchronizeUser( user )
 
 end
 
+
 function Server:send( command, msg, user )
 	-- Send to only one user:
 	if user then
-		local fullMsg = string.char(command) .. (msg or "") .. "\n"
+		local fullMsg = string.char(command) .. (msg or "") --.. "\n"
+
+		local len = #fullMsg
+		assert( len < 256^4, "Length of packet must not be larger than 4GB" )
+
+		fullMsg = utility:lengthToHeader( len ) .. fullMsg
+
 		--user.connection:send( string.char(command) .. (msg or "") .. "\n" )
 		local result, err, num = user.connection:send( fullMsg )
 		while err == "timeout" do
@@ -342,6 +431,9 @@ function Server:close()
 			u.connection:shutdown()
 		end
 		self.conn:close()
+		if self.advertisement.active then
+			self:unAdvertise()
+		end
 	end
 	self.conn = nil
 end
@@ -357,6 +449,118 @@ function Server:setUserValue( user, key, value )
 	local valueType = type( value )
 	self:send( CMD.USER_VALUE, user.id .. "|" ..  keyType .. "|" .. tostring(key) ..
 			"|" .. valueType .. "|" .. tostring(value) )
+end
+
+function Server:advertise( data, id, url )
+	assert( url or self.advertisement.url,
+		"The first time you call Server:advertise, a URL must be given! (Third argument must not be empty)" )
+	assert( id or self.advertisement.id,
+		"The first time you call Server:advertise, a game-ID (i.e. name of your game) must be given! (Second argument must not be empty)" )
+
+	assert( data, "server:advertise called without any information." )
+	assert( not data:find("%s"),
+		"Data passed to server:advertise must not contain whitespace. Remove all space and tab characters!" )
+	assert( not data:find("[^%.,a-zA-Z0-9:;]"),
+		"Data passed to server:advertise must not contain special characters! Allowed characters are: a-z A-Z 0-9 , . : ;" )
+
+	if id then
+	assert( not id:find("[^%.,a-zA-Z0-9:;]"),
+		"ID passed to server:advertise must not contain special characters! Allowed characters are: a-z A-Z 0-9 , . : ;" )
+	end
+
+
+	local firstAdvertisement = false
+	if not self.advertisement.data then
+		firstAdvertisement = true
+	end
+
+	self.advertisement.data = data
+	self.advertisement.active = true
+	self.advertisement.timer = ADVERTISEMENT_UPDATE_TIME
+	if id then
+		self.advertisement.id = id
+	end
+	if url then
+		-- Remove a possible trailing slash from the URL:
+		self.advertisement.url = url:match( "(.-)/?$" )
+	end
+
+	-- If the server is NOT dedicated (i.e. not headless), but run in Löve instead, then
+	-- let a sub-thread handle advertisement, so that messages can be received from it.
+	if love and not self.advertisement.thread then
+		self.advertisement.thread = love.thread.newThread( BASE .. "serverlist/advertiseThread.lua" )
+		local cin = love.thread.newChannel()
+		local cout = love.thread.newChannel()
+		self.advertisement.cin = cin
+		self.advertisement.cout = cout
+		self.advertisement.thread:start( cin, cout )
+	end
+
+	self:advertiseNow()
+
+	if firstAdvertisement then
+		advertiseLAN:setData( self.portUDP, self.port, self.advertisement.id, self.advertisement.data )
+		advertiseLAN:startListening()
+	else
+		advertiseLAN:setData( self.portUDP, self.port, self.advertisement.id, self.advertisement.data )
+	end
+end
+
+function Server:unAdvertise()
+	if love and self.advertisement.thread then
+		self.advertisement.cin:push( "unAdvertise|" )
+	else
+		-- Connect to the unAdvertise script on the main server.
+		-- By calling it, the server will know
+		-- that this server should be removed from the serverlist.
+		os.execute( "lua " .. BASE .. "/serverlist/unAdvertise.lua "
+			.. self.advertisement.url .. "/unAdvertise.php "
+			.. self.port )
+	end
+
+	self.advertisement.active = false
+	advertiseLAN:stopListening()
+end
+
+-- Called internally when server advertisement timer has run out.
+-- Starts the advertisement (or "keepalive") process:
+function Server:advertiseNow()
+	if love and self.advertisement.thread then
+		self.advertisement.cin:push( "URL|" .. self.advertisement.url )
+		self.advertisement.cin:push( "INFO|" .. self.advertisement.data )
+		self.advertisement.cin:push( "ID|" .. self.advertisement.id )
+		self.advertisement.cin:push( "PORT|" .. self.port )
+		self.advertisement.cin:push( "advertise|" )
+	else
+		os.execute( "lua serverlist/advertise.lua "
+			.. self.advertisement.url .. "/advertise.php "
+			.. self.port .. " "
+			.. self.advertisement.id .. " "
+			.. self.advertisement.data .. " &" )
+	end
+	self.advertisement.timer = ADVERTISEMENT_UPDATE_TIME
+end
+
+function Server:advertiseUpdate( dt )
+	if self.advertisement.thread then
+		local msg = self.advertisement.cout:pop()
+		if msg then
+			print("[ADVERTISE] " .. msg)
+			if self.callbacks.advertisement then
+				self.callbacks.advertisement( msg )
+			end
+			if msg:find("Warning") or msg == "closed" then
+				self.advertisement.thread = nil
+			end
+		end
+		if self.advertisement.thread then
+			local err = self.advertisement.thread:getError()
+			if err then
+				print("[ADVERTISE] " .. err)
+				self.advertisement.thread = nil
+			end
+		end
+	end
 end
 
 return Server

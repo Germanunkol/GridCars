@@ -142,17 +142,18 @@ function map:newFromString( mapstring )
 				--search fitting positon
 				local x = math.random(map.Boundary.minX, map.Boundary.maxX)
 				local y = math.random(map.Boundary.minY, map.Boundary.maxY)
-				while map:isPointOnRoad(x, y, 0) == true do
+				if map:isPointOnRoad(x, y, 0) == true then
 					x = math.random(map.Boundary.minX, map.Boundary.maxX)
 					y = math.random(map.Boundary.minY, map.Boundary.maxY)
 				end
-				local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
-				local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
-				table.insert(map.subjects, s)
+				if not map:isPointOnRoad( x, y, 0 ) then
+					local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
+					local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
+					table.insert(map.subjects, s)
+				end
 			end
 		end
 	end
-
 end
 
 function map:update( dt )

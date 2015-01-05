@@ -1,14 +1,18 @@
 # Affair - Löve Networking Library #
 
-A basic skeleton aimed at the awesome Löve engine (love2d.org).
+A networking library for the awesome [Löve engine](http://love2d.org).
 
-Features:
-- Synchronizing of Userlist (including IDs and Usernames) is done by library.
+This library aims to take care of the enourmous overhead of connecting, authorizing, passwords, synchronizing game states, usernames, userlist etc. involved when creating a network game. There are other networking libraries available, such as [LUBE](https://love2d.org/wiki/LUBE), [Noobhub](https://love2d.org/wiki/Noobhub), or you could even use plain [Luasocket](http://w3.impa.br/~diego/software/luasocket/) (which this library uses internally). However, _Affair_ is much more high-level. Because it has many functions which are frequently used in multiplayer games, using _Affair_ should speed up multiplayer game development a lot.
+
+## Features: ##
 - Callbacks for important events (new user, disconnected etc.) can be defined.
-- Server is independent of and can be run as a dedicated, headless, plain-Lua server (example included). Make sure Luasocket is installed if you use the server without Löve.
+- Automatic synchronizing of player names and player IDs
+- Server is independent of Löve and can be run as a dedicated, headless, plain-Lua server (example included).
+- Online serverlist
+- LAN serverlist (UDP-Broadcast)
+- Automatically synched user values. Simply call client:setUserValue( "red", 255 ) and let the library handle synchronization. All other clients will now have access to this user's "red" value, and it will be "255" on all clients - it will even be available on clients who join _after_ the setUserValue has been called. This way, any info about users (character, stats, position, upgrades, hitpoints etc.) are handled by the engine without you needing to worry about them.
+- Calculates and stores ping time of players.
 - Automatic handling of usernames. If a name appears multiple times, the library automatically appends numbers and increments them.
-- Automatically synched user values - want to synch the colour of your player with other servers, and let newly joining clients also know about it? Simply call client:setUserValue( "red", 255 ) and let the library handle synchronization.
-- TCP (reliable connection) only.
 
 ## Example: ##
 
@@ -30,7 +34,7 @@ You can also create a server _and_ connect a client to it at the same time:
 love . --server --client localhost
 ```
 
-Another included example is the dedicated server, which runs in plain Lua (Lua socket must be installed. If you have Löve installed, then this is usually the case.)
+Another included example is the dedicated server, which runs in plain Lua (Luasocket must be installed. If you have Löve installed, then this is usually the case.)
 Run:
 ```bash
 lua examples/dedicated.lua
@@ -42,13 +46,25 @@ Then connect a client to it by running the client example above.
 A server is started using the **network:startServer** function:
 
 ```
-server, err = network:startServer( numberOfPlayers, port, pingUpdate )
+server, err = network:startServer( numberOfPlayers, port, pingUpdate, portUDP )
 ```
 - **numberOfPlayers** is the maximum number of clients that may connect to the server (default 16).
 - **port** is the port number (Servers will need to port-forward this port if they're behind a router. Use a value between 1025 and 65535, default is 3410)
 - **pingUpdate** specifies how often the server should ping clients. (To check for timeouts, for example. Value in seconds, default is 5 seconds.)
+- **portUDP** sets the port number to be used for creating a LAN server list. Use a value between 1025 and 65535, default is 3410)
 Upon success, this function returns a server object which can be used to control the server (send stuff, kick clients, close connections, get list of clients, get number of clients etc.)
 If the function fails, it returns nil and an err will be filled with the error message.
+Most of the time, port, pingUpdate and portUDP can be left at their defaults, so you would call the function like so:
+```lua
+-- creates a server which allows a maximum of 8 connections.
+server, err = network:startServer( 8 )
+if server then
+	...
+else
+	print("Could not start server: " .. err )
+end
+```
+
 
 ### Callbacks: ###
 
@@ -77,8 +93,7 @@ Example usage: The authorize event could return _true_ while the server is in a 
 Note: You don't need to worry about the maximum number of players here - if the server is already full, then the engine will not authorize the player and won't even call this event.
 _authMsg_ is the string which the client used when calling network:startClient. This way, you can check if the client is using the same game version as you, or entered the correct password.
 
-**server.callbacks.customDataChanged( user, value, key )**: Called whenever a client changes their customUserData. The userdata is already synched with other clients, but if you want to do something when user data changes (example: start game when sets his "ready" value to true), then this is the place
-.
+**server.callbacks.customDataChanged( user, value, key, previousValue )**: Called whenever a client changes their customUserData. The userdata is already synched with other clients, but if you want to do something when user data changes (example: start game when sets his "ready" value to true), then this is the place. The previousValue is the value which the user had set before - it could be nil, if this value is set for the first time.
 
 **server.callbacks.disconnectedUser( user )**: Called when a user has disconnected. Note: after this call, the "user" table will be invalid. Don't attempt to use it again - but you're allowed to access it to print the user name of the client who left and similar:
 ```lua
@@ -126,5 +141,66 @@ Note: You do not need to keep a list of all users. Use client:getUsers() to get 
 
 ## Remarks: ##
 
-Never send the newline character "\n"!
-It is used internally by the engine.
+Maximum size of a message is 4 GB (to be more precise: 256^4 bytes). You should always stay well below, of course - but hey, I won't stop you.
+
+## Server lists: ##
+### Online: ###
+For the online server list to work, you will need to install some sort of web-server (a simple Apache server will do, you need php support) and put the files from the [AffairMainServer](https://github.com/Germanunkol/AffairMainServer) into some folder on that main server (The only requirement is that the folder is visible to anyone).
+On your game's server, call the following function (after having created a server using network:startServer):
+
+**server:advertise( data, id, url )**
+
+- data: A string with any info about the server which you want the clients to get, before joining. This may contain a name, a password, the number of players, the map name etc.
+- id: A name which identifies the game
+- the URL to the **folder** where the scripts are on your main server. For example, if you have the advertise.php in a path like this: _~/web/public/AffairMainServer/advertise.php_, then the URL given here should be _~/web/public/AffairMainServer_.
+
+**Careful!** The data and id strings may not contain the following characters: " & $ | and any whitespace (space, tab, newline). Usually, you're best off by using a comma-seperated list.
+The function will start sending updates about your server every minute or so, to tell the web server that your server is still alive, and will stop sending updates when your server goes offline.
+You can change the server's data, by calling the function again with only the data parameter - for example when you want to change the map or the number of players.
+If you want to stop advertising the server, call (for example because a round has started and you want no more players to join):
+**server:unAdvertise()**
+
+**Example:**
+```lua
+function startServer()
+	-- Attempt to create a server:
+	server, err = network:startServer( NUMBER_OF_PLAYERS, PORT, PING_UPDATE_TIME )
+
+	if server then
+		-- These callbacks are called when a new user connects or a user disconnected:
+		server.callbacks.userFullyConnected = connected
+		server.callbacks.disconnectedUser = disconnected
+		-- Start advertising this server, so others can join:
+		server:advertise( "Players:0", "ExampleServer", MAIN_SERVER_ADDRESS )
+	else
+		print("Error starting server:", err)
+		love.event.quit()
+	end
+end
+
+-- Update number of players on the serverlist:
+function connected()
+	local players = network:getUsers()
+	-- Only update the data field in the advertisement, leave the id and URL the same:
+	server:advertise( "Players:" .. #players )
+end
+function disconnected()
+	local players = network:getUsers()
+	-- Only update the data field in the advertisement, leave the id and URL the same:
+	server:advertise( "Players:" .. #players - 1 )
+end
+```
+
+### LAN: ###
+
+When calling the **server:advertise** function above, the server will also advertise itself in your Local Area Network.
+This uses a UDP port to accept messages from clients. The port can be set as the fourth argument in **network:startServer** (see above).
+
+On the client, you can start looking for LAN servers using:
+```lua
+network:requestServerListLAN( id, portUDP )
+```
+- **id** must be the same name as given to the server:advertise call on the server. The game filters out any servers which don't have the same ID, so make sure this is set correctly.
+- **portUDP** is an optional port you can set so that the UDP broadcast works on this port. **Important:** If you change this on the client, you must also change it on the server, when calling server:advertise!
+- 
+You may call this function again to refresh the LAN server list (i.e. send out a new request). In this case, you can call it without parameters - the previous ones will be used.
