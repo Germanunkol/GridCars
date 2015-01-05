@@ -1,9 +1,10 @@
 local BASE = (...):match("(.-)[^%.]+$")
+local BASE_SLASH = BASE:sub(1,#BASE-1) .. "/"
 
 local Server = require( BASE .. "server" )
 local Client = require( BASE .. "client" )
 
-local requestLAN = require( BASE .. "serverlist/requestLAN" )
+local requestLAN = require( BASE_SLASH .. "serverlist/requestLAN" )
 
 local network = {}
 network.callbacks = {
