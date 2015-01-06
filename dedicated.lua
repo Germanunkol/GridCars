@@ -40,6 +40,13 @@ function dedicated:startServer()
 		-- set client callbacks:
 		setServerCallbacks( server )
 		lobby:show()
+
+		updateAdvertisementInfo()
+		network.advertise:setURL( MAIN_SERVER_URL )
+		network.advertise:setID( GAME_ID )
+
+		network.advertise:start( server, "both" )
+
 	else
 		-- If I can't start a server for some reason, let user know and exit:
 		print(server)

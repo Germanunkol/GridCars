@@ -26,7 +26,7 @@ local scr
 local levelListStart = 1
 local levelNameList = nil
 local ERROR_MSG = nil
-local ERRROR_TIMER = 0
+local ERROR_TIMER = 0
 
 function lobby:init()
 	
