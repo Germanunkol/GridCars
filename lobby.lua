@@ -25,6 +25,8 @@ local scr
 -- The first level in the list to display:
 local levelListStart = 1
 local levelNameList = nil
+local ERROR_MSG = nil
+local ERRROR_TIMER = 0
 
 function lobby:init()
 	
@@ -38,7 +40,6 @@ function lobby:init()
 
 	scr:addFunction( "topPanel", "ready", love.graphics.getWidth() - 100, 0, "Ready", "r",
 		function() lobby:toggleReady() end )
-
 end
 
 function lobby:show()
@@ -63,7 +64,7 @@ function lobby:show()
 			dedicated:chooseMap()
 		end
 
-		updateAdvertisement()
+		updateAdvertisementInfo()
 	end
 
 	if client then
@@ -79,6 +80,8 @@ function lobby:show()
 		if map.loaded then
 			map:zoomOut()
 		end
+
+		ERROR_TIMER = 0
 	end
 
 	-- If I'm the server, then let me choose the map:
@@ -123,6 +126,10 @@ function lobby:update( dt )
 			end
 		end
 	end
+
+	if ERROR_TIMER > 0 then
+		ERROR_TIMER = ERROR_TIMER - dt
+	end
 end
 
 function lobby:draw()
@@ -130,6 +137,15 @@ function lobby:draw()
 	map:draw()
 
 	lobby:drawUserList()
+
+	if ERROR_TIMER > 0 then
+		love.graphics.setColor( 0, 0, 0, 200 )
+		love.graphics.rectangle( "fill", 60, love.graphics.getHeight() - 70,
+				love.graphics.getWidth() - 120, 60 )
+		love.graphics.setColor( 255,128,0, 200 )
+		love.graphics.printf( ERROR_MSG, 60, love.graphics.getHeight() - 60,
+				love.graphics.getWidth() - 120, "center" )
+	end
 end
 
 function lobby:drawUserList()
@@ -230,7 +246,7 @@ function lobby:chooseMap( levelname )
 		self.currentMapString = mapstring
 		self:sendMap()
 		print("\t->loaded!" )
-		updateAdvertisement()
+		updateAdvertisementInfo()
 	end
 end
 
@@ -386,6 +402,11 @@ function lobby:kickAllWhoArentReady()
 			end
 		end
 	end
+end
+
+function lobby:newWarning( msg )
+	ERROR_MSG = msg
+	ERROR_TIMER = 10
 end
 
 return lobby

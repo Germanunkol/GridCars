@@ -4,24 +4,19 @@
 
 local http = require("socket.http")
 
+print( "[UNADVERTISE] Attempting to connect" )
+
 local URL = arg[1] or ""
 local PORT = arg[2] or ""
-local ID = arg[3] or ""
-local INFO = arg[4] or ""
 
---print( "[ADVERTISE] Contacting: " .. URL )
+print( "[ADVERTISE] Contacting: " .. URL )
 
 local body = ""
 body = body .. "port=" .. PORT.. "&"
-body = body .. "id=" .. ID .. "&"
-body = body .. "info=" .. INFO .. "&"
 
-result = http.request( URL, body )
-local err = result:match( "%[Warning:%](.-)\n" )
-if err then
-	print( "[ADVERTISE] " .. err )
-else
-	print( "[ADVERTISE] Advertisement sent:", PORT, ID, INFO )
+local result, errCode, errorMsg, status = http.request( URL, body )
+if errCode and errCode ~= 200 then
+	print("[ADVERTISE] Could not un-advertise: " .. errCode, status, "Correct URL?", URL )
 end
 
 -- Close this process:

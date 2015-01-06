@@ -29,7 +29,9 @@ function menu:init()
 	--scr:addText( "centerPanel", "h1", 10, y, nil, 7, "{h}Server:")
 	scr:addHeader( "centerPanel", "h1", 0, y, "Server:" )
 	y = y + 20
-	scr:addFunction( "centerPanel", "server", 10, y, "Start Server", "s", menu.startServer )
+	scr:addFunction( "centerPanel", "serverOnline", 10, y, "Start Server (Online)", "s", function() menu.startServer("online") end )
+	y = y + 20
+	scr:addFunction( "centerPanel", "serverLAN", 10, y, "Start Server (LAN)", "a", function() menu.startServer("lan") end )
 	y = y + 40
 
 	--scr:addText( "centerPanel", "h2", 10, y, nil, 7, "{h}Client:")
@@ -78,6 +80,8 @@ function menu:show()
 	chat:reset()
 	map:reset()
 	menu:closeConnectPanel()
+
+	network.advertise:stop()
 end
 
 function menu.showServerList()
@@ -85,29 +89,35 @@ function menu.showServerList()
 		listScr:removeList( serverList.name )
 	end
 
-	network.callbacks.newServerEntryRemote = newServerListEntryRemote
-	network.callbacks.newServerEntryLocal = newServerListEntryLocal
+	network.advertise.callbacks.newEntryOnline = newServerListEntryRemote
+	network.advertise.callbacks.newEntryLAN = newServerListEntryLocal
 
 	local list = {}
 	serverList = listScr:newList( 60, 120, love.graphics.getWidth() - 132, list )
 
-	network:requestServerList( GAME_ID, MAIN_SERVER_URL )
-	network:requestServerListLAN( GAME_ID )
+	--network:requestServerList( GAME_ID, MAIN_SERVER_URL )
+	--network:requestServerListLAN( GAME_ID )
+	network.advertise:setURL( MAIN_SERVER_URL )
+	network.advertise:setID( GAME_ID )
+
+	network.advertise:request( "both" )
 
 	ui:setActiveScreen( listScr )
 end
 
 function newServerListEntryRemote( entry )
 	if serverList then
-		-- Event to be called when clicking the button:
-		local event = function()
-			menu.connect( entry.address, entry.port)
+		for k = 1, 10 do
+			-- Event to be called when clicking the button:
+			local event = function()
+				menu.connect( entry.address, entry.port)
+			end
+			local item = {
+				txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
+				event = event
+			}
+			serverList:addListItem( item )
 		end
-		local item = {
-			txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
-			event = event
-		}
-		serverList:addListItem( item )
 	end
 end
 function newServerListEntryLocal( entry )
@@ -145,7 +155,14 @@ end
 function menu:mousepressed( button, x, y )
 end
 
-function menu.startServer()
+function menu.startServer( lan )
+
+	if lan == "lan" then
+		LAN_ONLY = true
+	else
+		LAN_ONLY = false
+	end
+
 	local success
 	success, server = pcall( function()
 		return network:startServer( MAX_PLAYERS, PORT )
@@ -154,6 +171,15 @@ function menu.startServer()
 	if success then
 		-- set client callbacks:
 		setServerCallbacks( server )
+
+		updateAdvertisementInfo()
+		network.advertise:setURL( MAIN_SERVER_URL )
+		network.advertise:setID( GAME_ID )
+		if LAN_ONLY then
+			network.advertise:start( server, "lan" )
+		else
+			network.advertise:start( server, "both" )
+		end
 	else
 		menu:errorMsg( "Error:", server )
 	end

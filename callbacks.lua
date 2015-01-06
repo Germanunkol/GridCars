@@ -21,6 +21,9 @@ function setServerCallbacks( server )
 	server.callbacks.authorize = function( user, msg ) return lobby:authorize( user, msg ) end
 	server.callbacks.userFullyConnected = newUser
 	server.callbacks.disconnectedUser = disconnectedUser
+
+	-- Called when there's an error advertising (only on NON-DEDICATED server!):
+	network.advertise.callbacks.advertiseWarnings = advertisementMsg
 end
 function setClientCallbacks( client )
 	-- set client callbacks:
@@ -50,7 +53,7 @@ function newUser( user )
 	print("users", network:getUsers())
 
 	-- update advertisement:
-	updateAdvertisement()
+	updateAdvertisementInfo()
 end
 
 -- Called when client is disconnected from the server
@@ -71,7 +74,7 @@ function disconnectedUser( user )
 	end
 
 	-- update advertisement:
-	updateAdvertisement()
+	updateAdvertisementInfo()
 end
 
 -- Called on server when new client is in the process of
@@ -122,7 +125,7 @@ function clientReceived( command, msg )
 	end
 end
 
-function updateAdvertisement()
+function updateAdvertisementInfo()
 	if server then
 		local players, num = network:getUsers()
 		if num then
@@ -134,7 +137,13 @@ function updateAdvertisement()
 			serverInfo.state = "Lobby"
 		end
 		serverInfo.map = map:getName()
-		server:advertise( utility.createServerInfo(), GAME_ID, MAIN_SERVER_URL )
+		network.advertise:setInfo( utility.createServerInfo() )
+	end
+end
+
+function advertisementMsg( msg )
+	if STATE == "Lobby" then
+		lobby:newWarning( "Could not advertise your game online:\n" .. msg )
 	end
 end
 
