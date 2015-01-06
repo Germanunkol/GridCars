@@ -53,6 +53,7 @@ function menu:init()
 			love.graphics.getWidth()-120, 50 )
 	listScr:addHeader( "headerPanel", "h", 20, 10, "Servers:" )
 	listScr:addFunction( "headerPanel", "return", love.graphics.getWidth() - 260, 10, "Return", "q", menu.show )
+	listScr:addFunction( "headerPanel", "refresh", love.graphics.getWidth() - 360, 10, "Refresh", "r", menu.showServerList )
 end
 
 function menu.playername( name )

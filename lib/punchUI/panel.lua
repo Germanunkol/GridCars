@@ -143,6 +143,7 @@ function Panel:draw( inactive )
 	love.graphics.polygon( "fill", self.border )
 	love.graphics.setColor( COL.BORDER[1], COL.BORDER[2], COL.BORDER[3], COL.BORDER[4]*self.alpha )
 	love.graphics.polygon( "line", self.border )
+	love.graphics.setColor( COL.BORDER[1], COL.BORDER[2], COL.BORDER[3], COL.BORDER[4]*self.alpha*0.5 )
 	for k, l in ipairs( self.lines ) do
 		love.graphics.line( l.x1, l.y1, l.x2, l.y2 )
 	end
@@ -297,6 +298,10 @@ end
 
 function Panel:addListItem( item )
 
+	if #self.events > 0 then
+		self:addLine( 4, self.h , self.w - 8, self.h )
+	end
+
 	local curY = self.h
 
 	local ev = function()
@@ -309,6 +314,7 @@ function Panel:addListItem( item )
 		self:newTooltip( tip )
 	end
 
+
 	local key = item.key or tostring( #self.events + 1 )
 
 	ev, w, h = self:addFunction( key, 5, curY, item.txt, key, ev, tooltipEv )
@@ -320,6 +326,9 @@ function Panel:addListItem( item )
 
 	self:calcBorder()
 end
+
+------------------------------------------------------
+-- Handle mouse input:
 
 function Panel:mousemoved( x, y )
 	for k, e in pairs( self.events ) do

@@ -1,7 +1,9 @@
 PunchUI
 =======
 
-A simple User Interface library for the [Löve2D](http://love2d.org/) engine. No mouse - just keyboard controlled.
+A simple User Interface library for the [Löve2D](http://love2d.org/) engine. No mouse needed - just keyboard controlled.
+
+Update: Mouse control is now optionally available, by calling ui:mousemoved( love.mouse.getPosition() ) once a frame and ui:mousepressed(x, y, button) inside the love.mousepressed event.
 
 Features:
 ---------
