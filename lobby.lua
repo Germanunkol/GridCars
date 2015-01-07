@@ -194,8 +194,8 @@ function lobby:createLevelList()
 		table.insert( list, entry )
 	end]]
 	-- Display up to 8 items in the list:
-	for i = levelListStart, levelListStart + 7 do
-		if levelnames[i] then
+	for i = 1, #levelnames do
+		if levelnames[i]:match("(.*).stl") or levelnames[i]:match("(.*).STL") then
 			local entry = {
 				txt=levelnames[i],
 				event=function() self:chooseMap( levelnames[i] ) end,
@@ -208,7 +208,7 @@ function lobby:createLevelList()
 		table.insert( list, entry )
 	end]]
 
-	levelNameList = scr:newList( love.graphics.getWidth() - 300, 60, 160, list, 5 )
+	levelNameList = scr:newList( love.graphics.getWidth() - 300, 60, 160, list, 9 )
 end
 
 -- SERVER ONLY!
