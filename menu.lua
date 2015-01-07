@@ -218,7 +218,9 @@ function menu.connect( ip, port )
 		--ui:setActiveScreen( nil )
 	else
 		print("Could not conect:", client )
-		menu:errorMsg( "Error:", "Could not connect." )
+		local commands = {}
+		commands[1] = { txt = "Ok", key = "y" }
+		listScr:newMsgBox( "Error:", "Could not connect.", nil, nil, nil, commands)
 		menu:closeConnectPanel()
 	end
 

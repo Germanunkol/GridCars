@@ -348,7 +348,6 @@ function advertise:parseOnlineServerEntry( msg )
 		else
 			print("[ADVERTISE] Reply:", msg )
 		end
-		print(address, port, info)
 	end
 end
 
