@@ -118,6 +118,7 @@ function newServerListEntryRemote( entry )
 		serverList:addListItem( item )
 	end
 end
+
 function newServerListEntryLocal( entry )
 	if serverList then
 		-- Event to be called when clicking the button:

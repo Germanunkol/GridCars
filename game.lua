@@ -32,7 +32,16 @@ local tease2 = {
 -- "move": players are allowed to make their move.
 -- "wait": waiting for server or other players, or for animtion
 
+local scr = nil
+
 function game:init()
+	scr = ui:newScreen( "game" )
+
+	scr:addPanel( "topPanel",
+		0, 0, 
+		love.graphics.getWidth(), 35 )
+
+	scr:addFunction( "topPanel", "leave", 20, 0, "Leave", "q", game.close )
 end
 
 function game:show()
@@ -96,6 +105,8 @@ function game:show()
 		end
 		self.maxTime2 = 2
 		self.time2 = 0
+
+		ui:setActiveScreen( scr )
 	end
 end
 
@@ -551,7 +562,14 @@ function game:getNumUsersPlaying()
 			num = num + 1
 		end
 	end
-		return num
+	return num
+end
+
+function game:close()
+	local commands = {}
+	commands[1] = { txt = "Yes", key = "y", event = function() network:closeConnection() end }
+	commands[2] = { txt = "No", key = "n" }
+	scr:newMsgBox( "Game in progress!", "Are you sure you want to leave?", nil, nil, nil, commands)
 end
 
 return game
