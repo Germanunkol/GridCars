@@ -208,7 +208,7 @@ function lobby:createLevelList()
 		table.insert( list, entry )
 	end]]
 
-	levelNameList = scr:newList( love.graphics.getWidth() - 150, 60, 160, list, 5 )
+	levelNameList = scr:newList( love.graphics.getWidth() - 300, 60, 160, list, 5 )
 end
 
 -- SERVER ONLY!

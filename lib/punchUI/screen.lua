@@ -90,6 +90,12 @@ function Screen:addHeader( panelName, name, x, y, txt )
 	return h
 end
 
+function Screen:disableAllInputs()
+	for k, p in pairs( self.panels ) do
+		p:disableInput()
+	end
+end
+
 function Screen:activateInput( panelName, name )
 	local p = self:panelByName( panelName )
 	local inp = p:inputByName( name )
@@ -98,7 +104,6 @@ function Screen:activateInput( panelName, name )
 
 	p.activeInput = inp
 	inp:setActive( true )
-	
 end
 
 function Screen:tabToNextInput()
@@ -195,6 +200,7 @@ function Screen:textinput( letter )
 	end
 end
 function Screen:mousepressed( x, y, button )
+	self:disableAllInputs()
 	if self.msgBox then
 		if utility.isInside( x, y, self.msgBox.x, self.msgBox.y, self.msgBox.w, self.msgBox.h ) then
 			self.msgBox:mousepressed( x, y, button )

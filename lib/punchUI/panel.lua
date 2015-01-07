@@ -201,7 +201,7 @@ function Panel:addInput( name, x, y, width, height, key, returnEvent, password, 
 		self.activeInput = self:inputByName( name )
 		self.activeInput:setActive( true )
 	end
-	self:addFunction( name, x, y, "", key, event )
+	local ev = self:addFunction( name, x, y, "", key, event )
 
 	x = x + self.padding
 	y = y + self.padding
@@ -210,6 +210,8 @@ function Panel:addInput( name, x, y, width, height, key, returnEvent, password, 
 	
 	width = math.min( width or math.huge, maxWidth )
 	height = height or self.font:getHeight()
+
+	ev.w = width
 
 	local i = InputBlock:new( name, x + keyWidth, y, width-keyWidth, height, self.font, returnEvent, password, maxLetters )
 
@@ -221,12 +223,18 @@ function Panel:addInput( name, x, y, width, height, key, returnEvent, password, 
 	return i
 end
 
-
 function Panel:inputByName( name )
 	for k, i in ipairs( self.inputs ) do
 		if i.name == name then
 			return i
 		end
+	end
+end
+
+function Panel:disableInput()
+	if self.activeInput then
+		self.activeInput:setActive(false)
+		self.activeInput = nil
 	end
 end
 
@@ -248,8 +256,9 @@ function Panel:keypressed( key, unicode )
 		local re = self.activeInput:keypressed( key, unicode )
 		-- if "esc" was pressed (or similar), stop:
 		if re == "stop" then
-			self.activeInput:setActive(false)
-			self.activeInput = nil
+			--self.activeInput:setActive(false)
+			--self.activeInput = nil
+			self:disableInput()
 		elseif re == "forward" then		-- tab pressed: go to next input
 			self.activeInput:setActive(false)
 			local current = self.activeInput
@@ -319,7 +328,7 @@ function Panel:putListItem( item, i, curY )
 
 	ev, w, h = self:addFunction( key, 5, curY, item.txt, key, ev, tooltipEv )
 	curY = curY + self.list.lineHeight
-	return curY, w
+	return curY, w, ev
 end
 
 
