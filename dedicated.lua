@@ -24,7 +24,7 @@ dedicated = {
 config.load()
 
 --lobby:init()
-game:init()
+--game:init()
 map:load()
 
 MAIN_SERVER_URL = "http://germanunkol.de/gridcars/serverlist"
