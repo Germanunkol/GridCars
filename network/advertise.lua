@@ -217,12 +217,12 @@ function advertise:update( dt )
 	end
 
 	if self.advertiseOnline then
-		print("1 online", os.time())
 		if self.advertiseOnlineTimer <= 0 then
 			print("2 online", os.time())
 			self:sendUpdateOnline()
 			self.advertiseOnlineTimer = ADVERTISEMENT_UPDATE_TIME
 		end
+		self.advertiseOnlineTimer = self.advertiseOnlineTimer - dt
 	end
 
 	if advertiseOnlineThread then
