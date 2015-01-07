@@ -93,7 +93,7 @@ function menu.showServerList()
 	network.advertise.callbacks.newEntryLAN = newServerListEntryLocal
 
 	local list = {}
-	serverList = listScr:newList( 60, 120, love.graphics.getWidth() - 132, list )
+	serverList = listScr:newList( 60, 120, love.graphics.getWidth() - 132, list, 5 )
 
 	--network:requestServerList( GAME_ID, MAIN_SERVER_URL )
 	--network:requestServerListLAN( GAME_ID )

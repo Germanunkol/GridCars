@@ -91,16 +91,13 @@ function map:newFromString( mapstring )
 
 		if not DEDICATED then
 			math.randomseed( utility.numFromString( mapstring:sub(1, 100 ) ) )
-
 			--ZoomTarget = 50/MapScale -- startzoom depends on MapScale
-
 			-- create Environment
 			-- plant Subjects with big Pivots
 			for i = 1, maxS_QuadPivot, 1 do
 				--search fitting positon
 				local x = math.random(map.Boundary.minX, map.Boundary.maxX)
 				local y = math.random(map.Boundary.minY, map.Boundary.maxY)
-
 				-- check every pivot, ugly as shit but workes
 				local onRoad = 0
 				local pivotX = x + GridSizeBigStep
@@ -126,7 +123,7 @@ function map:newFromString( mapstring )
 				if onRoad == 0 then
 					local nSubject = math.random(1, utility.tablelength(SubjectListQuadPivot))
 					local s = mapSubject:new(SubjectListQuadPivot[nSubject], x, y) -- choose random subject
-					for key, str in pairs(noShadows) do 
+					for key, str in pairs(noShadows) do
 						if str == SubjectListQuadPivot[nSubject] then
 							s.castshadow = false
 							--print(SubjectListQuadPivot[nSubject], "has no shadow")
@@ -141,15 +138,13 @@ function map:newFromString( mapstring )
 				--search fitting positon
 				local x = math.random(map.Boundary.minX, map.Boundary.maxX)
 				local y = math.random(map.Boundary.minY, map.Boundary.maxY)
-				if map:isPointOnRoad(x, y, 0) == true then
+				while map:isPointOnRoad(x, y, 0) == true do
 					x = math.random(map.Boundary.minX, map.Boundary.maxX)
 					y = math.random(map.Boundary.minY, map.Boundary.maxY)
 				end
-				if not map:isPointOnRoad( x, y, 0 ) then
-					local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
-					local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
-					table.insert(map.subjects, s)
-				end
+				local nSubject = math.random(1, utility.tablelength(SubjectListOnePivot))
+				local s = mapSubject:new(SubjectListOnePivot[nSubject], x, y) -- choose random subject
+				table.insert(map.subjects, s)
 			end
 		end
 	end

@@ -189,10 +189,10 @@ function lobby:createLevelList()
 	end
 
 	local list = {}
-	if levelListStart > 1 then
+	--[[if levelListStart > 1 then
 		local entry = { txt="Up", event=function() lobby:moveLevelList( -1 ) end, key = "u" }
 		table.insert( list, entry )
-	end
+	end]]
 	-- Display up to 8 items in the list:
 	for i = levelListStart, levelListStart + 7 do
 		if levelnames[i] then
@@ -203,17 +203,12 @@ function lobby:createLevelList()
 			table.insert( list, entry )
 		end
 	end
-	if levelListStart + 7 < #levelnames then
+	--[[if levelListStart + 7 < #levelnames then
 		local entry = { txt="Down", event=function() lobby:moveLevelList( 1 ) end, key = "d" }
 		table.insert( list, entry )
-	end
+	end]]
 
-	levelNameList = scr:newList( love.graphics.getWidth() - 150, 60, nil, list )
-end
-
-function lobby:moveLevelList( amount )
-	levelListStart = levelListStart + amount
-	lobby:createLevelList()
+	levelNameList = scr:newList( love.graphics.getWidth() - 150, 60, 160, list, 5 )
 end
 
 -- SERVER ONLY!

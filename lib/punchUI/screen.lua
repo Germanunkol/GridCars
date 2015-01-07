@@ -384,47 +384,14 @@ function Screen:newMenu( x, y, minWidth, list )
 	self.menus[ID] = menuPanel
 end
 
-function Screen:newList( x, y, minWidth, list )
+function Screen:newList( x, y, minWidth, list, listLength )
 	width = love.graphics.getWidth()/5 + 8
 	x = x or 10
 	y = y or 10
 	local ID = #self.lists + 1
 	local listPanel = Panel:new( "listPanel" .. ID, x, y, width, 100, self.font, 4, {0,0,3,3} )
-
-	local curY = 0
-	local ev, w, h
-	local maxWidth = minWidth or 0
-	for k, v in ipairs( list ) do
-
-		local ev = function()
-			if v.event then
-				v.event()
-			end
-		end
-		local tip = v.tooltip or "Choose option " .. k .. "."
-		local tooltipEv = function()
-			self:newTooltip( tip )
-		end
-
-		local key = v.key or tostring(k)
-
-		ev, w, h = listPanel:addFunction( key, 5, curY, v.txt, key, ev, tooltipEv )
-		maxWidth = math.max( maxWidth, w )
-		curY = curY + self.font:getHeight() + 8
-	end
-
-	curY = 0
-	for k, v in ipairs( list ) do
-		curY = curY + self.font:getHeight() + 8
-		if k < #list then
-			listPanel:addLine( 4, curY , maxWidth + 4, curY )
-		end
-	end
-
-	listPanel.h = curY
-	listPanel.w = 12 + maxWidth
-	listPanel:calcBorder()
 	self.lists[ID] = listPanel
+	listPanel:toList( list, minWidth, listLength )
 	return listPanel
 end
 

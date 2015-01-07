@@ -32,6 +32,8 @@ function Panel:initialize( name, x, y, w, h, font, padding, corners )
 	self.corners = corners or {3,3,3,3}	
 	self:calcBorder()
 
+	self.isList = false
+
 	self.startX = START_X
 	self.startY = START_Y
 	self.alpha = START_ALPHA
@@ -296,9 +298,131 @@ function Panel:addLine( x1, y1, x2, y2 )
 	self.lines[#self.lines+1] = {x1=x1, y1=y1, x2=x2, y2=y2 }
 end
 
-function Panel:addListItem( item )
+--------------------------------------
+-- Handle lists:
 
-	if #self.events > 0 then
+function Panel:putListItem( item, i, curY )
+	local ev, w, h
+
+	local ev = function()
+		if item.event then
+			item.event()
+		end
+	end
+
+	local tip = item.tooltip or "Choose option " .. i .. "."
+	local tooltipEv = function()
+		self:newTooltip( tip )
+	end
+
+	local key = item.key or tostring(i)
+
+	ev, w, h = self:addFunction( key, 5, curY, item.txt, key, ev, tooltipEv )
+	curY = curY + self.list.lineHeight
+	return curY, w
+end
+
+
+function Panel:buildList()
+
+	local curY = self.padding
+	local maxWidth = self.list.minWidth or 0
+
+	self.events = {}
+	self.texts = {}
+
+	local itemsAdded = 1
+
+	-- Display a scroll up button?
+	if self.list.startItem > 1 then
+		local item = {
+			event = function()
+				self:scrollList( self.list.startItem - 1 )
+			end,
+			tooltip = "Scroll up",
+			key = "u",
+			txt = "Up",
+		}
+		curY = self:putListItem( item, nil, curY )
+	end
+
+	local count = 0
+	local moreItemsAvailable = false
+	for k = self.list.startItem, #self.list.items do
+		v = self.list.items[k]
+		count = count + 1
+		if curY + self.list.lineHeight*2 > self.h then
+			moreItemsAvailable = true
+			break
+		end
+		curY, w = self:putListItem( v, count, curY )
+		maxWidth = math.max( maxWidth, w )
+		itemsAdded = itemsAdded + 1
+	end
+
+	-- Display a scroll down button?
+	if self.list.startItem < #self.list.items then
+		local item = {
+			event = function()
+				self:scrollList( self.list.startItem + 1 )
+			end,
+			tooltip = "Scroll down",
+			key = "d",
+			txt = "Down",
+		}
+		curY = self:putListItem( item, nil, self.h - self.list.lineHeight -self.padding )
+	end
+
+	self.w = 12 + maxWidth
+end
+
+function Panel:toList( list, minWidth, listLength )
+
+	self.list = {
+		items = list,
+		displayLength = math.max(listLength, 3),
+		minWidth = minWidth,
+		startItem = 1,
+		lineHeight = self.font:getHeight() + 8
+	}
+
+	self.h = self.list.lineHeight*listLength + 2*self.padding
+
+	self:buildList()
+
+	--[[curY = 0
+	for k, v in ipairs( list ) do
+		curY = curY + self.font:getHeight() + 8
+		if k < #list then
+			self:addLine( 4, curY , maxWidth + 4, curY )
+		end
+	end]]
+
+	self:calcBorder()
+
+	self.isList = true
+end
+
+function Panel:scrollList( num )
+	print("Scroll to", num)
+	if self.isList then
+		local prev = self.list.startItem
+		self.list.startItem = math.min( math.max( num, 1 ), #self.list.items )
+		if prev ~= self.list.startItem then
+			self:buildList()
+		end
+	end
+end
+
+function Panel:addListItem( item )
+	if not self.isList then
+		return
+	end
+
+	table.insert( self.list.items, item )
+	self:buildList()
+
+	--[[if #self.events > 0 then
 		self:addLine( 4, self.h , self.w - 8, self.h )
 	end
 
@@ -314,7 +438,6 @@ function Panel:addListItem( item )
 		self:newTooltip( tip )
 	end
 
-
 	local key = item.key or tostring( #self.events + 1 )
 
 	ev, w, h = self:addFunction( key, 5, curY, item.txt, key, ev, tooltipEv )
@@ -324,7 +447,7 @@ function Panel:addListItem( item )
 	self.h = curY
 	self.w = maxWidth + 12
 
-	self:calcBorder()
+	self:calcBorder()]]
 end
 
 ------------------------------------------------------
