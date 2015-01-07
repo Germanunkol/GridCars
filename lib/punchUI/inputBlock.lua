@@ -112,9 +112,11 @@ end
 function InputBlock:setContent( txt )
 	local success = self:setText( txt )
 	if success then
-	self.front = txt
-	self.back = ""
-end
+		self.fullContent = txt
+		self.front = txt
+		self.back = ""
+		self.cursorX, self.cursorY = self:getCharPos( #self.front )
+	end
 end
 
 function InputBlock:update( cursorDirection )
@@ -166,6 +168,8 @@ function InputBlock:setActive( bool )
 		self.canvas = nil
 		self.renderImg = false
 		self.ignoredFirst = false
+		self.front = self.fullContent
+		self.back = ""
 	else
 		self.renderImg = true
 		self:render()

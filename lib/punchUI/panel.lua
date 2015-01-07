@@ -413,7 +413,6 @@ function Panel:toList( list, minWidth, listLength )
 end
 
 function Panel:scrollList( num )
-	print("Scroll to", num)
 	if self.isList then
 		local prev = self.list.startItem
 		self.list.startItem = math.min( math.max( num, 1 ), #self.list.items )

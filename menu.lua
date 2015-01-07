@@ -107,17 +107,15 @@ end
 
 function newServerListEntryRemote( entry )
 	if serverList then
-		for k = 1, 10 do
-			-- Event to be called when clicking the button:
-			local event = function()
-				menu.connect( entry.address, entry.port)
-			end
-			local item = {
-				txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
-				event = event
-			}
-			serverList:addListItem( item )
+		-- Event to be called when clicking the button:
+		local event = function()
+			menu.connect( entry.address, entry.port)
 		end
+		local item = {
+			txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
+			event = event
+		}
+		serverList:addListItem( item )
 	end
 end
 function newServerListEntryLocal( entry )
