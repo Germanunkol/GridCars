@@ -139,6 +139,9 @@ function config.load()
 	WELCOME_MSG = config.getValue( "WELCOME_MSG" ) or "Welcome!"
 	SERVER_NAME = config.getValue( "SERVER_NAME" ) or "Default Server"
 
+	PLAYERNAME = PLAYERNAME:sub( 1, 28 )	-- max of 28 chars
+	SERVER_NAME = SERVER_NAME:sub( 1, 50 )	-- max of 50 chars
+
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
 		HEIGHT = tonumber(config.getValue( "HEIGHT" )) or love.graphics.getHeight()
