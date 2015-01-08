@@ -13,6 +13,7 @@ CMD = {
 	MOVE_CAR = 133,
 	PLAYER_WINS = 134,
 	BACK_TO_LOBBY = 135,
+	LAPS = 136,
 }
 
 function setServerCallbacks( server )
@@ -122,6 +123,8 @@ function clientReceived( command, msg )
 		game:playerWins( msg )
 	elseif command == CMD.BACK_TO_LOBBY then
 		lobby:show()
+	elseif command == CMD.LAPS then
+		lobby:receiveLaps( msg )
 	end
 end
 

@@ -59,7 +59,7 @@ function game:toggleHelp()
 		scr:addHeader( "helpPanel", "h1", 0, y, "Help:" )
 		y = y + 30
 
-		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "Move your car by clicking the fields around it. Once every player has planned their move, the cars start driving. The places you can drive to this round depends on how your carr drove during the last movement phase: The same vector you moved last round will be added onto your car's position; from the resulting point, all neighbouring fields are available.\nBe the first to finsih the race, but don't leave the road or crash into other cars!\n\nUse {f]W{p}-{f}A{p}-{f}S{p}-{f}D{p} or {f}cursor keys{p} to move the camera, use {f}mouse wheel{p} or {f}+{p} and {f}-{p} to zoom." )
+		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "Move your car by clicking the fields around it. Once every player has planned their move, the cars start driving. The places you can drive to this round depends on how your carr drove during the last movement phase: The same vector you moved last round will be added onto your car's position; from the resulting point, all neighbouring fields are available.\nBe the first to finsih the race, but don't leave the road or crash into other cars!\n\nUse W-A-S-D or cursor keys to move the camera, use mouse wheel or + and - to zoom." )
 
 		scr:addFunction( "helpPanel", "close", 10, 260, "Close", "h", nil )
 	end
@@ -209,7 +209,7 @@ function game:drawUserList()
 			local dx = love.graphics.getFont():getWidth( u.playerName ) + 40
 			local lapString = ""
 			if map:hasCar( u.id ) then
-				lapString = "Lap: " .. map:getCarRound( u.id )
+				lapString = "Lap: " .. map:getCarRound( u.id ) .. "/" .. (self.numberOfLaps or LAPS)
 				love.graphics.print( lapString, x + dx, y )
 			end
 

@@ -211,9 +211,8 @@ function lobby:createLevelList()
 	levelNameList = scr:newList( love.graphics.getWidth() - 300, 60, 160, list, 9 )
 end
 
--- SERVER ONLY!
 function lobby:chooseMap( levelname )
-
+	-- SERVER ONLY!
 	if not server then return end
 
 	print("Loading map: " .. levelname )
@@ -252,13 +251,15 @@ function lobby:sendMap( user )
 	if self.currentMapString then
 
 		-- Remove linebreaks and replace by pipe symbol for sending.
-		mapstring = self.currentMapString:gsub( "\n", "|" )
+		--mapstring = self.currentMapString:gsub( "\n", "|" )
 		if user then
 			-- Send to single user?
-			server:send( CMD.MAP, mapstring, user )
+			server:send( CMD.MAP, self.currentMapString, user )
+			server:send( CMD.LAPS, tostring(LAPS), user )
 		else
 			-- Broadcast to all:
-			server:send( CMD.MAP, mapstring )
+			server:send( CMD.MAP, self.currentMapString )
+			server:send( CMD.LAPS, tostring(LAPS) )
 		end
 
 	end
@@ -268,10 +269,17 @@ function lobby:receiveMap( mapstring )
 	-- CLIENT ONLY!
 	if not client then return end
 	if server then return end
-	-- Re-add line breaks:
-	mapstring = mapstring:gsub( "|", "\n" )
+	-- Re-add line breaks (fallback for earlier versions:)
+	if not mapstring:find( "\n" ) then
+		mapstring = mapstring:gsub( "|", "\n" )
+	end
 
 	map:newFromString( mapstring )
+end
+
+function lobby:receiveLaps( laps )
+	laps = tonumber(laps)
+	game.numberOfLaps = laps
 end
 
 function lobby:toggleReady()
