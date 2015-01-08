@@ -208,7 +208,6 @@ function menu.startServer( lan )
 end
 
 function menu.ipEntered( ip )
-	print( "New IP:", ip )
 	menu.ip = ip
 end
 

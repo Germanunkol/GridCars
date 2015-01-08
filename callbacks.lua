@@ -51,8 +51,6 @@ function newUser( user )
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
 	end
 	
-	print("users", network:getUsers())
-
 	-- update advertisement:
 	updateAdvertisementInfo()
 end
