@@ -119,8 +119,12 @@ function newServerListEntryRemote( entry )
 		local event = function()
 			menu.connect( entry.address, entry.port)
 		end
+		local servername, otherinfo = entry.info:match("Name:(.-),(.*)")
+		otherinfo = otherinfo:gsub(",","\t")
+
 		local item = {
-			txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
+			--txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
+			txt = "(Online) " .. servername .. "\t" .. otherinfo,
 			event = event
 		}
 		serverList:addListItem( item )
@@ -133,6 +137,10 @@ function newServerListEntryLocal( entry )
 		local event = function()
 			menu.connect( entry.address, entry.port)
 		end
+
+		local servername, otherinfo = entry.info:match("Name:(.-),(.*)")
+		otherinfo = otherinfo:gsub(",","\t")
+
 		local item = {
 			txt = "(LAN) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
 			event = event
