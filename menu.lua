@@ -6,6 +6,9 @@ local scr, listScr
 Images = require "images"
 local playernameInput, addressInput
 
+local ERROR_MSG = nil
+local ERROR_TIMER = 0
+
 function menu:init()
 
 	scr = ui:newScreen( "menu" )
@@ -82,6 +85,8 @@ function menu:show()
 	menu:closeConnectPanel()
 
 	network.advertise:stop()
+
+	ERROR_TIMER = 0
 end
 
 function menu.showServerList()
@@ -91,6 +96,9 @@ function menu.showServerList()
 
 	network.advertise.callbacks.newEntryOnline = newServerListEntryRemote
 	network.advertise.callbacks.newEntryLAN = newServerListEntryLocal
+
+	network.advertise.callbacks.requestWarnings = function( msg )
+		menu:newWarning( "Could not load online list:\n" .. msg ) end
 
 	local list = {}
 	serverList = listScr:newList( 60, 120, love.graphics.getWidth() - 132, list, 15 )
@@ -139,6 +147,9 @@ function menu:closeConnectPanel()
 end
 
 function menu:update( dt )
+	if ERROR_TIMER > 0 then
+		ERROR_TIMER = ERROR_TIMER - dt
+	end
 end
 
 function menu:draw()
@@ -146,6 +157,14 @@ function menu:draw()
 	love.graphics.setColor( 255,255,255,255 )
 	love.graphics.draw(images["Logo.png"], x/2, 50, 0, 1, 1, 0, 0, 0, 0)
 --love.graphics.draw(images["Logo.png"], 0, 0, 0, 1, 1, 0, 0, 0, 0)
+	if ERROR_TIMER > 0 then
+		love.graphics.setColor( 0, 0, 0, 200 )
+		love.graphics.rectangle( "fill", 60, love.graphics.getHeight() - 70,
+				love.graphics.getWidth() - 120, 60 )
+		love.graphics.setColor( 255,128,0, 200 )
+		love.graphics.printf( ERROR_MSG, 60, love.graphics.getHeight() - 60,
+				love.graphics.getWidth() - 120, "center" )
+	end
 end
 
 function menu:keypressed( key )
@@ -334,6 +353,11 @@ function menu.fullscreen()
 		love.load()
 		menu:toggleOptions()
 	end
+end
+
+function menu:newWarning( msg )
+	ERROR_MSG = msg
+	ERROR_TIMER = 10
 end
 
 return menu

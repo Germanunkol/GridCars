@@ -115,32 +115,90 @@ end
 
 function Car:drawTargetPoints()
 	if not self.driveTime then		 -- Don't show while moving.
-	-- draw targets to move
-	love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4]/3)
-	love.graphics.polygon("fill",
+		-- draw targets to move
+		love.graphics.setColor(self.color[1], self.color[2], self.color[3], self.color[4]/3)
+		love.graphics.polygon("fill",
 		self.x+self.vX -GRIDSIZE, self.y+self.vY-GRIDSIZE,
 		self.x+self.vX-GRIDSIZE, self.y+self.vY+GRIDSIZE,
 		self.x+self.vX+GRIDSIZE, self.y+self.vY+GRIDSIZE,
 		self.x+self.vX+GRIDSIZE, self.y+self.vY-GRIDSIZE)
 
-	love.graphics.setColor( self.color )
+		love.graphics.setColor( self.color )
 
-	for x = -1, 1 do
-		for y = -1, 1 do
-			love.graphics.circle( "fill",
+		for x = -1, 1 do
+			for y = -1, 1 do
+				love.graphics.circle( "fill",
 				self.x + self.vX + GRIDSIZE*x,
 				self.y + self.vY + GRIDSIZE*y,
 				10 )
+			end
 		end
 	end
-end
 
 	if self.route[self.routeIndex-1] and self.routeIndex > 1 then
 		love.graphics.setColor( self.color )
 		love.graphics.circle( "fill",
-			self.route[self.routeIndex-1][1],
-			self.route[self.routeIndex-1][2], 20 )
+		self.route[self.routeIndex-1][1],
+		self.route[self.routeIndex-1][2], 20 )
+	end
+
+	-- If mouse is hovering over (or close to) a target point, draw the route to
+	-- that target point:
+	local gX, gY = map:screenToGrid( love.mouse.getPosition() )
+	gX = math.floor( gX + 0.5 )
+	gY = math.floor( gY + 0.5 )
+	if self:isThisAValidTargetPos( gX, gY ) then
+		self:drawMovementPrediction( gX, gY )
+	end
+end
+
+function Car:drawMovementPrediction( x, y )
+	-- NOTE: This would not have to be calculated every frame,
+	-- but since it's only done for one car, it's fine:
+	local oldX, oldY = self.x/GRIDSIZE, self.y/GRIDSIZE--map:getCarPos( self.id )
+
+	-- Step along the path and check if there's a collision. If so, stop there.
+	local p = {x = oldX, y = oldY }
+	local diff = {x = x-oldX, y = y-oldY}
+	local dist = utility.length( diff )
+	diff = utility.normalize(diff)
+
+	-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
+	local crashed, crashSiteFound = false, false
+	local movedDist = 0
+	local crashSite = nil
+	for l = 0.5, dist, 0.5 do
+		p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
+		if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+			crashSite = p
+			crashed = true
+			break
 		end
+		movedDist = l
+	end
+
+	-- Also check the end position!!
+	if not crashed then
+		-- I have managed to move the entire distance!
+		movedDist = dist
+		if not map:isPointOnRoad( x*GRIDSIZE, y*GRIDSIZE, 0 ) then
+			crashSite = {x=x, y=y}
+			crashed = true
+		end
+	end
+
+	if crashed then
+		love.graphics.setColor( 255,64,64,255 )
+		love.graphics.line( x*GRIDSIZE, y*GRIDSIZE,
+			self.x, self.y )
+		
+		-- Draw crash site:
+		love.graphics.circle( "fill", crashSite.x*GRIDSIZE, crashSite.y*GRIDSIZE, 5 )
+	else
+		love.graphics.setColor( 64,255,64,255 )
+		love.graphics.line( x*GRIDSIZE, y*GRIDSIZE,
+			self.x, self.y )
+	end
 end
 
 function Car:update( dt )
