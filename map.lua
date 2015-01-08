@@ -186,8 +186,10 @@ function map:update( dt )
 	else
 		if not DEDICATED then
 			if STATE == "Game" and not chat.active then
-				local dx = (love.keyboard.isDown('d') and 1 or 0) - (love.keyboard.isDown('a') and 1 or 0)
-				local dy = (love.keyboard.isDown('s') and 1 or 0) - (love.keyboard.isDown('w') and 1 or 0)
+				local dx = ((love.keyboard.isDown('d') or love.keyboard.isDown('right')) and 1 or 0) 
+					- ((love.keyboard.isDown('a') or love.keyboard.isDown('left')) and 1 or 0)
+				local dy = ((love.keyboard.isDown('s') or love.keyboard.isDown('down')) and 1 or 0)
+					- ((love.keyboard.isDown('w') or love.keyboard.isDown('up')) and 1 or 0)
 				dx = dx * (map.Boundary.maxX-map.Boundary.minX)/5 *dt  --GridSizeSmallStep 	--*dt
 				dy = dy * (map.Boundary.maxY-map.Boundary.minY)/5 *dt  --GridSizeSmallStep   --*dt
 				cam:move(dx, dy)
@@ -597,6 +599,26 @@ function map:keypressed( key )
 	--	local y = math.random(0,5)
 	--	map:setCarPos(1, x, y)
 	--end
+	if key == "+" then
+		CamZoomTime = nil
+		cam:zoom( 0.9 )
+		if cam.scale < 0.01 then
+			cam.scale = 0.01
+		end
+		--ZoomTarget = math.min(ZoomTarget + 0.1, 1)
+		--map:camZoom(ZoomTarget, 1)
+		--ZoomTarget = ZoomTarget + 0.01
+	end
+	if key == "-" then
+		CamZoomTime = nil
+		cam:zoom( 1.1 )
+		if cam.scale > 1.5 then
+			cam.scale = 1.5
+		end
+		--ZoomTarget = math.max(ZoomTarget - 0.1, 0.1)
+		--map:camZoom(ZoomTarget, 1)
+		--ZoomTarget = ZoomTarget - 0.01
+	end
 end
 
 function map:mousepressed( x, y, button )

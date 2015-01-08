@@ -42,6 +42,27 @@ function game:init()
 		love.graphics.getWidth(), 35 )
 
 	scr:addFunction( "topPanel", "leave", 20, 0, "Leave", "q", game.close )
+	scr:addFunction( "topPanel", "help", love.graphics.getWidth() -160, 0, "Help", "h", game.toggleHelp )
+end
+
+function game:toggleHelp()
+	if scr:panelByName( "helpPanel" ) ~= nil then
+		scr:removePanel( "helpPanel" )
+	else
+		local width = 300
+		local x = love.graphics.getWidth() - 370
+		local y = 0
+		scr:addPanel( "helpPanel",
+			x,
+			80,
+			width, 320 )
+		scr:addHeader( "helpPanel", "h1", 0, y, "Help:" )
+		y = y + 30
+
+		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "Move your car by clicking the fields around it. Once every player has planned their move, the cars start driving. The places you can drive to this round depends on how your carr drove during the last movement phase: The same vector you moved last round will be added onto your car's position; from the resulting point, all neighbouring fields are available.\nBe the first to finsih the race, but don't leave the road or crash into other cars!\n\nUse {f]W{p}-{f}A{p}-{f}S{p}-{f}D{p} or {f}cursor keys{p} to move the camera, use {f}mouse wheel{p} or {f}+{p} and {f}-{p} to zoom." )
+
+		scr:addFunction( "helpPanel", "close", 10, 260, "Close", "h", nil )
+	end
 end
 
 function game:show()

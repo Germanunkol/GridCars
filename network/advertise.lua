@@ -135,7 +135,6 @@ function advertise:stop()
 			-- Un-Advertise the server:
 			advertise:sendUpdateOnline( true )
 		end
-		print("stop", debug.traceback())
 		self.advertiseOnline = false
 	end
 end
