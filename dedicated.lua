@@ -1,11 +1,10 @@
 -- Run this file to run a dedicated server.
 -- Make sure the config.txt file is edited to fit the settings you want to have.
 
-local origPrint = print
-print = function(...)
-	args = {...}
+--[[print = function(...)
+	local args = {...}
 	origPrint( unpack(args) )
-	str = ""
+	local str = ""
 	for k, v in pairs(args) do
 		str = str .. v .. "\t"
 	end
@@ -13,7 +12,7 @@ print = function(...)
 	local file = io.open( "printLog.txt", "a")
 	file:write( str .. "\n" )
 	file:close()
-end
+end]]
 
 DEDICATED = true
 
