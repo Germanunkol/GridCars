@@ -131,7 +131,7 @@ function config.load()
 	ROUND_TIME = tonumber(config.getValue( "ROUND_TIME" )) or 10
 	LAPS = tonumber(config.getValue( "LAPS" )) or 1
 	MAX_PLAYERS = tonumber(config.getValue( "MAX_PLAYERS" )) or 16
-	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
+	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 500
 	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
 	PORT = tonumber(config.getValue( "PORT" )) or 3410
 	ADDRESS = config.getValue( "ADDRESS" ) or "germanunkol.de"

@@ -96,6 +96,9 @@ function game:show()
 				server:setUserValue( u, "moved", true )
 			end
 			server:setUserValue( u, "crashed", false )
+
+			server:setUserValue( u, "speed", 0 )
+			server:setUserValue( u, "maxSpeed", 0 )
 		end
 
 		game.crashedUsers = {}
@@ -200,15 +203,21 @@ function game:drawUserList()
 	local i = 1
 	if client and users then
 		love.graphics.setColor( 0, 0, 0, 128 )
-		love.graphics.rectangle( "fill", x - 5, y - 5, 400, num*20 + 5 )
+		love.graphics.rectangle( "fill", x - 5, y - 5, 450, num*20 + 5 )
 		for k, u in pairs( users ) do
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
 
 			local dx = love.graphics.getFont():getWidth( u.playerName ) + 40
+
 			local lapString = ""
 			if map:hasCar( u.id ) then
+
+				local speedString = (u.customData.speed or 0).. " km/h"
+				love.graphics.print( speedString, x + dx, y )
+				dx = dx + love.graphics.getFont():getWidth( speedString ) + 15
+
 				lapString = "Lap: " .. map:getCarRound( u.id ) .. "/" .. (self.numberOfLaps or LAPS)
 				love.graphics.print( lapString, x + dx, y )
 			end
@@ -223,7 +232,6 @@ function game:drawUserList()
 				love.graphics.setColor( 255, 255, 128, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString ) + 20
 				love.graphics.print( "[Waiting for move]", x + dx, y )
-				dx = dx + love.graphics.getFont():getWidth( "[Waiting for move]" ) + 20
 			elseif not u.customData.ingame == true then
 				love.graphics.setColor( 128, 128, 255, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString )
@@ -231,7 +239,7 @@ function game:drawUserList()
 			end
 
 			if map:hasCar( u.id) then
-				map:getCar( u.id ):drawOnUI( 380, y + 5, 0.2 )
+				map:getCar( u.id ):drawOnUI( 435, y + 5, 0.2 )
 			end
 
 			y = y + 20
@@ -378,32 +386,43 @@ function game:moveAll()
 				if DEDICATED then
 					map:setCarPosDirectly( u.id, x, y )
 				end
-			end
-		end
-	end
 
-	self.timerEvent = function()
-		game:checkForWinner()
+				local car = map:getCar( u.id )
+				local vX = x - map:TransCoordPtG(car.x)
+				local vY = y - map:TransCoordPtG(car.y)
 
-		if not game.winnerID then
-			game:startMovementRound()
-		else
-			game:sendWinner( game.winnerID )
-			self.timerEvent = game.sendBackToLobby
-			self.maxTime = 5
-			self.time = 0
-			if DEDICATED then
-				if server:getUsers()[game.winnerID] and
-						server:getUsers()[game.winnerID].playerName then
+				local speed = math.floor( math.sqrt(vX*vX + vY*vY)*100 )/10
+				server:setUserValue( u, "speed", speed )
 
-					utility.log( "[" .. os.time() .. "] Winner: " ..
-						server:getUsers()[game.winnerID].playerName )
+				if not u.customData.maxSpeed or u.customData.maxSpeed < speed then
+					server:setUserValue( u, "maxSpeed", speed )
 				end
 			end
 		end
+
+		self.timerEvent = function()
+			game:checkForWinner()
+
+			if not game.winnerID then
+				game:startMovementRound()
+			else
+				game:sendWinner( game.winnerID )
+				self.timerEvent = game.sendBackToLobby
+				self.maxTime = 5
+				self.time = 0
+				if DEDICATED then
+					if server:getUsers()[game.winnerID] and
+						server:getUsers()[game.winnerID].playerName then
+
+						utility.log( "[" .. os.time() .. "] Winner: " ..
+						server:getUsers()[game.winnerID].playerName )
+					end
+				end
+			end
+		end
+		self.maxTime = 1.2
+		self.time = 0
 	end
-	self.maxTime = 1.2
-	self.time = 0
 end
 
 function game:validateCarMovement( id, x, y )
@@ -576,6 +595,10 @@ function game:synchronizeCars( user )
 			end
 		end
 	end
+end
+
+function game:speedToCrashTimeout( speed )
+	
 end
 
 function game:getNumUsersPlaying()

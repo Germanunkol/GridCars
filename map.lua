@@ -790,7 +790,7 @@ function map:getCarCenterVel( id )
 		return (car.x + car.vX)/GRIDSIZE, (car.y + car.vY)/GRIDSIZE
 	end
 end
-
+	
 function map:zoomOut()
 	if map.loaded then
 		local max = math.max( math.abs(map.Boundary.maxX - map.Boundary.minX),
