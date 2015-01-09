@@ -100,6 +100,7 @@ function serverReceived( command, msg, user )
 		server:send( command, user.playerName .. ": " .. msg )
 	elseif command == CMD.MOVE_CAR then
 		local x, y = msg:match( "(.*)|(.*)" )
+		print( "move car:", user.id, x, y, msg)
 		game:validateCarMovement( user.id, x, y )
 	end
 end
