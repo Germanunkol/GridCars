@@ -275,7 +275,9 @@ function game:mousepressed( x, y, button )
 				local gX, gY = map:screenToGrid( x, y )
 				gX = math.floor( gX + 0.5 )
 				gY = math.floor( gY + 0.5 )
+				print( "Grid position clicked:", gX, gY )
 				if map:isThisAValidTargetPos( client:getID(), gX, gY ) then
+					print("\t->is valid.")
 					self:sendNewCarPosition( gX, gY )
 				end
 			end
@@ -316,7 +318,7 @@ function game:sendNewCarPosition( x, y )
 	-- CLIENT ONLY!
 	if client then
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
-
+		print("\t->Sent:", CMD.MOVE_CAR, x .. "|" .. y )
 		--map:setCarNextMovement( client:getID(), x, y )
 	end
 end
