@@ -318,7 +318,7 @@ function game:sendNewCarPosition( x, y )
 	-- CLIENT ONLY!
 	if client then
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
-		print("\t->Sent:", CMD.MOVE_CAR, x .. "|" .. y )
+		print("\t->Sent:", CMD.MOVE_CAR, x .. "|" .. y, os.time())
 		--map:setCarNextMovement( client:getID(), x, y )
 	end
 end
@@ -454,6 +454,7 @@ function game:validateCarMovement( id, x, y )
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
 
+			print("\tValidating at:", os.time())
 			print("\tPrevious positions:", id, map:getCar(id), oldX, oldY)
 			if map:isThisAValidTargetPos( id, x, y ) then
 				print("\tPossition is valid.")
