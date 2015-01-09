@@ -35,6 +35,11 @@ local noShadows = {"Schafe", "See", "laternenumzug", "Markt1", "Markt2", "Kidz1"
 GRIDSIZE = GridSizeSmallStep
 local MapScale = 500
 
+-- Start position triangle:
+local tri1 = {0, -GRIDSIZE/2}
+local tri2 = {-GRIDSIZE/2, GRIDSIZE/2}
+local tri3 = {GRIDSIZE/2, GRIDSIZE/2}
+
 --wird einmalig bei Spielstart aufgerufen
 function map:load()
 	map.View.x = 0
@@ -241,13 +246,17 @@ function map:draw()
 		)]]
 		love.graphics.setColor( 150, 150, 150, 100 )
 		love.graphics.line( self.startLine.p1.x, self.startLine.p1.y,
-		self.startLine.p2.x, self.startLine.p2.y )
-		love.graphics.circle( "fill", self.startProjPoint.x, self.startProjPoint.y, 5 )
+			self.startLine.p2.x, self.startLine.p2.y )
+		--love.graphics.circle( "fill", self.startProjPoint.x, self.startProjPoint.y, 5 )
 
 		--[[love.graphics.setColor( 0, 255,0, 255 )
 		love.graphics.circle( "fill", self.startPoint.x, self.startPoint.y, 5 )
 		love.graphics.setColor( 255,0,0, 255)
 		love.graphics.circle( "fill", self.endPoint.x, self.endPoint.y, 5 )]]
+		love.graphics.setColor( 150, 150, 150, 25 )
+		for k, pos in pairs( self.startPositions ) do
+			love.graphics.polygon( "fill", pos.triangle )
+		end
 	end
 
 	-- draw grid
@@ -449,8 +458,8 @@ function map:import( mapstring )
 				elseif vertices[counterV].z == MapScale*3 and vertices[counterV-1].z == MapScale*3 and
 						vertices[counterV-2].z == MapScale*3 then
 
-					local x = math.floor(vertices[counterV].x/GRIDSIZE)*GRIDSIZE
-					local y = math.floor(vertices[counterV].y/GRIDSIZE)*GRIDSIZE
+					local x = math.floor(vertices[counterV].x/GRIDSIZE + 0.5)*GRIDSIZE
+					local y = math.floor(vertices[counterV].y/GRIDSIZE + 0.5)*GRIDSIZE
 					local found = false
 					for k, s in pairs( map.startPositions ) do
 						if s.x == x and s.y == y then
@@ -481,9 +490,23 @@ function map:import( mapstring )
 		if #map.startPositions < MAX_PLAYERS then
 			return false, "Map only has " .. #map.startPositions .. " start positions, but you allow up to " .. MAX_PLAYERS .. " players. Change MAX_PLAYERS in config.txt."
 		end
+
+		-- Sort the start positions by how close they are to the start line:
+		-- (only needed on server)
+		table.sort( map.startPositions, sortStartPositions )
 	end
 
-	table.sort( map.startPositions, sortStartPositions )
+
+	-- Create small triangles which represent the start positions:
+	for k, pos in ipairs( map.startPositions ) do
+		local x1, y1 = utility.rotatePoint( tri1[1], tri1[2], map.driveAngle)
+		local x2, y2 = utility.rotatePoint( tri2[1], tri2[2], map.driveAngle)
+		local x3, y3 = utility.rotatePoint( tri3[1], tri3[2], map.driveAngle)
+		pos.triangle = {
+				x1+pos.x, y1+pos.y,
+				x2+pos.x, y2+pos.y,
+				x3+pos.x, y3+pos.y }
+	end
 
 	map.loaded = true
 	return true
