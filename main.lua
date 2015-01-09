@@ -1,11 +1,14 @@
---[[print = function(...)
+local origPrint = print
+
+print = function(...)
 	args = {...}
+	origPrint( unpack(args) )
 	str = ""
 	for k, v in pairs(args) do
 		str = str .. v .. "\t"
 	end
 	love.filesystem.append( "log.txt", str .. "\r\n" )
-end]]
+end
 
 network = require( "network.network" )
 config = require( "config" )
