@@ -623,7 +623,7 @@ function game:sendWinner()
 end
 function game:sendBackToLobby()
 	if server then
-		--server:send( CMD.BACK_TO_LOBBY, "" )
+		server:send( CMD.BACK_TO_LOBBY, "" )
 		if DEDICATED then
 			lobby:show()
 		end
