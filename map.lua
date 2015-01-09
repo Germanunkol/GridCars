@@ -35,9 +35,10 @@ local noShadows = {"Schafe", "See", "laternenumzug", "Markt1", "Markt2", "Kidz1"
 GRIDSIZE = GridSizeSmallStep
 local MapScale = 500
 
+-- Start position triangle:
 local tri1 = {0, -GRIDSIZE/2}
-local tri2 = {-GRIDSIZE/2, 0}
-local tri3 = {GRIDSIZE/2, 0}
+local tri2 = {-GRIDSIZE/2, GRIDSIZE/2}
+local tri3 = {GRIDSIZE/2, GRIDSIZE/2}
 
 --wird einmalig bei Spielstart aufgerufen
 function map:load()
@@ -252,6 +253,7 @@ function map:draw()
 		love.graphics.circle( "fill", self.startPoint.x, self.startPoint.y, 5 )
 		love.graphics.setColor( 255,0,0, 255)
 		love.graphics.circle( "fill", self.endPoint.x, self.endPoint.y, 5 )]]
+		love.graphics.setColor( 150, 150, 150, 25 )
 		for k, pos in pairs( self.startPositions ) do
 			love.graphics.polygon( "fill", pos.triangle )
 		end

@@ -73,6 +73,17 @@ function game:show()
 	
 	if server then
 
+		-- For exery player who's playing, add one start position to the list of available positions:
+		local availablePositions = {}
+		local i = 1
+		for id, u in pairs( server:getUsers() ) do
+			if u.customData.ingame then
+				-- add one start position to the list of available positions:
+				table.insert( availablePositions, map.startPositions[i] )
+				i = i + 1
+			end
+		end
+
 		for id, u in pairs( server:getUsers() ) do
 			if u.customData.ingame then
 				local col = {
@@ -83,8 +94,11 @@ function game:show()
 				}
 
 				local x, y = 0,0
-				if map.startPositions[id] then
-					x, y = map.startPositions[id].x, map.startPositions[id].y
+
+				local startPosNum = math.random(1,#availablePositions)
+				if availablePositions[startPosNum] then
+					x, y = availablePositions[startPosNum].x, availablePositions[startPosNum].y
+					table.remove( availablePositions, startPosNum )
 				end
 
 				map:newCar( u.id, x, y, col )
