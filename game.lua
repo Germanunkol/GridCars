@@ -411,6 +411,7 @@ function game:moveAll()
 
 				local speed = math.floor( math.sqrt(vX*vX + vY*vY)*100 )/10
 				server:setUserValue( u, "speed", speed )
+				print("set user speed:", u.id, speed)
 
 				if not u.customData.maxSpeed or u.customData.maxSpeed < speed then
 					server:setUserValue( u, "maxSpeed", speed )
