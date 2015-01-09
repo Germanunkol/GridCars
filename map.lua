@@ -744,7 +744,6 @@ function map:newCar( id, x, y, color )
 		end
 	end
 	map.cars[id] = Car:new( x, y, color, map.driveAngle, bodyType )
-	print("created car:", id, x, y, map.cars[id], #map.cars )
 end
 
 function map:removeAllCars()

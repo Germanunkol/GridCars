@@ -316,12 +316,12 @@ function game:startMovementRound()
 			if game.crashedUsers[u.id] then
 
 				-- If this is the first crash round:
-				if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
+				--[[if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
 					if math.random(20) == 1 then
 						local i = math.random(#tease)
 						server:send( CMD.CHAT, tease[i] .. u.playerName .. tease2[i] )
 					end
-				end
+				end]]
 				game.crashedUsers[u.id] = game.crashedUsers[u.id] - 1
 				if game.crashedUsers[u.id] <= 0 then
 					-- If I've waited long enough, let me rejoin the game:
@@ -439,6 +439,7 @@ function game:validateCarMovement( id, x, y )
 			local p = {x = oldX, y = oldY }
 			local diff = {x = x-oldX, y = y-oldY}
 			local dist = utility.length( diff )
+			local speed = math.floor( dist*100 )/10
 			diff = utility.normalize(diff)
 
 			-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
@@ -461,7 +462,8 @@ function game:validateCarMovement( id, x, y )
 					crashed = true
 				end
 			end
-
+			
+			local crashedIntoCar = false
 			-- If I managed to move the full distance, then check if there's already a car there
 			if movedDist == dist then
 				for id2, bool in pairs( self.usersMoved ) do
@@ -469,7 +471,8 @@ function game:validateCarMovement( id, x, y )
 						if self.newUserPositions[id2] then
 							if self.newUserPositions[id2].x == x and
 								self.newUserPositions[id2].y == y then
-
+								
+								crashedIntoCar = true
 								crashed = true
 								break
 							end
@@ -489,8 +492,14 @@ function game:validateCarMovement( id, x, y )
 						break
 					end
 				end
+
 				-- remembers how many rounds the user has to wait
-				game.crashedUsers[id] = SKIP_ROUNDS_ON_CRASH + 1
+				if crashedIntoCar then
+					game.crashedUsers[id] = SKIP_ROUNDS_CAR_CAR + 1
+				else
+					print("Crashed with speed:", speed)
+					game.crashedUsers[id] = game:speedToCrashTimeout( speed )
+				end
 			end
 
 			if crashed and not crashSiteFound then
@@ -598,7 +607,7 @@ function game:synchronizeCars( user )
 end
 
 function game:speedToCrashTimeout( speed )
-	
+	return SKIP_ROUNDS_COLLISION_MIN + math.floor(speed*SKIP_ROUNDS_COLLISION_PER_10_KMH/10) + 1
 end
 
 function game:getNumUsersPlaying()
