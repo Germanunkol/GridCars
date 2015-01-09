@@ -131,8 +131,10 @@ function config.load()
 	ROUND_TIME = tonumber(config.getValue( "ROUND_TIME" )) or 10
 	LAPS = tonumber(config.getValue( "LAPS" )) or 1
 	MAX_PLAYERS = tonumber(config.getValue( "MAX_PLAYERS" )) or 16
-	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 100
-	SKIP_ROUNDS_ON_CRASH = tonumber(config.getValue( "SKIP_ROUNDS_ON_CRASH" )) or 2
+	TRAIL_LENGTH = tonumber(config.getValue( "TRAIL_LENGTH" )) or 500
+	SKIP_ROUNDS_CAR_CAR = tonumber(config.getValue( "SKIP_ROUNDS_CAR_CAR" )) or 1
+	SKIP_ROUNDS_COLLISION_PER_10_KMH = tonumber(config.getValue( "SKIP_ROUNDS_COLLISION_PER_10_KMH" )) or 0.5
+	SKIP_ROUNDS_COLLISION_MIN = tonumber(config.getValue( "SKIP_ROUNDS_COLLISION_MIN" )) or 1
 	PORT = tonumber(config.getValue( "PORT" )) or 3410
 	ADDRESS = config.getValue( "ADDRESS" ) or "germanunkol.de"
 	COUNTDOWN = tonumber(config.getValue( "COUNTDOWN" )) or 60
@@ -141,6 +143,10 @@ function config.load()
 
 	PLAYERNAME = PLAYERNAME:sub( 1, 28 )	-- max of 28 chars
 	SERVER_NAME = SERVER_NAME:sub( 1, 50 )	-- max of 50 chars
+
+	SKIP_ROUNDS_CAR_CAR = math.max( 0, SKIP_ROUNDS_CAR_CAR )
+	SKIP_ROUNDS_COLLISION_PER_10_KMH = math.max( 0, SKIP_ROUNDS_COLLISION_PER_10_KMH )
+	SKIP_ROUNDS_COLLISION_MIN = math.floor(math.max( 0, SKIP_ROUNDS_COLLISION_MIN ))
 
 	if not DEDICATED then
 		WIDTH = tonumber(config.getValue( "WIDTH" )) or love.graphics.getWidth()
@@ -177,11 +183,14 @@ function config.createIfEmpty()
 		config.setValue( "LAPS", LAPS )
 		config.setValue( "MAX_PLAYERS", MAX_PLAYERS )
 		config.setValue( "TRAIL_LENGTH", TRAIL_LENGTH )
-		config.setValue( "SKIP_ROUNDS_ON_CRASH", SKIP_ROUNDS_ON_CRASH )
 		config.setValue( "PORT", PORT )
 		config.setValue( "COUNTDOWN", COUNTDOWN )
 		config.setValue( "FULLSCREEN", false )
-		config.setValue( "WELCOME_MSG", "Welcome!" )
+		config.setValue( "WELCOME_MSG", WELCOME_MSG )
+		config.setValue( "SERVER_NAME", SERVER_NAME )
+		config.setValue( "SKIP_ROUNDS_CAR_CAR", SKIP_ROUNDS_CAR_CAR )
+		config.setValue( "SKIP_ROUNDS_COLLISION_PER_10_KMH", SKIP_ROUNDS_COLLISION_PER_10_KMH )
+		config.setValue( "SKIP_ROUNDS_COLLISION_MIN", SKIP_ROUNDS_COLLISION_MIN )
 	end
 end
 

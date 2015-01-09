@@ -158,4 +158,8 @@ function utility.createServerInfo()
 	return str
 end
 
+function utility.rotatePoint( x, y, ang )
+	return x*math.cos(ang) - y*math.sin(ang), x*math.sin(ang) + y*math.cos(ang)
+end
+
 return utility

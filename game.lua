@@ -73,6 +73,17 @@ function game:show()
 	
 	if server then
 
+		-- For exery player who's playing, add one start position to the list of available positions:
+		local availablePositions = {}
+		local i = 1
+		for id, u in pairs( server:getUsers() ) do
+			if u.customData.ingame then
+				-- add one start position to the list of available positions:
+				table.insert( availablePositions, map.startPositions[i] )
+				i = i + 1
+			end
+		end
+
 		for id, u in pairs( server:getUsers() ) do
 			if u.customData.ingame then
 				local col = {
@@ -83,8 +94,11 @@ function game:show()
 				}
 
 				local x, y = 0,0
-				if map.startPositions[id] then
-					x, y = map.startPositions[id].x, map.startPositions[id].y
+
+				local startPosNum = math.random(1,#availablePositions)
+				if availablePositions[startPosNum] then
+					x, y = availablePositions[startPosNum].x, availablePositions[startPosNum].y
+					table.remove( availablePositions, startPosNum )
 				end
 
 				map:newCar( u.id, x, y, col )
@@ -96,6 +110,9 @@ function game:show()
 				server:setUserValue( u, "moved", true )
 			end
 			server:setUserValue( u, "crashed", false )
+
+			server:setUserValue( u, "speed", 0 )
+			server:setUserValue( u, "maxSpeed", 0 )
 		end
 
 		game.crashedUsers = {}
@@ -202,15 +219,21 @@ function game:drawUserList()
 	local i = 1
 	if client and users then
 		love.graphics.setColor( 0, 0, 0, 128 )
-		love.graphics.rectangle( "fill", x - 5, y - 5, 400, num*20 + 5 )
+		love.graphics.rectangle( "fill", x - 5, y - 5, 450, num*20 + 5 )
 		for k, u in pairs( users ) do
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
 
 			local dx = love.graphics.getFont():getWidth( u.playerName ) + 40
+
 			local lapString = ""
 			if map:hasCar( u.id ) then
+
+				local speedString = (u.customData.speed or 0).. " km/h"
+				love.graphics.print( speedString, x + dx, y )
+				dx = dx + love.graphics.getFont():getWidth( speedString ) + 15
+
 				lapString = "Lap: " .. map:getCarRound( u.id ) .. "/" .. (self.numberOfLaps or LAPS)
 				love.graphics.print( lapString, x + dx, y )
 			end
@@ -225,7 +248,6 @@ function game:drawUserList()
 				love.graphics.setColor( 255, 255, 128, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString ) + 20
 				love.graphics.print( "[Waiting for move]", x + dx, y )
-				dx = dx + love.graphics.getFont():getWidth( "[Waiting for move]" ) + 20
 			elseif not u.customData.ingame == true then
 				love.graphics.setColor( 128, 128, 255, 255 )
 				dx = dx + love.graphics.getFont():getWidth( lapString )
@@ -233,7 +255,7 @@ function game:drawUserList()
 			end
 
 			if map:hasCar( u.id) then
-				map:getCar( u.id ):drawOnUI( 380, y + 5, 0.2 )
+				map:getCar( u.id ):drawOnUI( 435, y + 5, 0.2 )
 			end
 
 			y = y + 20
@@ -310,12 +332,12 @@ function game:startMovementRound()
 			if game.crashedUsers[u.id] then
 
 				-- If this is the first crash round:
-				if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
+				--[[if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
 					if math.random(20) == 1 then
 						local i = math.random(#tease)
 						server:send( CMD.CHAT, tease[i] .. u.playerName .. tease2[i] )
 					end
-				end
+				end]]
 				game.crashedUsers[u.id] = game.crashedUsers[u.id] - 1
 				if game.crashedUsers[u.id] <= 0 then
 					-- If I've waited long enough, let me rejoin the game:
@@ -380,32 +402,43 @@ function game:moveAll()
 				if DEDICATED then
 					map:setCarPosDirectly( u.id, x, y )
 				end
-			end
-		end
-	end
 
-	self.timerEvent = function()
-		game:checkForWinner()
+				local car = map:getCar( u.id )
+				local vX = x - map:TransCoordPtG(car.x)
+				local vY = y - map:TransCoordPtG(car.y)
 
-		if not game.winnerID then
-			game:startMovementRound()
-		else
-			game:sendWinner( game.winnerID )
-			self.timerEvent = game.sendBackToLobby
-			self.maxTime = 5
-			self.time = 0
-			if DEDICATED then
-				if server:getUsers()[game.winnerID] and
-						server:getUsers()[game.winnerID].playerName then
+				local speed = math.floor( math.sqrt(vX*vX + vY*vY)*100 )/10
+				server:setUserValue( u, "speed", speed )
 
-					utility.log( "[" .. os.time() .. "] Winner: " ..
-						server:getUsers()[game.winnerID].playerName )
+				if not u.customData.maxSpeed or u.customData.maxSpeed < speed then
+					server:setUserValue( u, "maxSpeed", speed )
 				end
 			end
 		end
+
+		self.timerEvent = function()
+			game:checkForWinner()
+
+			if not game.winnerID then
+				game:startMovementRound()
+			else
+				game:sendWinner( game.winnerID )
+				self.timerEvent = game.sendBackToLobby
+				self.maxTime = 5
+				self.time = 0
+				if DEDICATED then
+					if server:getUsers()[game.winnerID] and
+						server:getUsers()[game.winnerID].playerName then
+
+						utility.log( "[" .. os.time() .. "] Winner: " ..
+						server:getUsers()[game.winnerID].playerName )
+					end
+				end
+			end
+		end
+		self.maxTime = 1.2
+		self.time = 0
 	end
-	self.maxTime = 1.2
-	self.time = 0
 end
 
 function game:validateCarMovement( id, x, y )
@@ -423,82 +456,96 @@ function game:validateCarMovement( id, x, y )
 			else
 				print("\tPossition is NOT valid.")
 			end
-			if oldX and oldY then
 
-				-- Step along the path and check if there's a collision. If so, stop there.
-				local p = {x = oldX, y = oldY }
-				local diff = {x = x-oldX, y = y-oldY}
-				local dist = utility.length( diff )
-				print("\tDiff1:", diff.x, diff.y)
-				diff = utility.normalize(diff)
+			-- Step along the path and check if there's a collision. If so, stop there.
+			local p = {x = oldX, y = oldY }
+			local diff = {x = x-oldX, y = y-oldY}
+			local dist = utility.length( diff )
+			local speed = math.floor( dist*100 )/10
+			print("\tDiff1:", diff.x, diff.y)
+			print("\tSpeed1:", diff.x, diff.y)
+			diff = utility.normalize(diff)
 
-				print("\tDist:", dist)
-				print("\tDiff2:", diff.x, diff.y)
+			print("\tDist:", dist)
+			print("\tDiff2:", diff.x, diff.y)
 
-				-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
-				local crashed, crashSiteFound = false, false
-				local movedDist = 0
-				for l = 0.5, dist, 0.5 do
-					p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
-					if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
-						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {255,0,0,255} )
-						crashed = true
-						break
-					else
-						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,255,0,255} )
-					end
-					movedDist = l
+			-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
+			local crashed, crashSiteFound = false, false
+			local movedDist = 0
+			for l = 0.5, dist, 0.5 do
+				print("\t\tStep forward", l)
+				p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
+				if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+					print("\t\t->Not on road")
+					map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {255,0,0,255} )
+					crashed = true
+					break
+				else
+					map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,255,0,255} )
 				end
+				movedDist = l
+			end
 
-				-- Also check the end position!!
-				if not crashed then
-					-- I have managed to move the entire distance!
-					movedDist = dist
-					if not map:isPointOnRoad( x*GRIDSIZE, y*GRIDSIZE, 0 ) then
-						map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {255,0,0,255} )
-						crashed = true
-					else
-						map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {0,255,0,255} )
-					end
+			-- Also check the end position!!
+			if not crashed then
+				-- I have managed to move the entire distance!
+				movedDist = dist
+				if not map:isPointOnRoad( x*GRIDSIZE, y*GRIDSIZE, 0 ) then
+					map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {255,0,0,255} )
+					crashed = true
+				else
+					map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {0,255,0,255} )
 				end
+			end
 
-				-- If I managed to move the full distance, then check if there's already a car there
-				if movedDist == dist then
-					for id2, bool in pairs( self.usersMoved ) do
-						if bool then
-							if self.newUserPositions[id2] then
-								if self.newUserPositions[id2].x == x and
-									self.newUserPositions[id2].y == y then
+			local crashedIntoCar = false
+			-- If I managed to move the full distance, then check if there's already a car there
+			if movedDist == dist then
+				for id2, bool in pairs( self.usersMoved ) do
+					if bool then
+						if self.newUserPositions[id2] then
+							if self.newUserPositions[id2].x == x and
+								self.newUserPositions[id2].y == y then
 
-									crashed = true
-									break
-								end
+								crashedIntoCar = true
+								crashed = true
+								break
 							end
 						end
 					end
 				end
-				if crashed then
-					-- Step backwards:
-					for lBack = movedDist-0.5, 0, -0.5 do
-						p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
-						p.x = math.floor(p.x)
-						p.y = math.floor(p.y)
-						if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
-							map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,128,0,255} )
-							crashSiteFound = true
-							x, y = p.x, p.y
-							break
-						else
-							map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {128,0,0,255} )
-						end
+			end
+
+			if crashed then
+				print("\tCrashed")
+				-- Step backwards:
+				for lBack = movedDist-0.5, 0, -0.5 do
+					print("\t\tStepback", lBack)
+					p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
+					p.x = math.floor(p.x)
+					p.y = math.floor(p.y)
+					if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,128,0,255} )
+						crashSiteFound = true
+						x, y = p.x, p.y
+						break
+					else
+						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {128,0,0,255} )
 					end
-					-- remembers how many rounds the user has to wait
-					game.crashedUsers[id] = SKIP_ROUNDS_ON_CRASH + 1
 				end
 
-				if crashed and not crashSiteFound then
-					x, y = oldX, oldY
+				-- remembers how many rounds the user has to wait
+				if crashedIntoCar then
+					game.crashedUsers[id] = SKIP_ROUNDS_CAR_CAR + 1
+				else
+					print("Crashed with speed:", speed)
+					game.crashedUsers[id] = game:speedToCrashTimeout( speed )
 				end
+			end
+
+			if crashed and not crashSiteFound then
+				x, y = oldX, oldY
+				print("\tNo crash site found, placed to old pos:", oldX, oldY)
 			end
 
 			self.usersMoved[id] = true
@@ -598,6 +645,10 @@ function game:synchronizeCars( user )
 			end
 		end
 	end
+end
+
+function game:speedToCrashTimeout( speed )
+	return SKIP_ROUNDS_COLLISION_MIN + math.floor(speed*SKIP_ROUNDS_COLLISION_PER_10_KMH/10) + 1
 end
 
 function game:getNumUsersPlaying()
