@@ -401,22 +401,22 @@ function game:moveAll()
 				--local x, y = map:getCarPos( u.id )
 				local x,y = self.newUserPositions[u.id].x, self.newUserPositions[u.id].y
 				server:send( CMD.MOVE_CAR, u.id .. "|" .. x .. "|" .. y )
-				if DEDICATED then
-					map:setCarPosDirectly( u.id, x, y )
-				end
 
+				-- Calculate and send car speed:
 				local car = map:getCar( u.id )
 				local vX = x - map:TransCoordPtG(car.x)
 				local vY = y - map:TransCoordPtG(car.y)
-				print("speed:", car.x, car.y, x, y, vX, vY)
-
 				local speed = math.floor( math.sqrt(vX*vX + vY*vY)*100 )/10
 				server:setUserValue( u, "speed", speed )
-				print("set user speed:", u.id, speed)
 
 				if not u.customData.maxSpeed or u.customData.maxSpeed < speed then
 					server:setUserValue( u, "maxSpeed", speed )
 				end
+
+				if DEDICATED then
+					map:setCarPosDirectly( u.id, x, y )
+				end
+
 			end
 		end
 
