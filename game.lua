@@ -207,6 +207,8 @@ function game:draw()
 					love.graphics.getWidth()/2, "center" )
 			end
 		end
+
+		map:drawDebug()
 	end
 end
 
@@ -273,7 +275,9 @@ function game:mousepressed( x, y, button )
 				local gX, gY = map:screenToGrid( x, y )
 				gX = math.floor( gX + 0.5 )
 				gY = math.floor( gY + 0.5 )
-				if map:clickAtTargetPosition( client:getID(), gX, gY ) then
+				print( "Grid position clicked:", gX, gY )
+				if map:isThisAValidTargetPos( client:getID(), gX, gY ) then
+					print("\t->is valid.")
 					self:sendNewCarPosition( gX, gY )
 				end
 			end
@@ -314,7 +318,7 @@ function game:sendNewCarPosition( x, y )
 	-- CLIENT ONLY!
 	if client then
 		client:send( CMD.MOVE_CAR, x .. "|" .. y )
-
+		print("\t->Sent:", CMD.MOVE_CAR, x .. "|" .. y, os.time())
 		--map:setCarNextMovement( client:getID(), x, y )
 	end
 end
@@ -397,20 +401,22 @@ function game:moveAll()
 				--local x, y = map:getCarPos( u.id )
 				local x,y = self.newUserPositions[u.id].x, self.newUserPositions[u.id].y
 				server:send( CMD.MOVE_CAR, u.id .. "|" .. x .. "|" .. y )
-				if DEDICATED then
-					map:setCarPosDirectly( u.id, x, y )
-				end
 
+				-- Calculate and send car speed:
 				local car = map:getCar( u.id )
 				local vX = x - map:TransCoordPtG(car.x)
 				local vY = y - map:TransCoordPtG(car.y)
-
 				local speed = math.floor( math.sqrt(vX*vX + vY*vY)*100 )/10
 				server:setUserValue( u, "speed", speed )
 
 				if not u.customData.maxSpeed or u.customData.maxSpeed < speed then
 					server:setUserValue( u, "maxSpeed", speed )
 				end
+
+				if DEDICATED then
+					map:setCarPosDirectly( u.id, x, y )
+				end
+
 			end
 		end
 
@@ -444,26 +450,43 @@ function game:validateCarMovement( id, x, y )
 	if server then
 		-- if this user has not moved yet:
 		if self.usersMoved[id] == nil then
---			map:setCarPos( id, x, y )
+			--			map:setCarPos( id, x, y )
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
-			if oldX and oldY then
+
+			print("\tValidating at:", os.time())
+			print("\tPrevious positions:", id, map:getCar(id), oldX, oldY)
+			if map:isThisAValidTargetPos( id, x, y ) then
+				print("\tPossition is valid.")
+			else
+				print("\tPossition is NOT valid.")
+			end
 
 			-- Step along the path and check if there's a collision. If so, stop there.
 			local p = {x = oldX, y = oldY }
 			local diff = {x = x-oldX, y = y-oldY}
 			local dist = utility.length( diff )
 			local speed = math.floor( dist*100 )/10
+			print("\tDiff1:", diff.x, diff.y)
+			print("\tSpeed1:", diff.x, diff.y)
 			diff = utility.normalize(diff)
+
+			print("\tDist:", dist)
+			print("\tDiff2:", diff.x, diff.y)
 
 			-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
 			local crashed, crashSiteFound = false, false
 			local movedDist = 0
 			for l = 0.5, dist, 0.5 do
+				print("\t\tStep forward", l)
 				p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
 				if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+					print("\t\t->Not on road")
+					map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {255,0,0,255} )
 					crashed = true
 					break
+				else
+					map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,255,0,255} )
 				end
 				movedDist = l
 			end
@@ -473,10 +496,13 @@ function game:validateCarMovement( id, x, y )
 				-- I have managed to move the entire distance!
 				movedDist = dist
 				if not map:isPointOnRoad( x*GRIDSIZE, y*GRIDSIZE, 0 ) then
+					map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {255,0,0,255} )
 					crashed = true
+				else
+					map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {0,255,0,255} )
 				end
 			end
-			
+
 			local crashedIntoCar = false
 			-- If I managed to move the full distance, then check if there's already a car there
 			if movedDist == dist then
@@ -485,7 +511,7 @@ function game:validateCarMovement( id, x, y )
 						if self.newUserPositions[id2] then
 							if self.newUserPositions[id2].x == x and
 								self.newUserPositions[id2].y == y then
-								
+
 								crashedIntoCar = true
 								crashed = true
 								break
@@ -494,16 +520,22 @@ function game:validateCarMovement( id, x, y )
 					end
 				end
 			end
+
 			if crashed then
+				print("\tCrashed")
 				-- Step backwards:
 				for lBack = movedDist-0.5, 0, -0.5 do
+					print("\t\tStepback", lBack)
 					p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
 					p.x = math.floor(p.x)
 					p.y = math.floor(p.y)
 					if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
+						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,128,0,255} )
 						crashSiteFound = true
 						x, y = p.x, p.y
 						break
+					else
+						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {128,0,0,255} )
 					end
 				end
 
@@ -518,8 +550,8 @@ function game:validateCarMovement( id, x, y )
 
 			if crashed and not crashSiteFound then
 				x, y = oldX, oldY
+				print("\tNo crash site found, placed to old pos:", oldX, oldY)
 			end
-		end
 
 			self.usersMoved[id] = true
 			self.newUserPositions[id] = {x=x, y=y}

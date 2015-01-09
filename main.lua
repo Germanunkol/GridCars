@@ -1,6 +1,7 @@
 --[[print = function(...)
-	args = {...}
-	str = ""
+	local args = {...}
+	origPrint( unpack(args) )
+	local str = ""
 	for k, v in pairs(args) do
 		str = str .. v .. "\t"
 	end

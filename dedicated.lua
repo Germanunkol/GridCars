@@ -1,6 +1,19 @@
 -- Run this file to run a dedicated server.
 -- Make sure the config.txt file is edited to fit the settings you want to have.
 
+--[[print = function(...)
+	local args = {...}
+	origPrint( unpack(args) )
+	local str = ""
+	for k, v in pairs(args) do
+		str = str .. v .. "\t"
+	end
+	--love.filesystem.append( "log.txt", str .. "\r\n" )
+	local file = io.open( "printLog.txt", "a")
+	file:write( str .. "\n" )
+	file:close()
+end]]
+
 DEDICATED = true
 
 STATE = "Menu"

@@ -47,6 +47,8 @@ function map:load()
 	cam = Camera(map.View.x, map.View.y)
 end
 
+DEBUG_POINT_LIST = {}
+
 --wird zum laden neuer Maps öfters aufgerufen
 -- ACHTUNG: Bitte nur noch map:newFromString aufrufen!
 --[[function map:new( mapstring ) -- Parameterbeispiel: "testtrackstl.stl"
@@ -269,7 +271,24 @@ function map:draw()
 	for id, s in ipairs(map.subjects) do
 		s:draw()
 	end
+
 	cam:detach()
+end
+
+function map:addDebugPoint( x, y, col )
+	table.insert( DEBUG_POINT_LIST, {x=x, y=y, color = col} )
+end
+
+function map:drawDebug()
+	if client then
+		cam:attach()
+		love.graphics.setPointSize( 5 )
+		for i, p in pairs( DEBUG_POINT_LIST ) do
+			love.graphics.setColor( p.color )
+			love.graphics.point( p.x, p.y )
+		end
+		cam:detach()
+	end
 end
 
 function map:drawTargetPoints( id )
@@ -785,7 +804,7 @@ function map:screenToGrid( x, y )
 	return self:TransCoordPtG(wX), self:TransCoordPtG(wY)
 end
 
-function map:clickAtTargetPosition( id, x, y )
+function map:isThisAValidTargetPos( id, x, y )
 	local car = map.cars[id]
 	if car then
 		return car:isThisAValidTargetPos( x, y )
@@ -812,7 +831,16 @@ function map:getCarCenterVel( id )
 		return (car.x + car.vX)/GRIDSIZE, (car.y + car.vY)/GRIDSIZE
 	end
 end
-	
+
+function map:getCarSpeed()
+	local car = map.cars[id]
+	if car then
+		return math.squrt( car.vX*car.vX + car.vY*var.vY )
+	else
+		return 0
+	end
+end
+
 function map:zoomOut()
 	if map.loaded then
 		local max = math.max( math.abs(map.Boundary.maxX - map.Boundary.minX),
