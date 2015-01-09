@@ -408,6 +408,7 @@ function game:moveAll()
 				local car = map:getCar( u.id )
 				local vX = x - map:TransCoordPtG(car.x)
 				local vY = y - map:TransCoordPtG(car.y)
+				print("speed:", car.x, car.y, x, y, vX, vY)
 
 				local speed = math.floor( math.sqrt(vX*vX + vY*vY)*100 )/10
 				server:setUserValue( u, "speed", speed )
