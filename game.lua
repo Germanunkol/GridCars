@@ -124,7 +124,8 @@ function game:show()
 		self.maxTime = 3
 		self.time = 0
 
-		server:send( CMD.CHAT, "Server: Game starting. You have " .. ROUND_TIME .. " seconds for each move." )
+		server:send( CMD.SERVERCHAT,
+			"Game starting. You have " .. ROUND_TIME .. " seconds for each move." )
 
 		updateAdvertisementInfo()
 	end
@@ -337,7 +338,7 @@ function game:startMovementRound()
 				--[[if game.crashedUsers[u.id] == SKIP_ROUNDS_ON_CRASH + 1 then
 					if math.random(20) == 1 then
 						local i = math.random(#tease)
-						server:send( CMD.CHAT, tease[i] .. u.playerName .. tease2[i] )
+						server:send( CMD.SERVERCHAT, tease[i] .. u.playerName .. tease2[i] )
 					end
 				end]]
 				game.crashedUsers[u.id] = game.crashedUsers[u.id] - 1
@@ -369,6 +370,9 @@ function game:startMovementRound()
 		self.maxTime = ROUND_TIME
 		self.time = 0
 
+		print("----------------------------------------")
+		print("New round starting:", os.time())
+
 		-- If all users crashed, continue:
 		game:checkForRoundEnd()
 	end
@@ -389,7 +393,7 @@ function game:roundTimeout()
 			end
 		end
 		if found then
-			server:send( CMD.CHAT, "Server: Time up. Moving on..." )
+			server:send( CMD.SERVERCHAT, "Server: Time up. Moving on..." )
 		end
 	end
 end
@@ -459,7 +463,9 @@ function game:validateCarMovement( id, x, y )
 			if map:isThisAValidTargetPos( id, x, y ) then
 				print("\tPossition is valid.")
 			else
-				print("\tPossition is NOT valid.")
+				print("\tPossition is NOT valid. Traceback:", debug.traceback())
+				server:send( CMD.SERVERCHAT,
+					"Something went wrong. " .. server:getUsers()[id] .. "'s movement was invalid.")
 			end
 
 			-- Step along the path and check if there's a collision. If so, stop there.

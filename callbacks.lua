@@ -14,6 +14,7 @@ CMD = {
 	PLAYER_WINS = 134,
 	BACK_TO_LOBBY = 135,
 	LAPS = 136,
+	SERVERCHAT = 138,
 }
 
 function setServerCallbacks( server )
@@ -45,7 +46,7 @@ end
 function newUser( user )
 	lobby:setUserColor( user )
 	server:setUserValue( user, "moved", true )
-	server:send( CMD.CHAT, WELCOME_MSG, user )
+	server:send( CMD.SERVERCHAT, WELCOME_MSG, user )
 	if DEDICATED then
 		utility.log( "[" .. os.time() .. "] New user: " ..
 			user.playerName .. " (" .. server:getNumUsers() .. ")" )
@@ -107,7 +108,9 @@ end
 
 function clientReceived( command, msg )
 	if command == CMD.CHAT then
-		chat:newLine( msg )
+		chat:newLineSpeech( msg )
+	elseif command == CMD.SERVERCHAT then
+		chat:newLineServer( msg )
 	elseif command == CMD.MAP then
 		lobby:receiveMap( msg )
 	elseif command == CMD.START_GAME then

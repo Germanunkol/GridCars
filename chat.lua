@@ -8,12 +8,19 @@ local chat = {
 local CHAT_WIDTH = 300
 local chatSide = "left"
 
+local colNormal = {255,255,255,255}
+local colServer = {255,200,64,255}
+
 function chat:init()
 	CHAT_WIDTH = math.min(love.graphics.getWidth()/2 - 40, 500)
 end
 
 function chat:reset()
-	self.lines = { "", "", "", "", "", "", "", "Press enter to chat.", "Welcome!" }
+	self.lines = {} -- "", "", "", "", "", "", "", "Press enter to chat.", "Welcome!" }
+	for k = 1, 9 do
+		table.insert( self.lines, {txt = "", col=colNormal} )
+	end
+	table.insert( self.lines, {txt = "Press enter to chat.", col=colServer} )
 end
 
 function chat:show()
@@ -51,11 +58,11 @@ function chat:draw()
 	love.graphics.rectangle( "fill", x, y,
 			CHAT_WIDTH, 20*(#self.lines) + 10 )
 
-	love.graphics.setColor( 255, 255, 255, 255 )
 	x = x + 5
 	y = y + 10
 	for k = 1, #self.lines do
-		love.graphics.print( self.lines[k], x, y )
+		love.graphics.setColor( self.lines[k].col )
+		love.graphics.print( self.lines[k].txt, x, y )
 		y = y + 20
 	end
 
@@ -83,11 +90,18 @@ function chat:update( dt )
 	end
 end
 
-function chat:newLine( text )
+function chat:newLine( text, col )
 	for k = 1, #self.lines-1 do
 		self.lines[k] = self.lines[k+1]
 	end
-	self.lines[#self.lines] = text
+	self.lines[#self.lines] = {txt = text, col = col}
+end
+
+function chat:newLineSpeech( text )
+	self:newLine( text, colNormal )
+end
+function chat:newLineServer( text )
+	self:newLine( text, colServer )
 end
 
 function chat:keypressed( key )

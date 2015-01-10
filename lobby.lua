@@ -151,7 +151,7 @@ function lobby:update( dt )
 		self.countdown = self.countdown - dt
 		if self.countdown < 5 and not self.sentCountdownTimes[math.ceil(self.countdown)] then
 			if math.ceil(self.countdown) > 0 then
-				server:send( CMD.CHAT, math.ceil(self.countdown))
+				server:send( CMD.SERVERCHAT, math.ceil(self.countdown))
 				self.sentCountdownTimes[math.ceil(self.countdown)] = true
 			end
 		end
@@ -349,13 +349,13 @@ function lobby:attemptGameStart()
 		if usersReady == 0 then
 			if self.countdown then
 				self.countdown = nil
-				server:send( CMD.CHAT, "Server halted countdown. No one is ready." )
+				server:send( CMD.SERVERCHAT, "Server halted countdown. No one is ready." )
 			end
 		else
 			if self.countdown == nil then
 				self.countdown = COUNTDOWN
 				self.sentCountdownTimes = {}
-				server:send( CMD.CHAT, "Round starts in " .. COUNTDOWN .. " seconds. Get ready to play! ('R' to join this round.)" )
+				server:send( CMD.SERVERCHAT, "Round starts in " .. COUNTDOWN .. " seconds. Get ready to play! ('R' to join this round.)" )
 			end
 		end
 	end
