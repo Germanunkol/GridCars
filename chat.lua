@@ -7,6 +7,10 @@ local chat = {
 
 local CHAT_WIDTH = 300
 local chatSide = "left"
+local CHAT_INPUT_CHARACTERS = 100
+-- Used for line breaking:
+local letter = "[%z\1-\127\194-\244][\128-\191]*"
+local word = "[%S]* "	-- not space followed by space
 
 local colNormal = {255,255,255,255}
 local colServer = {255,200,64,255}
@@ -68,15 +72,20 @@ function chat:draw()
 
 	local x, y = 20, love.graphics.getHeight() - 70
 	if self.active then
+		
+		local str = self.enterText
+
+		-- print only the last part of the chat:
+
 		love.graphics.setColor( 0, 0, 0, 200 )
 		love.graphics.rectangle( "fill",
 			x, y, CHAT_WIDTH, fontHeight + 10 )
 
 		love.graphics.setColor( 255, 255, 255, 255 )
 		if math.sin(self.time*3) > 0 then
-			love.graphics.print( "Say: " .. self.enterText .. "|", x + 5, y + 5 )
+			love.graphics.print( "Say: " .. str .. "|", x + 5, y + 5 )
 		else
-			love.graphics.print( "Say: " .. self.enterText, x + 5, y + 5 )
+			love.graphics.print( "Say: " .. str, x + 5, y + 5 )
 		end
 	end
 
@@ -91,10 +100,70 @@ function chat:update( dt )
 end
 
 function chat:newLine( text, col )
+
+	-- remove leading whitespace:
+	text = text:match( "%s*(.*)" )
+
+	local font = love.graphics.getFont()
+
+	local restStr
+	-- Wrap text if necessary:
+	local wLines = {}	-- lines that have been wrapped
+
+	if font:getWidth( text ) <= CHAT_WIDTH - 10 then
+		table.insert( wLines, text )
+	else
+		local restLine = text .. " "
+		local tmpLine, shortLine
+		while #restLine > 0 do
+			local i = 1
+			local breakingCondition = false
+			tmpLine = nil
+			shortLine = nil
+			repeat		-- look for spaces!
+				tmpLine = restLine:match( word:rep(i) )
+				if tmpLine then
+					if font:getWidth(tmpLine) > CHAT_WIDTH - 10 then
+						breakingCondition = true
+					else
+						shortLine = tmpLine
+					end
+				else
+					breakingCondition = true
+				end
+				i = i + 1
+			until breakingCondition
+			if not shortLine then -- if there weren't enough spaces then:
+				breakingCondition = false
+				i = 1
+				repeat			-- ... look for letters:
+					tmpLine = restLine:match( letter:rep(i) )
+					if tmpLine then
+						if font:getWidth(tmpLine) > self.width then
+							breakingCondition = true
+						else
+							shortLine = tmpLine
+						end
+					else
+						breakingCondition = true
+					end
+					i = i + 1
+				until breakingCondition
+			end
+			table.insert( wLines, shortLine )
+			restLine = restLine:sub( #shortLine+1 )
+		end
+	end
+
+	for k, l in ipairs(wLines) do
+
+	-- Add the text to the table of text lines:
 	for k = 1, #self.lines-1 do
 		self.lines[k] = self.lines[k+1]
 	end
-	self.lines[#self.lines] = {txt = text, col = col}
+	self.lines[#self.lines] = {txt = l, col = col}
+
+	end
 end
 
 function chat:newLineSpeech( text )
@@ -141,7 +210,7 @@ function chat:textinput( letter )
 	if STATE == "Game" or STATE == "Lobby" then
 		if self.active then
 			if letter ~= "|" then
-				if love.graphics.getFont():getWidth( "Say: " .. self.enterText .. letter ) < CHAT_WIDTH - 50 then
+				if #self.enterText < CHAT_INPUT_CHARACTERS then
 					self.enterText = self.enterText .. letter
 				end
 			end
