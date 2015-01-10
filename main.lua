@@ -125,7 +125,6 @@ function love.mousepressed( x, y, button )
 end
 
 
-
 function love.draw()
 
 	if STATE == "Game" then

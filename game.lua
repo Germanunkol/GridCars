@@ -385,6 +385,10 @@ function game:roundTimeout()
 
 			-- If the user did not move their car in time, move it according to last velocity:
 			if not self.usersMoved[u.id] and u.customData.ingame == true then
+				print("Round timeout for user:", u.id )
+				for k, v in ipairs( u.customData.ingame ) do
+					print("\t", k, v)
+				end
 				local x, y = map:getCarCenterVel( u.id )
 
 				-- Check for crashes:
@@ -465,7 +469,13 @@ function game:validateCarMovement( id, x, y )
 			else
 				print("\tPossition is NOT valid. Traceback:", debug.traceback())
 				server:send( CMD.SERVERCHAT,
-					"Something went wrong. " .. server:getUsers()[id] .. "'s movement was invalid.")
+					"DEBUG: Something went wrong. " .. server:getUsers()[id].username .. "'s movement was invalid.")
+			end
+
+			if not oldX or not oldY then
+				print("\tWARNING: oldX or oldY aren't set!", debug.traceback())
+				server:send( CMD.SERVERCHAT, "DEBUG: somthing went wrong with the car position of " .. server:getUsers()[id].username .. "." )
+				oldX, oldY = 0, 0
 			end
 
 			-- Step along the path and check if there's a collision. If so, stop there.

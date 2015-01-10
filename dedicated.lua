@@ -31,7 +31,8 @@ require( "callbacks" )		-- helper functions
 Timer = require("timer")
 
 dedicated = {
-	currentMapName = nil
+	currentMapName = nil,
+	mapCycleID = 0
 }
 
 config.load()
@@ -103,30 +104,82 @@ function getDirectoryItems( dir )
 	return f
 end
 
-function dedicated:chooseMap()
-	local files = getDirectoryItems( "maps/" )
-
-	if #files < 1 then
-		return
+function dedicated:loadMapCycle()
+	MAP_CYCLE = config.getValue( "MAP_CYCLE" )
+	MAP_CYCLE_TBL = {}
+	if MAP_CYCLE then
+		for file in MAP_CYCLE:gmatch( "([^%s,]+)%s*,?%s*" ) do
+			table.insert( MAP_CYCLE_TBL, file )
+		end
 	end
 
-	-- first map?
-	if self.currentMapName == nil then
-		self.currentMapName = files[1]
-	else
-		for k, f in ipairs(files) do
-			if f == self.currentMapName then
-				if files[k+1] then
-					self.currentMapName = files[k+1]
-				else
-					self.currentMapName = files[1]
+	-- Look for invalid file names ...
+	local invalidFiles = {}
+	for k = #MAP_CYCLE_TBL,1,-1 do -- iterate backwards because of the table.remove call
+		local filename = MAP_CYCLE_TBL[k]
+		-- Try to open the file, to see if it exists:
+		local f = io.open( "maps/" .. filename )
+		if not f then
+	--		table.insert( invalidFiles, k )
+			table.remove( MAP_CYCLE_TBL, k )
+		else
+			f:close()
+		end
+	end
+end
+
+function dedicated:chooseMap()
+
+	self:loadMapCycle()
+
+	local foundMapFromMapCycle = nil
+	if #MAP_CYCLE_TBL > 0 then
+		if MAP_CYCLE_TBL[self.mapCycleID+1] then
+			self.currentMapName = MAP_CYCLE_TBL[self.mapCycleID+1]
+			self.mapCycleID = self.mapCycleID + 1
+		else
+			self.currentMapName = MAP_CYCLE_TBL[1]
+			self.mapCycleID = 1
+		end
+		foundMapFromMapCycle = true
+	end
+
+	if not foundMapFromMapCycle then
+		print("No map found in map cycle. Choose random:")
+		local files = getDirectoryItems( "maps/" )
+
+		if #files < 1 then
+			return
+		end
+
+		-- first map?
+		if self.currentMapName == nil then
+			self.currentMapName = files[1]
+		else
+			for k, f in ipairs(files) do
+				if f == self.currentMapName then
+					if files[k+1] then
+						self.currentMapName = files[k+1]
+					else
+						self.currentMapName = files[1]
+					end
+					break
 				end
-				break
+			end
+		end
+	else
+		print("Map cycle:")
+		for k, file in ipairs( MAP_CYCLE_TBL ) do
+			if k == self.mapCycleID then
+				print( "\t>" .. file )
+			else
+				print( "\t " .. file )
 			end
 		end
 	end
-	lobby:chooseMap( self.currentMapName )
 
+	-- Choose this map, load it and send it to all clients:
+	lobby:chooseMap( self.currentMapName )
 	self.postMatchLocked = false
 end
 
