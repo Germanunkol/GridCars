@@ -145,7 +145,7 @@ function dedicated:chooseMap()
 	end
 
 	if not foundMapFromMapCycle then
-		print("No map found in map cycle. Choose random:")
+		print("No map cycle found. Will play all maps in maps/ subfolder:")
 		local files = getDirectoryItems( "maps/" )
 
 		if #files < 1 then
