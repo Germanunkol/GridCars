@@ -470,12 +470,12 @@ function game:validateCarMovement( id, x, y )
 			else
 				print("\tPossition is NOT valid. Traceback:", debug.traceback())
 				server:send( CMD.SERVERCHAT,
-					"DEBUG: Something went wrong. " .. server:getUsers()[id].username .. "'s movement was invalid.")
+					"DEBUG: Something went wrong. " .. server:getUsers()[id].playerName .. "'s movement was invalid.")
 			end
 
 			if not oldX or not oldY then
 				print("\tWARNING: oldX or oldY aren't set!", debug.traceback())
-				server:send( CMD.SERVERCHAT, "DEBUG: somthing went wrong with the car position of " .. server:getUsers()[id].username .. "." )
+				server:send( CMD.SERVERCHAT, "DEBUG: somthing went wrong with the car position of " .. server:getUsers()[id].playerName .. "." )
 				oldX, oldY = 0, 0
 			end
 
