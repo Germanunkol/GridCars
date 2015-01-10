@@ -15,6 +15,7 @@ CMD = {
 	BACK_TO_LOBBY = 135,
 	LAPS = 136,
 	SERVERCHAT = 138,
+	STAT = 139,
 }
 
 function setServerCallbacks( server )
@@ -127,6 +128,8 @@ function clientReceived( command, msg )
 		lobby:show()
 	elseif command == CMD.LAPS then
 		lobby:receiveLaps( msg )
+	elseif command == CMD.STAT then
+		stats:add( msg )
 	end
 end
 

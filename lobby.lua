@@ -160,6 +160,10 @@ function lobby:update( dt )
 	if ERROR_TIMER > 0 then
 		ERROR_TIMER = ERROR_TIMER - dt
 	end
+
+	if client then
+		stats:update( dt )
+	end
 end
 
 function lobby:draw()
@@ -175,6 +179,10 @@ function lobby:draw()
 		love.graphics.setColor( 255,128,0, 200 )
 		love.graphics.printf( ERROR_MSG, 60, love.graphics.getHeight() - 60,
 				love.graphics.getWidth() - 120, "center" )
+	end
+
+	if client then
+		stats:draw()
 	end
 end
 

@@ -9,6 +9,7 @@
 end]]
 
 network = require( "network.network" )
+stats = require( "stats" )
 config = require( "config" )
 game = require( "game" )
 lobby = require( "lobby" )

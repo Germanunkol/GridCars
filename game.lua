@@ -133,6 +133,8 @@ function game:show()
 	if not DEDICATED then
 		ui:setActiveScreen( nil )
 
+		stats:clear()
+
 		-- Do a cool camera startup swing:
 		map:camSwingAbort()
 		map:camSwingToPos( map.startProjPoint.x, map.startProjPoint.y, 1.5 )
@@ -195,7 +197,6 @@ function game:draw()
 		game:drawUserList()
 
 		if game.winnerID then
-
 			local users = network:getUsers()
 			if users and users[game.winnerID] then
 				love.graphics.setColor( 0, 0, 0, 200 )
@@ -643,11 +644,40 @@ function game:sendWinner()
 end
 function game:sendBackToLobby()
 	if server then
+		-- Create and send statustics:
+		game:sendStats()
+
 		server:send( CMD.BACK_TO_LOBBY, "" )
+
 		if DEDICATED then
-			lobby:show()
+			lobby:show()	-- must be called AFTER generating the stats!
 		end
 	end
+end
+
+function game:sendStats()
+	-- SERVER ONLY!
+	if not server then return end
+
+	local users = network:getUsers()
+
+	-- Create and send top speed string:
+	local statStr = "Top Speed:|km/h|"
+	for k, u in pairs( users ) do
+		if u.customData.ingame then
+			statStr = statStr .. u.id .. " " .. u.customData.maxSpeed .. "|"
+		end
+	end
+	server:send( CMD.STAT, statStr )
+
+	-- Create and send crashes string:
+	local statStr = "Top Speed:|km/h|"
+	for k, u in pairs( users ) do
+		if u.customData.ingame then
+			statStr = statStr .. u.id .. " " .. u.customData.maxSpeed .. "|"
+		end
+	end
+	server:send( CMD.STAT, statStr )
 end
 
 function game:zoomOut()

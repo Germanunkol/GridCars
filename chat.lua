@@ -15,6 +15,8 @@ local word = "[%S]* "	-- not space followed by space
 local colNormal = {255,255,255,255}
 local colServer = {255,200,64,255}
 
+local panel = require( "panel" )
+
 function chat:init()
 	CHAT_WIDTH = math.min(love.graphics.getWidth()/2 - 40, 500)
 end
@@ -25,6 +27,7 @@ function chat:reset()
 		table.insert( self.lines, {txt = "", col=colNormal} )
 	end
 	table.insert( self.lines, {txt = "Press enter to chat.", col=colServer} )
+	self.panel = panel:new( 0, 0, CHAT_WIDTH, 20*(#self.lines) + 10, 3)
 end
 
 function chat:show()
@@ -58,9 +61,9 @@ function chat:draw()
 		x = love.graphics.getWidth() - 20 - CHAT_WIDTH
 	end
 
-	love.graphics.setColor( 0, 0, 0, 200 )
-	love.graphics.rectangle( "fill", x, y,
-			CHAT_WIDTH, 20*(#self.lines) + 10 )
+	--love.graphics.rectangle( "fill", x, y,
+			--CHAT_WIDTH, 20*(#self.lines) + 10 )
+	self.panel:draw( x, y )
 
 	x = x + 5
 	y = y + 10
