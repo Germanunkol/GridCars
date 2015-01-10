@@ -75,11 +75,12 @@ function chat:draw()
 		
 		local str = self.enterText
 
-		-- print only the last part of the chat:
+		local inputLen = love.graphics.getFont():getWidth( "Say: " .. str )
+		inputLen = math.max(inputLen, 50 )
 
 		love.graphics.setColor( 0, 0, 0, 200 )
 		love.graphics.rectangle( "fill",
-			x, y, CHAT_WIDTH, fontHeight + 10 )
+			x, y, inputLen + 13, fontHeight + 10 )
 
 		love.graphics.setColor( 255, 255, 255, 255 )
 		if math.sin(self.time*3) > 0 then
@@ -157,11 +158,11 @@ function chat:newLine( text, col )
 
 	for k, l in ipairs(wLines) do
 
-	-- Add the text to the table of text lines:
-	for k = 1, #self.lines-1 do
-		self.lines[k] = self.lines[k+1]
-	end
-	self.lines[#self.lines] = {txt = l, col = col}
+		-- Add the text to the table of text lines:
+		for k = 1, #self.lines-1 do
+			self.lines[k] = self.lines[k+1]
+		end
+		self.lines[#self.lines] = {txt = l, col = col}
 
 	end
 end
@@ -210,7 +211,8 @@ function chat:textinput( letter )
 	if STATE == "Game" or STATE == "Lobby" then
 		if self.active then
 			if letter ~= "|" then
-				if #self.enterText < CHAT_INPUT_CHARACTERS then
+				if love.graphics.getFont():getWidth( "Say: " .. self.enterText )
+						< love.graphics.getWidth() - 60 then
 					self.enterText = self.enterText .. letter
 				end
 			end
