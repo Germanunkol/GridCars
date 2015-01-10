@@ -386,6 +386,7 @@ function game:roundTimeout()
 			-- If the user did not move their car in time, move it according to last velocity:
 			if not self.usersMoved[u.id] and u.customData.ingame == true then
 				print("Round timeout for user:", u.id )
+				print("\tUser Data:")
 				for k, v in pairs( u.customData ) do
 					print("\t", k, v)
 				end
