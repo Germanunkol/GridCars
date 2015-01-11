@@ -33,6 +33,7 @@ local tease2 = {
 -- "wait": waiting for server or other players, or for animtion
 
 local scr = nil
+local panel = require( "panel" )
 
 function game:init()
 	scr = ui:newScreen( "game" )
@@ -43,6 +44,9 @@ function game:init()
 
 	scr:addFunction( "topPanel", "leave", 20, 0, "Leave", "q", game.close )
 	scr:addFunction( "topPanel", "help", love.graphics.getWidth() -160, 0, "Help", "h", game.toggleHelp )
+
+	self.winnerPanel = panel:new( love.graphics.getWidth()/3, love.graphics.getHeight()/2 - 100,
+					love.graphics.getWidth()/3, love.graphics.getFont():getHeight() + 10 )
 end
 
 function game:toggleHelp()
@@ -201,14 +205,11 @@ function game:draw()
 		if game.winnerID then
 			local users = network:getUsers()
 			if users and users[game.winnerID] then
-				love.graphics.setColor( 0, 0, 0, 200 )
-				love.graphics.rectangle( "fill",
-					love.graphics.getWidth()/4, love.graphics.getHeight()/2 - 100,
-					love.graphics.getWidth()/2, 40 )
+				self.winnerPanel:draw()
 				love.graphics.setColor( 64,255,64, 255 )
 				love.graphics.printf( users[game.winnerID].playerName .. " wins the round!",
-					love.graphics.getWidth()/4, love.graphics.getHeight()/2-90,
-					love.graphics.getWidth()/2, "center" )
+					love.graphics.getWidth()/3, love.graphics.getHeight()/2-95,
+					love.graphics.getWidth()/3, "center" )
 			end
 		end
 
