@@ -17,10 +17,10 @@ function stats:clear()
 	STAT_WIDTH = love.graphics.getWidth()/2
 	STAT_X = (love.graphics.getWidth() - STAT_WIDTH)/2
 	STAT_HEIGHT = 300 --math.min(love.graphics.getHeight()/3, 300)
-	STAT_Y = (love.graphics.getHeight() - STAT_HEIGHT)/2
+	STAT_Y = (love.graphics.getHeight() - STAT_HEIGHT)/2 - PAD*4
 
 	self.panel = panel:new( STAT_X - PAD, STAT_Y - 2*PAD,
-			STAT_WIDTH + 3*PAD, STAT_HEIGHT + 3*PAD )
+			STAT_WIDTH + 3*PAD, STAT_HEIGHT + 6*PAD )
 
 	-- Stat to be displayed:
 	self.current = nil
@@ -73,6 +73,7 @@ end
 function stats:draw()
 	if self.current and list[self.current] then
 
+		love.graphics.setLineWidth( 2 )
 		local fontHeight = love.graphics.getFont():getHeight()
 
 		local users = network:getUsers()
@@ -83,7 +84,7 @@ function stats:draw()
 				STAT_WIDTH + 2*PAD, STAT_HEIGHT + 4*PAD )]]
 		self.panel:draw()
 
-		local statNameWidth = STAT_WIDTH/(#list+1)
+		local statNameWidth = STAT_WIDTH/(#list)
 		for k, s in ipairs( list ) do
 			-- Print stat titles:
 			if s == stat then
@@ -91,7 +92,7 @@ function stats:draw()
 			else
 				love.graphics.setColor( 255, 255, 255, 64 )
 			end
-			love.graphics.printf( s.name, STAT_X + statNameWidth*k,
+			love.graphics.printf( s.name, STAT_X + statNameWidth*(k-1),
 				STAT_Y - PAD, statNameWidth, "center" )
 		end
 
@@ -116,6 +117,11 @@ function stats:draw()
 				love.graphics.printf( u.displayStr,
 						STAT_X + k*slotWidth - fontHeight/2, STAT_Y + STAT_HEIGHT - 5,
 						500, "left", -math.pi/2 )
+
+				if map:getCar( u.id ) then
+					map:getCar( u.id ):drawOnUI( STAT_X + k*slotWidth,
+							STAT_Y + STAT_HEIGHT + 30, 0.3 )
+				end
 			end
 		end
 	end

@@ -193,9 +193,9 @@ function game:draw()
 		if self.GAMESTATE == "move" then
 			map:drawTargetPoints( client:getID() )
 		end
-		if love.keyboard.isDown( " " ) then
+		--[[if love.keyboard.isDown( " " ) then
 			map:drawCarInfo()
-		end
+		end]]
 		game:drawUserList()
 
 		if game.winnerID then
