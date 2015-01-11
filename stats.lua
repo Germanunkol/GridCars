@@ -8,6 +8,8 @@ local STAT_HEIGHT = 300 --math.min(love.graphics.getHeight()/3, 300)
 local STAT_Y = (love.graphics.getHeight() - STAT_HEIGHT)/2
 local PAD = 20
 
+local STAT_SWITCH_TIME = 5
+
 local panel = require( "panel" )
 
 function stats:clear()
@@ -18,17 +20,17 @@ function stats:clear()
 	STAT_Y = (love.graphics.getHeight() - STAT_HEIGHT)/2
 
 	self.panel = panel:new( STAT_X - PAD, STAT_Y - 2*PAD,
-			STAT_WIDTH + 3*PAD, STAT_HEIGHT + 2*PAD )
+			STAT_WIDTH + 3*PAD, STAT_HEIGHT + 3*PAD )
 
 	-- Stat to be displayed:
 	self.current = nil
+	
+	self.nextStatTimer = STAT_SWITCH_TIME
 end
 
 -- Called for every statistic sent from the server:
 function stats:add( str )
 	local name, unit, data = str:match( "(.-)|(.-)|(.*)" )
-	print("New stat string:", str)
-	print("\t", name, unit, data)
 	if name and unit and data then
 		local stat = {
 			name = name,
@@ -41,7 +43,6 @@ function stats:add( str )
 		local max = -math.huge
 
 		for id, value in data:gmatch( "(%S-)%s(%S-)|" ) do
-			print( "id, value:", id, value)
 			id = tonumber(id)
 			if id and users[id] then
 				local entry = {}
@@ -58,6 +59,10 @@ function stats:add( str )
 		for k, u in ipairs( stat.data ) do
 			if max ~= 0 then
 				u.relHeight = u.val/max
+				-- Display at least a few pixels, even if u.val is zero:
+				u.relHeight = math.max( 0.02, u.relHeight )
+			else
+				u.relHeight = 0.02
 			end
 		end
 
@@ -78,15 +83,23 @@ function stats:draw()
 				STAT_WIDTH + 2*PAD, STAT_HEIGHT + 4*PAD )]]
 		self.panel:draw()
 
-		-- Print stat title:
-		love.graphics.setColor( 255, 255, 255, 255 )
-		love.graphics.printf( stat.name, STAT_X, STAT_Y - PAD, STAT_WIDTH )
+		local statNameWidth = STAT_WIDTH/(#list+1)
+		for k, s in ipairs( list ) do
+			-- Print stat titles:
+			if s == stat then
+				love.graphics.setColor( 255, 255, 255, 255 )
+			else
+				love.graphics.setColor( 255, 255, 255, 64 )
+			end
+			love.graphics.printf( s.name, STAT_X + statNameWidth*k,
+				STAT_Y - PAD, statNameWidth, "center" )
+		end
 
 		local slotWidth = STAT_WIDTH/(#stat.data+1)
 		local barWidth = math.min( 30, slotWidth + 10 )
 		for k, u in ipairs( stat.data ) do
 			if users[u.id] then
-				local barHeight = stat.timer*u.relHeight*STAT_HEIGHT
+				local barHeight = math.min(stat.timer,u.relHeight)*STAT_HEIGHT
 				love.graphics.setColor( users[u.id].customData.red, 
 						users[u.id].customData.green,
 						users[u.id].customData.blue,
@@ -109,15 +122,24 @@ function stats:draw()
 end
 
 function stats:update( dt )
-	if not self.current then
+	if not self.current or not list[self.current] then
 		self.current = 1
 		if list[self.current] then
 			list[self.current].timer = 0
 		end
+		self.nextStatTimer = STAT_SWITCH_TIME
 	else
 		if list[self.current] then
 			if list[self.current].timer < 1 then
-				list[self.current].timer = math.min( list[self.current].timer + dt, 1 )
+				list[self.current].timer = math.min( list[self.current].timer + dt*0.5, 1 )
+			end
+			self.nextStatTimer = self.nextStatTimer - dt
+			if self.nextStatTimer < 0 then
+				self.current = self.current + 1
+				self.nextStatTimer = STAT_SWITCH_TIME
+				if list[self.current] then
+					list[self.current].timer = 0
+				end
 			end
 		end
 	end

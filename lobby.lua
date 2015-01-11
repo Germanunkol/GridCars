@@ -1,3 +1,5 @@
+local panel = require( "panel" )
+
 local lobby = {
 	camMoveTime = 5,
 	currentMapString = nil,
@@ -173,11 +175,9 @@ function lobby:draw()
 	lobby:drawUserList()
 
 	if ERROR_TIMER > 0 then
-		love.graphics.setColor( 0, 0, 0, 200 )
-		love.graphics.rectangle( "fill", 60, love.graphics.getHeight() - 70,
-				love.graphics.getWidth() - 120, 60 )
+		ERROR_PANEL:draw()
 		love.graphics.setColor( 255,128,0, 200 )
-		love.graphics.printf( ERROR_MSG, 60, love.graphics.getHeight() - 60,
+		love.graphics.printf( ERROR_MSG, 60, love.graphics.getHeight() - 65,
 				love.graphics.getWidth() - 120, "center" )
 	end
 
@@ -448,6 +448,8 @@ end
 function lobby:newWarning( msg )
 	ERROR_MSG = msg
 	ERROR_TIMER = 10
+	ERROR_PANEL = panel:new( 60, love.graphics.getHeight() - 70,
+		love.graphics.getWidth() - 120, love.graphics.getFont():getHeight()*2 + 10 )
 end
 
 return lobby

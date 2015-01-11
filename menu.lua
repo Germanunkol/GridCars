@@ -81,6 +81,7 @@ function menu:show()
 		addressInput:setContent( ADDRESS )
 	end
 	chat:reset()
+	stats:clear()
 	map:reset()
 	menu:closeConnectPanel()
 

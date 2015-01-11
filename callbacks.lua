@@ -47,6 +47,7 @@ end
 function newUser( user )
 	lobby:setUserColor( user )
 	server:setUserValue( user, "moved", true )
+	server:setUserValue( user, "roundsWon", 0 )
 	server:send( CMD.SERVERCHAT, WELCOME_MSG, user )
 	if DEDICATED then
 		utility.log( "[" .. os.time() .. "] New user: " ..

@@ -27,7 +27,7 @@ function chat:reset()
 		table.insert( self.lines, {txt = "", col=colNormal} )
 	end
 	table.insert( self.lines, {txt = "Press enter to chat.", col=colServer} )
-	self.panel = panel:new( 0, 0, CHAT_WIDTH, 20*(#self.lines) + 10, 3)
+	self.panel = panel:new( 0, 0, CHAT_WIDTH, 20*(#self.lines) + 10 )
 end
 
 function chat:show()

@@ -110,6 +110,8 @@ function game:show()
 				server:setUserValue( u, "moved", true )
 			end
 			server:setUserValue( u, "crashed", false )
+			server:setUserValue( u, "numCrashes", 0 )
+			server:setUserValue( u, "topCrashSpeed", 0 )
 
 			server:setUserValue( u, "speed", 0 )
 			server:setUserValue( u, "maxSpeed", 0 )
@@ -437,6 +439,10 @@ function game:moveAll()
 				game:startMovementRound()
 			else
 				game:sendWinner( game.winnerID )
+				local winner = server:getUsers()[game.winnerID]
+				if winner then
+					server:setUserValue( winner, "roundsWon", winner.customData.roundsWon + 1 )
+				end
 				self.timerEvent = game.sendBackToLobby
 				self.maxTime = 5
 				self.time = 0
@@ -463,6 +469,7 @@ function game:validateCarMovement( id, x, y )
 			--			map:setCarPos( id, x, y )
 			--map:setCarPosDirectly(id, x, y) --car-id as number, pos as Gridpos
 			local oldX, oldY = map:getCarPos( id )
+			local user = server:getUsers()[id]
 
 			print("\tValidating at:", os.time())
 			print("\tPrevious positions:", id, map:getCar(id), oldX, oldY)
@@ -486,7 +493,7 @@ function game:validateCarMovement( id, x, y )
 			local dist = utility.length( diff )
 			local speed = math.floor( dist*100 )/10
 			print("\tDiff1:", diff.x, diff.y)
-			print("\tSpeed1:", diff.x, diff.y)
+			print("\tSpeed1:", speed )
 			diff = utility.normalize(diff)
 
 			print("\tDist:", dist)
@@ -564,6 +571,13 @@ function game:validateCarMovement( id, x, y )
 					print("Crashed with speed:", speed)
 					game.crashedUsers[id] = game:speedToCrashTimeout( speed )
 				end
+
+				if user then
+					server:setUserValue( user, "numCrashes", user.customData.numCrashes + 1 )
+					if speed > user.customData.topCrashSpeed then
+						server:setUserValue( user, "topCrashSpeed", speed )
+					end
+				end
 			end
 
 			if crashed and not crashSiteFound then
@@ -574,7 +588,6 @@ function game:validateCarMovement( id, x, y )
 			self.usersMoved[id] = true
 			self.newUserPositions[id] = {x=x, y=y}
 
-			local user = server:getUsers()[id]
 			if user then
 				-- tell this user to wait!
 				server:send( CMD.GAMESTATE, "wait", user )
@@ -671,10 +684,28 @@ function game:sendStats()
 	server:send( CMD.STAT, statStr )
 
 	-- Create and send crashes string:
-	local statStr = "Top Speed:|km/h|"
+	local statStr = "Crashes:||"
 	for k, u in pairs( users ) do
 		if u.customData.ingame then
-			statStr = statStr .. u.id .. " " .. u.customData.maxSpeed .. "|"
+			statStr = statStr .. u.id .. " " .. u.customData.numCrashes .. "|"
+		end
+	end
+	server:send( CMD.STAT, statStr )
+
+	-- Create and send top speed at crashes:
+	local statStr = "Worst crash:|km/h|"
+	for k, u in pairs( users ) do
+		if u.customData.ingame then
+			statStr = statStr .. u.id .. " " .. u.customData.topCrashSpeed .. "|"
+		end
+	end
+	server:send( CMD.STAT, statStr )
+
+	-- Create and send top speed at crashes:
+	local statStr = "Rounds won:||"
+	for k, u in pairs( users ) do
+		if u.customData.ingame then
+			statStr = statStr .. u.id .. " " .. u.customData.roundsWon .. "|"
 		end
 	end
 	server:send( CMD.STAT, statStr )
