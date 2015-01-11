@@ -41,6 +41,11 @@ function projectPointOntoLine( l1,l2, p )
 	return { x=u.x*dist + l1.x, y = u.y*dist + l1.y }
 end
 
+function utility.linePointDist( l1,l2, p )
+	local o = projectPointOntoLine( l1,l2, p )
+	return utility.dist( o, p )
+end
+
 function utility.triangleArea( t )
 	local p = projectPointOntoLine( t[1],t[2], t[3] )
 	local width = utility.dist( t[1], t[2] )

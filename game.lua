@@ -615,15 +615,43 @@ function game:checkForRoundEnd()
 	end
 end
 
+-- This function checks for a winner. A winner is found if a user has passed the startline
+-- LAP times. If more than one players have done so, the winner is the one who is _furthest_
+-- from the start line (i.e. crossed the line with the most speed/first)
 function game:checkForWinner()
 	if server and not game.winnerID then
+		local potentialWinners = {}
 		for k, u in pairs( server:getUsers() ) do
 			if u.customData.ingame then
 				if map:getCarRound( u.id ) >= LAPS + 1 then
-					game.winnerID = u.id
-					print("WINNER FOUND!", u.id)
-					break
+					table.insert( potentialWinners, u.id )
 				end
+			end
+		end
+
+		-- Find the winner who has the least 
+		local winnerID
+		local maxDist = -math.huge
+		for k, id in pairs( potentialWinners ) do
+			local car = map:getCar( id )
+			if car then
+				local x,y = car:getPos()
+				local p = {x=x, y=y}
+				local dist = utility.linePointDist( map.startLine.p1,map.startLine.p2, p )
+				print( x, y, map.startLine.p1.x, map.startLine.p1.y )
+				if dist > maxDist then	-- so far the first player:
+					winnerID = id
+					maxDist = dist
+				end
+			end
+		end
+		if winnerID then
+			game.winnerID = winnerID
+			print("WINNER FOUND!", game.winnerID )
+		else
+			-- Fallback, just in case:
+			if #potentialWinners > 0 then
+				game.winnerID = potentialWinners[1]
 			end
 		end
 	end

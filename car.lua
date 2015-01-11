@@ -262,6 +262,9 @@ function Car:setPos( x, y )
 	self.x = x
 	self.y = y
 end
+function Car:getPos()
+	return self.x, self.y
+end
 
 function Car:isThisAValidTargetPos( x, y )
 	x = x*GRIDSIZE
