@@ -1,7 +1,7 @@
 -- This defines all the callbacks needed by server and client.
 -- Callbacks are called when certain events happen.
 
-VERSION = "0.5"
+VERSION = "0.6"
 
 -- These are all possible commands clients of the server can send:
 CMD = {

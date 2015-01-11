@@ -4,7 +4,7 @@ Setting up a GridCars server
 Normal Server:
 -----------------------
 A normal server is one with a graphical interface (where you also play along). Usually used in LAN settings.
-- Edit your config.txt file in _%APPDATA%\GridCars\_ or _~/.local/share/GridCars/_ (Options: see below)
+- Edit your config.txt file in _%APPDATA%\GridCars\_ or _~/.local/share/GridCars/_ (The exact path to the file is shown when you start the game and press 'H' for help.) Available options: see below
 - If you want to play on the internet, port-forward the Port (Default: TCP 3140) on your router
 - Start the Game, and select one of the two server options.
 
@@ -12,7 +12,7 @@ Dedicated server:
 -----------------------
 A dedicated server is run from the console, usually on online servers.
 - Download the source code version of the game [from github](https://github.com/Germanunkol/GridCars/)
-- Edit the config.txt file _in the root directory of the game_. (Options: see below)
+- Edit the config.txt file _in the root directory of the game_. Available options: see below
 - Make sure Lua and luasocket are installed.
 - Run "lua dedicated.lua" in the root directory.
 

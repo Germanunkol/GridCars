@@ -33,7 +33,7 @@ STATE = "Menu"
 MAX_PLAYERS = 16
 PORT = 3410
 MAIN_SERVER_URL = "http://germanunkol.de/gridcars/serverlist"
-GAME_ID = "GridCars" .. VERSION
+GAME_ID = "GridCars"
 
 function love.load( args )
 
