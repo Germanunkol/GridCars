@@ -30,7 +30,7 @@ gridcars [at] gmail.com
 
 Server Options:
 ----------------------
-See the [SERVER_SETUP.md](SERVER_SETUP.md) for instructions on configuring your own server.
+See the [SERVER_SETTINGS.md](SERVER_SETTINGS.md) for instructions on configuring your own server.
 
 Credits:
 ----------------------
