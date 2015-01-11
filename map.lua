@@ -79,7 +79,7 @@ function map:newFromString( mapstring )
 
 	local success, msg = map:import(mapstring)
 	if not success then
-		print("error loading map: ", msg)
+		print("Error loading map: ", msg)
 		lobby:errorMsg( msg )
 		map:reset()
 		return
@@ -794,7 +794,6 @@ function map:newCar( id, x, y, color )
 end
 
 function map:removeAllCars()
-	print("Called", debug.traceback())
 	map.lastRoundCars = map.cars
 	map.cars = {}
 end
