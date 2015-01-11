@@ -48,7 +48,7 @@ function map:load()
 	cam = Camera(map.View.x, map.View.y)
 end
 
-DEBUG_POINT_LIST = {}
+local DEBUG_POINT_LIST = {}
 
 --wird zum laden neuer Maps öfters aufgerufen
 -- ACHTUNG: Bitte nur noch map:newFromString aufrufen!

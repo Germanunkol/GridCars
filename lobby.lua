@@ -72,6 +72,8 @@ function lobby:init()
 
 	scr:addFunction( "topPanel", "ready", love.graphics.getWidth() - 100, 0, "Ready", "r",
 		function() lobby:toggleReady() end )
+
+	self.userPanel = panel:new( 0, 0, 300, 19 )
 end
 
 function lobby:show()
@@ -193,9 +195,10 @@ function lobby:drawUserList()
 	local x, y = 20, 60
 	local i = 1
 	if client and users then
-		love.graphics.setColor( 0, 0, 0, 128 )
-		love.graphics.rectangle( "fill", x - 5, y - 5, 300, num*20 + 5 )
+		--love.graphics.setColor( 0, 0, 0, 128 )
+		--love.graphics.rectangle( "fill", x - 5, y - 5, 300, num*20 + 5 )
 		for k, u in pairs( users ) do
+			self.userPanel:draw( x - 5, y - 3  )
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )

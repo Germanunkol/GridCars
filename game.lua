@@ -47,6 +47,8 @@ function game:init()
 
 	self.winnerPanel = panel:new( love.graphics.getWidth()/3, love.graphics.getHeight()/2 - 100,
 					love.graphics.getWidth()/3, love.graphics.getFont():getHeight() + 10 )
+
+	self.userPanel = panel:new( 0, 0, 450, 19 )
 end
 
 function game:toggleHelp()
@@ -223,9 +225,10 @@ function game:drawUserList()
 	local x, y = 20, 60
 	local i = 1
 	if client and users then
-		love.graphics.setColor( 0, 0, 0, 128 )
-		love.graphics.rectangle( "fill", x - 5, y - 5, 450, num*20 + 5 )
 		for k, u in pairs( users ) do
+
+			self.userPanel:draw( x - 5, y - 3 )
+
 			love.graphics.setColor( 255,255,255, 255 )
 			love.graphics.printf( i .. ":", x, y, 20, "right" )
 			love.graphics.printf( u.playerName, x + 25, y, 250, "left" )
@@ -493,26 +496,19 @@ function game:validateCarMovement( id, x, y )
 			local diff = {x = x-oldX, y = y-oldY}
 			local dist = utility.length( diff )
 			local speed = math.floor( dist*100 )/10
-			print("\tDiff1:", diff.x, diff.y)
-			print("\tSpeed1:", speed )
+			print("\tDelta:", diff.x, diff.y)
+			print("\tSpeed:", speed )
 			diff = utility.normalize(diff)
-
 			print("\tDist:", dist)
-			print("\tDiff2:", diff.x, diff.y)
 
 			-- Step forward in steps of 0.5 length - this makes sure no small gaps are jumped!
 			local crashed, crashSiteFound = false, false
 			local movedDist = 0
 			for l = 0.5, dist, 0.5 do
-				print("\t\tStep forward", l)
 				p = {x = oldX + l*diff.x, y = oldY + l*diff.y }
 				if not map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
-					print("\t\t->Not on road")
-					map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {255,0,0,255} )
 					crashed = true
 					break
-				else
-					map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,255,0,255} )
 				end
 				movedDist = l
 			end
@@ -522,10 +518,7 @@ function game:validateCarMovement( id, x, y )
 				-- I have managed to move the entire distance!
 				movedDist = dist
 				if not map:isPointOnRoad( x*GRIDSIZE, y*GRIDSIZE, 0 ) then
-					map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {255,0,0,255} )
 					crashed = true
-				else
-					map:addDebugPoint( x*GRIDSIZE, y*GRIDSIZE, {0,255,0,255} )
 				end
 			end
 
@@ -551,17 +544,13 @@ function game:validateCarMovement( id, x, y )
 				print("\tCrashed")
 				-- Step backwards:
 				for lBack = movedDist-0.5, 0, -0.5 do
-					print("\t\tStepback", lBack)
 					p = {x = oldX + lBack*diff.x, y = oldY + lBack*diff.y }
 					p.x = math.floor(p.x)
 					p.y = math.floor(p.y)
 					if map:isPointOnRoad( p.x*GRIDSIZE, p.y*GRIDSIZE, 0 ) then
-						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {0,128,0,255} )
 						crashSiteFound = true
 						x, y = p.x, p.y
 						break
-					else
-						map:addDebugPoint( p.x*GRIDSIZE, p.y*GRIDSIZE, {128,0,0,255} )
 					end
 				end
 
@@ -569,7 +558,6 @@ function game:validateCarMovement( id, x, y )
 				if crashedIntoCar then
 					game.crashedUsers[id] = SKIP_ROUNDS_CAR_CAR + 1
 				else
-					print("Crashed with speed:", speed)
 					game.crashedUsers[id] = game:speedToCrashTimeout( speed )
 				end
 
