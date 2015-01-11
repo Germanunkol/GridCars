@@ -144,7 +144,6 @@ function config.load()
 	PLAYERNAME = PLAYERNAME:sub( 1, 28 )	-- max of 28 chars
 	SERVER_NAME = SERVER_NAME:sub( 1, 50 )	-- max of 50 chars
 
-
 	SKIP_ROUNDS_CAR_CAR = math.max( 0, SKIP_ROUNDS_CAR_CAR )
 	SKIP_ROUNDS_COLLISION_PER_10_KMH = math.max( 0, SKIP_ROUNDS_COLLISION_PER_10_KMH )
 	SKIP_ROUNDS_COLLISION_MIN = math.floor(math.max( 0, SKIP_ROUNDS_COLLISION_MIN ))

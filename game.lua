@@ -61,13 +61,13 @@ function game:toggleHelp()
 		scr:addPanel( "helpPanel",
 			x,
 			80,
-			width, 320 )
+			width, 410 )
 		scr:addHeader( "helpPanel", "h1", 0, y, "Help:" )
 		y = y + 30
 
-		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "Move your car by clicking the fields around it. Once every player has planned their move, the cars start driving. The places you can drive to this round depends on how your carr drove during the last movement phase: The same vector you moved last round will be added onto your car's position; from the resulting point, all neighbouring fields are available.\nBe the first to finsih the race, but don't leave the road or crash into other cars!\n\nUse W-A-S-D or cursor keys to move the camera, use mouse wheel or + and - to zoom." )
+		scr:addText( "helpPanel", "helpText", 10, y, nil, 7, "Move your car by clicking the fields around it. Once every player has planned their move, the cars start driving. The places you can drive to this round depends on how your carr drove during the last movement phase: The same vector you moved last round will be added onto your car's position; from the resulting point, all neighbouring fields are available.\nBe the first to finsih the race, but don't leave the road or crash into other cars!\n\nUse W-A-S-D or cursor keys to move the camera, use mouse wheel or + and - to zoom.\n\nCrashes:\nStay on the road! If you leave the road, you will crash. The time you have to wait afterwards depends on how fast you were.\nYou can crash into other player's cars if you click on the same position. Whoever clicks second, crashes." )
 
-		scr:addFunction( "helpPanel", "close", 10, 260, "Close", "h", nil )
+		scr:addFunction( "helpPanel", "close", 10, 360, "Close", "h", nil )
 	end
 end
 
