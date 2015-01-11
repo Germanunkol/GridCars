@@ -120,7 +120,7 @@ function stats:draw()
 
 				if map:getCar( u.id ) then
 					map:getCar( u.id ):drawOnUI( STAT_X + k*slotWidth,
-							STAT_Y + STAT_HEIGHT + 30, 0.3 )
+							STAT_Y + STAT_HEIGHT + 40, 0.3 )
 				end
 			end
 		end
@@ -146,6 +146,17 @@ function stats:update( dt )
 				if list[self.current] then
 					list[self.current].timer = 0
 				end
+			end
+		end
+	end
+end
+
+function stats:removeUser( id )
+	for i, stat in pairs( list ) do
+		for k, u in ipairs( stat.data ) do
+			if u.id == id then
+				table.remove( stat.data, k )
+				break
 			end
 		end
 	end

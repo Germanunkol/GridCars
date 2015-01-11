@@ -3,6 +3,7 @@ local map = {
 	Boundary = {},
 	nullpunkt = {},
 	cars = {},
+	lastRoundCars = {},
 	subjects = {},
 	View = {},
 	loaded = false,
@@ -339,7 +340,7 @@ function map:drawGrid()
 end
 
 function map:reset()
-	map.cars = {}
+	map:removeAllCars()
 	map.Boundary = {	minX = math.huge,
 						minY = math.huge,
 						maxX = -math.huge,
@@ -725,10 +726,14 @@ function map:getCarPos(id)
 end
 
 function map:hasCar(id)
-	return map.cars[id] ~= nil
+	return (map.cars[id] ~= nil or map.lastRoundCars[id] ~= nil)
 end
 function map:getCar(id)
-	return map.cars[id]
+	if map.cars[id] then
+		return map.cars[id]
+	else
+		return map.lastRoundCars[id]
+	end
 end
 
 function map:getGridPos(GridNx,GridNy)
@@ -789,6 +794,8 @@ function map:newCar( id, x, y, color )
 end
 
 function map:removeAllCars()
+	print("Called", debug.traceback())
+	map.lastRoundCars = map.cars
 	map.cars = {}
 end
 
