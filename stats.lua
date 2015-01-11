@@ -28,6 +28,20 @@ function stats:clear()
 	self.nextStatTimer = STAT_SWITCH_TIME
 end
 
+function stats:show()
+	if #list > 1 then
+		self.display = true
+		self.nextStatTimer = STAT_SWITCH_TIME
+		self.current = 1
+		if list[self.current] then
+			list[self.current].timer = 0
+		end
+	end
+end
+function stats:hide()
+	stats.display = false
+end
+
 -- Called for every statistic sent from the server:
 function stats:add( str )
 	local name, unit, data = str:match( "(.-)|(.-)|(.*)" )
@@ -71,7 +85,7 @@ function stats:add( str )
 end
 
 function stats:draw()
-	if self.current and list[self.current] then
+	if self.display and self.current and list[self.current] then
 
 		love.graphics.setLineWidth( 2 )
 		local fontHeight = love.graphics.getFont():getHeight()
@@ -128,23 +142,25 @@ function stats:draw()
 end
 
 function stats:update( dt )
-	if not self.current or not list[self.current] then
-		self.current = 1
-		if list[self.current] then
-			list[self.current].timer = 0
-		end
-		self.nextStatTimer = STAT_SWITCH_TIME
-	else
-		if list[self.current] then
-			if list[self.current].timer < 1 then
-				list[self.current].timer = math.min( list[self.current].timer + dt*0.5, 1 )
+	if self.display then
+		if not self.current or not list[self.current] then
+			self.current = 1
+			if list[self.current] then
+				list[self.current].timer = 0
 			end
-			self.nextStatTimer = self.nextStatTimer - dt
-			if self.nextStatTimer < 0 then
-				self.current = self.current + 1
-				self.nextStatTimer = STAT_SWITCH_TIME
-				if list[self.current] then
-					list[self.current].timer = 0
+			self.nextStatTimer = STAT_SWITCH_TIME
+		else
+			if list[self.current] then
+				if list[self.current].timer < 1 then
+					list[self.current].timer = math.min( list[self.current].timer + dt*0.5, 1 )
+				end
+				self.nextStatTimer = self.nextStatTimer - dt
+				if self.nextStatTimer < 0 then
+					self.current = self.current + 1
+					self.nextStatTimer = STAT_SWITCH_TIME
+					if list[self.current] then
+						list[self.current].timer = 0
+					end
 				end
 			end
 		end

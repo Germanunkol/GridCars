@@ -135,6 +135,7 @@ function clientReceived( command, msg )
 		lobby:receiveLaps( msg )
 	elseif command == CMD.STAT then
 		stats:add( msg )
+		stats:show()	-- in case it's not displaying yet, show the stats window
 	end
 end
 

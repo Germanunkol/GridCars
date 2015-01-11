@@ -70,10 +70,13 @@ function lobby:init()
 
 	scr:addFunction( "topPanel", "close", 20, 0, "Leave", "q", lobby.close )
 
+	scr:addFunction( "topPanel", "stats", 3*love.graphics.getWidth()/4-40, 0, "Toggle Statistics", "t",
+		function() lobby:toggleStats() end )
+
 	scr:addFunction( "topPanel", "ready", love.graphics.getWidth() - 100, 0, "Ready", "r",
 		function() lobby:toggleReady() end )
 
-	self.userPanel = panel:new( 0, 0, 300, 19 )
+	self.userPanel = panel:new( 0, 0, 300, 18 )
 end
 
 function lobby:show()
@@ -327,6 +330,14 @@ function lobby:toggleReady()
 	if client then
 		local ready = client:getUserValue( "ready" )
 		client:setUserValue( "ready", not ready )
+	end
+end
+
+function lobby:toggleStats()
+	if stats.display then
+		stats:hide()
+	else
+		stats:show()
 	end
 end
 
