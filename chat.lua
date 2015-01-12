@@ -23,7 +23,7 @@ end
 
 function chat:reset()
 	self.lines = {} -- "", "", "", "", "", "", "", "Press enter to chat.", "Welcome!" }
-	for k = 1, 9 do
+	for k = 1, 11 do
 		table.insert( self.lines, {txt = "", col=colNormal} )
 	end
 	table.insert( self.lines, {txt = "Press enter to chat.", col=colServer} )
@@ -36,7 +36,7 @@ end
 function chat:draw()
 	local fontHeight = love.graphics.getFont():getHeight()
 	local x
-	local y = love.graphics.getHeight() - 20*(#self.lines+1) - 70
+	local y = love.graphics.getHeight() - 20*(#self.lines+1) - 40
 
 	if map.loaded and client and client:getID() then
 		if map:hasCar( client:getID() ) then
@@ -73,7 +73,7 @@ function chat:draw()
 		y = y + 20
 	end
 
-	local x, y = 20, love.graphics.getHeight() - 70
+	local x, y = 20, love.graphics.getHeight() - 40
 	if self.active then
 		
 		local str = self.enterText
