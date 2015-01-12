@@ -45,12 +45,10 @@ MAIN_SERVER_URL = "http://germanunkol.de/gridcars/serverlist"
 GAME_ID = "GridCars"
 
 function dedicated:startServer()
-	local success
-	success, server = pcall( function()
-		return network:startServer( MAX_PLAYERS, PORT )
-	end)
+	local err
+	server, err = network:startServer( MAX_PLAYERS, PORT )
 
-	if success then
+	if server then
 		-- set client callbacks:
 		setServerCallbacks( server )
 		lobby:show()
@@ -63,7 +61,8 @@ function dedicated:startServer()
 
 	else
 		-- If I can't start a server for some reason, let user know and exit:
-		print(server)
+		print("ERROR: Could not start server:")
+		print( "\t", err)
 		os.exit()
 	end
 end

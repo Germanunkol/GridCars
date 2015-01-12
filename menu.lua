@@ -190,12 +190,10 @@ function menu.startServer( lan )
 		LAN_ONLY = false
 	end
 
-	local success
-	success, server = pcall( function()
-		return network:startServer( MAX_PLAYERS, PORT )
-	end)
+	local err
+	server, err = network:startServer( MAX_PLAYERS, PORT )
 
-	if success then
+	if server then
 		-- set client callbacks:
 		setServerCallbacks( server )
 
@@ -208,12 +206,14 @@ function menu.startServer( lan )
 			network.advertise:start( server, "both" )
 		end
 	else
-		menu:errorMsg( "Error:", server )
+		menu:errorMsg( "Error:", err )
 	end
 
 	-- Also start a client!
-	menu.ipEntered( 'localhost' )
-	menu.connect()
+	if server then
+		menu.ipEntered( 'localhost' )
+		menu.connect()
+	end
 end
 
 function menu.ipEntered( ip )
@@ -231,12 +231,10 @@ function menu.connect( ip, port )
 	scr:addText( "connectPanel", "connectTxt", 10, 15, nil, 7, "Connecting to: '" ..
 			(ip or menu.ip) .. "'...")
 
-	local success
-	success, client = pcall( function()
-		return network:startClient( ip or menu.ip, PLAYERNAME, port or PORT, VERSION )
-	end)
+	local err
+	client, err = network:startClient( ip or menu.ip, PLAYERNAME, port or PORT, VERSION )
 
-	if success then
+	if client then
 		-- set client callbacks:
 		setClientCallbacks( client )
 		if not server then		-- only save address if this is not a server (in this case ADDRESS would be localhost)
@@ -247,7 +245,7 @@ function menu.connect( ip, port )
 		print("Could not conect:", client )
 		local commands = {}
 		commands[1] = { txt = "Ok", key = "y" }
-		listScr:newMsgBox( "Error:", "Could not connect.", nil, nil, nil, commands)
+		listScr:newMsgBox( "Error:", "Could not connect:" .. (err or ""), nil, nil, nil, commands)
 		menu:closeConnectPanel()
 	end
 
