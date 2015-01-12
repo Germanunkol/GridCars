@@ -3,6 +3,10 @@ NUM_CAR_IMAGES = 4
 local Car = {}
 Car.__index = Car
 
+local col_shadow = { 0, 0, 0, 100 }
+local shadowOffsetX = 5
+local shadowOffsetY = 5
+
 --[[Car.draw = function() .... end
 Car["draw"]
 t = {}
@@ -70,6 +74,9 @@ function Car:draw()
 	-- draw Car
 	love.graphics.push()
 	--love.graphics.scale(self.scale, self.scale)
+	-- draw shadow:
+	love.graphics.setColor(col_shadow)
+	love.graphics.draw(self.body, self.x+shadowOffsetX, self.y+shadowOffsetY, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
 	 -- draw body
 	love.graphics.setColor(self.color)
 	love.graphics.draw(self.body, self.x, self.y, self.r, 1, 1, self.body:getWidth()/2, self.body:getHeight()/2, 0, 0)
