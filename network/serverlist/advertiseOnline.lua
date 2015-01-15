@@ -18,11 +18,13 @@ body = body .. "info=" .. INFO .. "&"
 
 local result, errCode, errorMsg, status = http.request( URL, body )
 
-local err = result:match( "%[Warning:%]%s?(.-)\n" )
-if err then
-	print( "[ADVERTISE] " .. err )
---else
---	print( "[ADVERTISE] Advertisement sent:", PORT, ID, INFO )
+if result then
+	local err = result:match( "%[Warning:%]%s?(.-)\n" )
+	if err then
+		print( "[ADVERTISE] " .. err )
+		--else
+		--	print( "[ADVERTISE] Advertisement sent:", PORT, ID, INFO )
+	end
 end
 
 if errCode and errCode >= 400 then

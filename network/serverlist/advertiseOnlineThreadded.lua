@@ -25,12 +25,15 @@ while true do
 		body = body .. "id=" .. ID .. "&"
 		body = body .. "info=" .. INFO .. "&"
 		local result, errCode, errorMsg, status  = http.request( URL .. "/advertise.php", body )
-		local err = result:match( "%[Warning:%](.-)\n" )
-		if err then
-			cout:push( "Warning:" .. err)
-			cout:push("closed")
-			return
-		elseif errCode and errCode >= 400 then		-- don't send two warnings
+		if result then
+			local err = result:match( "%[Warning:%](.-)\n" )
+			if err then
+				cout:push( "Warning:" .. err)
+				cout:push("closed")
+				return
+			end
+		end
+		if errCode and errCode >= 400 then		-- don't send two warnings
 			local msg = "Warning: Could not advertise: \"" .. tostring(status) .. "\""
 			if errCode == 404 then
 				msg = msg .. "\n\tWrong URL? (" .. URL .. "/advertise.php)"
@@ -39,6 +42,7 @@ while true do
 			cout:push("closed")
 			return
 		end
+
 	elseif command == "unAdvertise" then
 		local body = ""
 		body = body .. "port=" .. PORT.. "&"
