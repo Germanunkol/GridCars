@@ -162,8 +162,10 @@ function Client:received( command, msg )
 		local user = User:new( nil, playerName, id )
 		userList[id] = user
 		numberOfUsers = numberOfUsers + 1
-		if self.callbacks.newUser then
-			self.callbacks.newUser( user )
+		if self.playerName ~= playerName then
+			if self.callbacks.otherUserConnected then
+				self.callbacks.otherUserConnected( user )
+			end
 		end
 	elseif command == CMD.PLAYER_LEFT then
 		local id = tonumber(msg)

@@ -93,6 +93,7 @@ function synchronize( user )
 end
 
 function otherUserConnected( user )
+	print("TEST!")
 	if client and client.authorized then
 		Sounds:play( "beep" )
 	end
