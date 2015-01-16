@@ -122,6 +122,7 @@ function newServerListEntryRemote( entry )
 		end
 		local servername, otherinfo = entry.info:match("Name:(.-),(.*)")
 		otherinfo = otherinfo:gsub(",","\t")
+		otherinfo = otherinfo:gsub(":",": ")
 
 		local item = {
 			--txt = "(Online) " .. entry.address .. "\t" .. entry.info:gsub(",","\t"):gsub(":", ": "),
